@@ -116,7 +116,7 @@ class Factor:
         """
         Return variables
         """
-        return self.df.columns
+        return list(set(self.df.columns) - {'count'})
 
     def prod(self, other):
         """
@@ -129,7 +129,7 @@ class Factor:
         left_vars = set(list(self.get_variables()))
         right_vars = set(list(other.get_variables()))
         common = list(
-            left_vars.intersection(right_vars) - {'count'}
+            left_vars.intersection(right_vars)
         )
 
         merged = self.df.merge(other.df, on=common)
@@ -137,7 +137,7 @@ class Factor:
 
         return Factor(
             merged[
-                list(left_vars.union(right_vars))
+                list(left_vars.union(right_vars.union({'count'})))
             ]
         )
 
