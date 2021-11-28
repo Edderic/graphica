@@ -2,8 +2,42 @@
 Data Structures module.
 
 Classes:
+    - ConditionalProbabilityTable
     - DirectedAcyclicGraph
+    - Factor
 """
+
+
+class ConditionalProbabilityTable:
+    """
+    Conditional Probability Table class. Meant to be used to represent
+    conditional probabilities for Bayesian Networks.
+    """
+
+    # pylint:disable=too-few-public-methods
+    def __init__(self, df, given, outcomes):
+        self.df = df
+        self.given = given
+        self.outcomes = outcomes
+
+        self.__validate__()
+
+    def __validate__(self):
+        existing_cols = self.df.reset_index().columns
+
+        if 'count' not in existing_cols:
+            raise ValueError("The column 'count' must exist.")
+
+        given_plus_outcomes_cols = set(self.given + self.outcomes)
+
+        if given_plus_outcomes_cols.intersection(
+            set(existing_cols) - {'count'}
+        ) != given_plus_outcomes_cols:
+
+            raise ValueError(
+                "Mismatch between dataframe columns {existing_cols} and"
+                + " given and outcomes {given_plus_outcomes_cols}"
+            )
 
 
 class DirectedAcyclicGraph:
@@ -66,3 +100,43 @@ class DirectedAcyclicGraph:
             return []
 
         return self.data_structure[node]
+
+
+class Factor:
+    """
+    Class for representing factors.
+    """
+    def __init__(self, df=None, cpt=None):
+        if df is not None:
+            self.df = df
+        else:
+            self.df = cpt.df
+
+    def get_variables(self):
+        """
+        Return variables
+        """
+        return self.df.columns
+
+    def prod(self, other):
+        """
+        Parameters:
+            other: Factor
+
+        Returns: Factor
+        """
+
+        left_vars = set(list(self.get_variables()))
+        right_vars = set(list(other.get_variables()))
+        common = list(
+            left_vars.intersection(right_vars) - {'count'}
+        )
+
+        merged = self.df.merge(other.df, on=common)
+        merged['count'] = merged.count_x * merged.count_y
+
+        return Factor(
+            merged[
+                list(left_vars.union(right_vars))
+            ]
+        )
