@@ -140,3 +140,18 @@ class Factor:
                 list(left_vars.union(right_vars))
             ]
         )
+
+    def sum(self, var):
+        """
+        Parameters:
+            var: string
+                The variable to be summed out.
+
+        Returns: Factor
+        """
+
+        other_vars = list(set(self.get_variables()) - {'count', var})
+        new_df = self.df.groupby(other_vars)\
+            .sum()[['count']].reset_index()
+
+        return Factor(new_df)

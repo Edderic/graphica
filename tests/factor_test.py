@@ -54,3 +54,33 @@ def test_factor_prod():
         indexed_left.iterrows(), indexed_right.iterrows()
     ):
         assert left['count'] == pytest.approx(right['count'])
+
+
+def test_factor_sum():
+    df = pd.DataFrame([
+        {'X': 0, 'Y': 0, 'count': 0.25},
+        {'X': 0, 'Y': 1, 'count': 0.75},
+        {'X': 1, 'Y': 0, 'count': 0.6},
+        {'X': 1, 'Y': 1, 'count': 0.4},
+    ])
+
+    cpt_1 = CPT(
+        df=df,
+        outcomes=['Y'],
+        given=['X']
+    )
+
+    factor = Factor(cpt=cpt_1)
+
+    new_factor = factor.sum('Y')
+
+    expected_df = pd.DataFrame([
+        {
+            'X': 0, 'count': 1.0
+        },
+        {
+            'X': 1, 'count': 1.0
+        }
+    ])
+
+    assert new_factor.df.equals(expected_df)
