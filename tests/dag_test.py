@@ -19,3 +19,13 @@ def test_get_parents():
     assert [] == dag.get_parents("A")
     assert ["A"] == dag.get_parents("B")
     assert ["B"] == dag.get_parents("C")
+
+
+def test_get_children():
+    dag = DAG()
+    dag.add_edge("A", "B")
+    dag.add_edge("B", "C")
+
+    assert ["B"] == dag.get_children("A")
+    assert ["C"] == dag.get_children("B")
+    assert [] == dag.get_children("C")
