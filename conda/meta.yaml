@@ -1,0 +1,41 @@
+{% set name = "linx" %}
+{% set version = "0.0.1" %}
+
+package:
+  name: "{{ name|lower }}"
+  version: "{{ version }}"
+
+source:
+  path: ../
+
+build:
+  script: "{{ PYTHON }} -m pip install . -vv"
+
+requirements:
+  build:
+    - python {{ python }}
+  host:
+    - pip
+    - python {{ python }}
+  run:
+    - dask
+    - matplotlib
+    - numpy
+    - pandas
+    - python
+    - scipy
+    - tqdm
+
+about:
+  home: "https://github.com/edderic/linx"
+  license: MIT
+  license_family: MIT
+  summary: "Tools for Probabilistic Graphical Modeling"
+  dev_url: "https://github.com/edderic/linx"
+
+extra:
+  recipe-maintainers:
+    - edderic
+test:
+  imports:
+    - linx
