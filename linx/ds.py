@@ -5,6 +5,7 @@ Classes:
     - ConditionalProbabilityTable
     - DirectedAcyclicGraph
     - Factor
+    - Factors
 """
 
 
@@ -117,6 +118,30 @@ class Factor:
         Return variables
         """
         return list(set(self.df.columns) - {'count'})
+
+    def div(self, other):
+        """
+        Parameters:
+            other: Factor
+
+        Returns: Factor
+        """
+
+        left_vars = set(list(self.get_variables()))
+        right_vars = set(list(other.get_variables()))
+        common = list(
+            left_vars.intersection(right_vars)
+        )
+
+        merged = self.df.merge(other.df, on=common)
+        merged['count'] = merged.count_x / merged.count_y
+
+        return Factor(
+            merged[
+                list(left_vars.union(right_vars.union({'count'})))
+            ]
+        )
+
 
     def prod(self, other):
         """
