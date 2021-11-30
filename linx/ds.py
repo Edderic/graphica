@@ -358,7 +358,7 @@ class MarkovNetwork:
         variables = factor.get_variables()
         for var in variables:
             if var not in self.factors:
-                self.factors[var] = []
+                self.factors[var] = Factors([])
             self.factors[var].append(factor)
 
     def get_factors(self, node=None):
