@@ -6,6 +6,8 @@ Classes:
     - DirectedAcyclicGraph
     - Factor
     - Factors
+    - BayesianNetwork
+    - MarkovNetwork
 """
 
 
@@ -305,3 +307,44 @@ class BayesianNetwork(DirectedAcyclicGraph):
         """
 
         return self.cpts[node]
+
+
+class MarkovNetwork:
+    """
+    Markov network. A data structure that has undirected edges. Each clique
+    represents a factor.
+    """
+    def __init__(self):
+        self.factors = {}
+
+    def add_factor(self, factor):
+        """
+        Add factor.
+
+        Parameters:
+            factor: Factor
+                Something that responds to get_variables.
+        """
+        variables = factor.get_variables()
+        for var in variables:
+            if var not in self.factors:
+                self.factors[var] = []
+            self.factors[var].append(factor)
+
+    def get_factors(self, node=None):
+        """
+        If node is None, returns all factors.
+
+        Parameters:
+            node: string or None
+
+        Returns: list[Factor]
+        """
+        if node is None:
+            factors = []
+            for _, v in self.factors.items():
+                factors = factors + v
+
+            return factors
+        else:
+            return self.factors[node]
