@@ -14,7 +14,7 @@ def test_factor_div():
     cpt_1 = CPT(
         df=df,
         outcomes=['Y'],
-        given=['X']
+        givens=['X']
     )
 
     factor_1 = Factor(cpt=cpt_1)
@@ -29,7 +29,7 @@ def test_factor_div():
     cpt_2 = CPT(
         df=df_2,
         outcomes=['A'],
-        given=['X']
+        givens=['X']
     )
 
     factor_2 = Factor(cpt=cpt_2)
@@ -66,7 +66,7 @@ def test_factor_prod():
     cpt_1 = CPT(
         df=df,
         outcomes=['Y'],
-        given=['X']
+        givens=['X']
     )
 
     factor_1 = Factor(cpt=cpt_1)
@@ -81,7 +81,7 @@ def test_factor_prod():
     cpt_2 = CPT(
         df=df_2,
         outcomes=['A'],
-        given=['X']
+        givens=['X']
     )
 
     factor_2 = Factor(cpt=cpt_2)
@@ -119,7 +119,7 @@ def test_factor_sum():
     cpt_1 = CPT(
         df=df,
         outcomes=['Y'],
-        given=['X']
+        givens=['X']
     )
 
     factor = Factor(cpt=cpt_1)
