@@ -228,6 +228,22 @@ class Factors():
     def __init__(self, factors):
         self.factors = factors
 
+    def __iter__(self):
+        for factor in self.factors:
+            yield factor
+
+    def __len__(self):
+        return len(self.factors)
+
+    def append(self, factor):
+        """
+        Append a factor.
+
+        Parameters:
+            factor: Factor
+        """
+        self.factors.append(factor)
+
     def prod(self):
         """
         Multiply set of factors
@@ -355,7 +371,7 @@ class MarkovNetwork:
         Returns: list[Factor]
         """
         cache = {}
-        factors = []
+        factors = Factors([])
 
         if node:
             return self.factors[node]
