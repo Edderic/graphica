@@ -311,6 +311,17 @@ class BayesianNetwork(DirectedAcyclicGraph):
 
         return self.cpts[node]
 
+    def to_markov_network(self):
+        """
+        Returns: MarkovNetwork
+        """
+        markov_network = MarkovNetwork()
+        for _, cpt in self.cpts.items():
+            factor = Factor(cpt=cpt)
+            markov_network.add_factor(factor)
+
+        return markov_network
+
 
 class MarkovNetwork:
     """
