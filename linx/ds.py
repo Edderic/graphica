@@ -173,7 +173,6 @@ class Factor:
             ]
         )
 
-
     def prod(self, other):
         """
         Parameters:
