@@ -348,3 +348,12 @@ class MarkovNetwork:
             return factors
         else:
             return self.factors[node]
+
+    def get_variables(self):
+        """
+        Get all the variables
+
+        Returns: list[string]
+        """
+
+        return list(self.factors.keys())
