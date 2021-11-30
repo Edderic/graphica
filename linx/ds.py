@@ -258,6 +258,14 @@ class Factors():
 
         return factor_prod
 
+    def get_variables(self):
+        variables = set({})
+
+        for factor in self.factors:
+            variables = variables.union(factor.get_variables())
+
+        return variables
+
 
 class BayesianNetwork(DirectedAcyclicGraph):
     """

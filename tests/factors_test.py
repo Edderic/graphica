@@ -34,3 +34,46 @@ def test_looping():
 
     for i, factor in enumerate(factors):
         assert factor == expected_factors[i]
+
+
+def test_get_variables():
+    df1 = pd.DataFrame([
+        {
+            'X': 0, 'count': 123,
+        },
+        {
+            'X': 1, 'count': 123,
+        }
+    ])
+
+    df2 = pd.DataFrame([
+        {
+            'Y': 0, 'count': 123,
+        },
+        {
+            'Y': 1, 'count': 123,
+        }
+    ])
+
+    df3 = pd.DataFrame([
+        {
+            'Y': 0, 'A': 0, 'count': 123,
+        },
+        {
+            'Y': 0, 'A': 1, 'count': 123,
+        },
+        {
+            'Y': 1, 'A': 0, 'count': 123,
+        },
+        {
+            'Y': 1, 'A': 1, 'count': 123,
+        },
+    ])
+
+    factor_1 = Factor(df=df1)
+    factor_2 = Factor(df=df2)
+    factor_3 = Factor(df=df3)
+    factors = Factors([factor_1, factor_2, factor_3])
+    variables = factors.get_variables()
+
+    assert {'X', 'Y', 'A'} == variables
