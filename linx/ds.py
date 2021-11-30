@@ -142,9 +142,12 @@ class Factor:
     """
     def __init__(self, df=None, cpt=None):
         if df is not None:
-            self.df = df
+            self.df = df.copy()
         else:
-            self.df = cpt.df
+            self.df = cpt.df.copy()
+
+    def __repr__(self):
+        return f"Factor({self.get_variables()})"
 
     def get_variables(self):
         """
