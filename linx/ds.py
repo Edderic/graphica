@@ -16,9 +16,13 @@ class ConditionalProbabilityTable:
     """
 
     # pylint:disable=too-few-public-methods
-    def __init__(self, df, given, outcomes):
+    def __init__(self, df, outcomes, givens=None):
         self.df = df
-        self.given = given
+
+        if givens is None:
+            givens = []
+
+        self.givens = givens
         self.outcomes = outcomes
 
         self.__validate__()
@@ -29,7 +33,7 @@ class ConditionalProbabilityTable:
         if 'count' not in existing_cols:
             raise ValueError("The column 'count' must exist.")
 
-        given_plus_outcomes_cols = set(self.given + self.outcomes)
+        given_plus_outcomes_cols = set(self.givens + self.outcomes)
 
         if given_plus_outcomes_cols.intersection(
             set(existing_cols) - {'count'}
@@ -40,13 +44,28 @@ class ConditionalProbabilityTable:
                 + " given and outcomes {given_plus_outcomes_cols}"
             )
 
+    def get_givens(self):
+        """
+        Returns list[str]
+            List of variable names that are being conditioned on.
+        """
+        return self.givens
+
+    def get_outcomes(self):
+        """
+        Returns list[str]
+            List of variable names in the left side of the query.
+        """
+        return self.outcomes
+
 
 class DirectedAcyclicGraph:
     """
     Directed Acyclic Graph. Useful for representing Bayesian Networks.
     """
     def __init__(self):
-        self.data_structure = {}
+        self.children = {}
+        self.nodes = {}
 
     def add_edge(self, start, end):
         """
