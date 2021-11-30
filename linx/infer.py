@@ -57,7 +57,7 @@ class VariableElimination:
 
             The right side of the conditioning bar is the "given" section.
 
-        greedy_heuristic: callable
+        greedy_heuristic: callable. Defaults to min_fill_edges
             A callable that has two arguments:
                 eliminateables: The list of variables to eliminate.
                 network: MarkovNetwork
@@ -68,15 +68,19 @@ class VariableElimination:
         network,
         outcomes,
         given,
-        greedy_heuristic
+        greedy_heuristic=None
     ):
         # TODO: handle queries of do(x)
         # TODO: Maybe have "outcomes" and "given" be wrapped into a "Query"
         # object.
-        self.network = network
+        self.network = network.to_markov_network()
         self.outcomes = outcomes
         self.given = given
-        self.greedy_heuristic = greedy_heuristic
+
+        if greedy_heuristic is None:
+            self.greedy_heuristic = min_fill_edges
+        else:
+            self.greedy_heuristic = greedy_heuristic
 
     def compute(self):
         """
