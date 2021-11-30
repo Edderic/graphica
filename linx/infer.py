@@ -9,7 +9,7 @@ Functions:
 """
 
 
-def min_neighbors(eliminateables, network):
+def min_fill_edges(eliminateables, network):
     """
     A greedy heuristic meant to prevent exponential blow up of factors for
     VariableElimination.
