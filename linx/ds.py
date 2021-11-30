@@ -271,6 +271,12 @@ class Factors():
 
         return variables
 
+    def remove(self, factor):
+        """
+        Remove a factor.
+        """
+        self.factors.remove(factor)
+
 
 class BayesianNetwork(DirectedAcyclicGraph):
     """
