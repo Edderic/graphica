@@ -1,6 +1,43 @@
 """
 Algorithms for inference.
+
+Classes:
+    VariableElimination
+
+Functions:
+    min_neighbors
 """
+
+
+def min_neighbors(eliminateables, network):
+    """
+    A greedy heuristic meant to prevent exponential blow up of factors for
+    VariableElimination.
+
+    Parameters:
+        eliminateables: list[str]
+            Variables to eliminate.
+
+        network: MarkovNetwork
+
+    Returns: tuple (string, integer)
+        First item is the best choice to eliminate.
+
+        Second item is the min number of variables associated with the best
+        choice.
+    """
+    min_number_of_variables = len(network.get_variables())
+    best_choice = None
+
+    for eliminateable in eliminateables:
+        factors = network.get_factors(eliminateable)
+        num_vars = len(factors.get_variables())
+
+        if min_number_of_variables > num_vars:
+            min_number_of_variables = num_vars
+            best_choice = eliminateable
+
+    return best_choice, min_number_of_variables
 
 
 class VariableElimination:
