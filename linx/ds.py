@@ -259,6 +259,11 @@ class Factors():
         return factor_prod
 
     def get_variables(self):
+        """
+        Return set of variables.
+
+        Returns: set[string]
+        """
         variables = set({})
 
         for factor in self.factors:
