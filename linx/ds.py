@@ -210,3 +210,98 @@ class Factor:
             .sum()[['count']].reset_index()
 
         return Factor(new_df)
+
+
+class Factors():
+    """
+    Helper for doing a bunch of operations on Factors.
+
+    Parameters:
+        factors: list[Factor]
+    """
+
+    def __init__(self, factors):
+        self.factors = factors
+
+    def prod(self):
+        """
+        Multiply set of factors
+        """
+        factor_prod = None
+
+        for factor in self.factors:
+            if factor_prod is None:
+                factor_prod = factor
+            else:
+                factor_prod = factor_prod.prod(factor)
+
+        return factor_prod
+
+
+class BayesianNetwork(DirectedAcyclicGraph):
+    """
+    Bayesian Network that stores ConditionalProbabilityTables.
+    """
+
+    def __init__(self):
+        self.cpts = {}
+        super().__init__()
+
+    def add_node(self, cpt):
+        """
+        Add a conditional probability table. This adds a node.
+
+        Parameters:
+            cpt: ConditionalProbabilityTable
+        """
+        outcomes = cpt.get_outcomes()
+        if cpt.get_givens():
+            raise ValueError(
+                "There should not be any givens for the CPT when adding a"
+                + " node."
+            )
+
+        if len(outcomes) != 1:
+            raise ValueError(
+                "There should only be one outcome for a CPT of a "
+                + "Bayesian Network."
+            )
+
+        for outcome in outcomes:
+            self.cpts[outcome] = cpt
+
+            super().add_node(outcome)
+
+    def add_edge(self, cpt):
+        """
+        Add a conditional probability table. This in turn adds an edge.
+
+        Parameters:
+            cpt: ConditionalProbabilityTable
+        """
+        outcomes = cpt.get_outcomes()
+        givens = cpt.get_givens()
+
+        if len(outcomes) != 1:
+            raise ValueError(
+                "There should only be one outcome for a CPT of a "
+                + "Bayesian Network."
+            )
+
+        for outcome in outcomes:
+            self.cpts[outcome] = cpt
+
+            for given in givens:
+                super().add_edge(start=given, end=outcome)
+
+    def find_cpt_for_node(self, node):
+        """
+        Find conditional probability table for node.
+
+        Parameters:
+            node: str
+
+        Returns: ConditionalProbabilityTable
+        """
+
+        return self.cpts[node]
