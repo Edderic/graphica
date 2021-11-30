@@ -78,10 +78,22 @@ class DirectedAcyclicGraph:
                 End node.
         """
 
-        if start not in self.data_structure:
-            self.data_structure[start] = [end]
-        elif end not in self.data_structure[start]:
-            self.data_structure[start].append(end)
+        if start not in self.children:
+            self.children[start] = [end]
+        elif end not in self.children[start]:
+            self.children[start].append(end)
+
+    def add_node(self, node):
+        """
+        Add edge from start node to end node.
+
+        Parameters:
+            node: str
+                Node to add.
+        """
+
+        if node not in self.nodes:
+            self.nodes[node] = 1
 
     def get_neighbors(self, node):
         """
@@ -102,7 +114,7 @@ class DirectedAcyclicGraph:
         """
         parents = []
 
-        for other_node, children in self.data_structure.items():
+        for other_node, children in self.children.items():
             if node in children:
                 parents.append(other_node)
 
@@ -116,10 +128,10 @@ class DirectedAcyclicGraph:
         Returns: list[str]
         """
 
-        if node not in self.data_structure:
+        if node not in self.children:
             return []
 
-        return self.data_structure[node]
+        return self.children[node]
 
 
 class Factor:
