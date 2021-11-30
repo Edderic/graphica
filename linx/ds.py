@@ -354,14 +354,20 @@ class MarkovNetwork:
 
         Returns: list[Factor]
         """
-        if node is None:
-            factors = []
-            for _, v in self.factors.items():
-                factors = factors + v
+        cache = {}
+        factors = []
 
-            return factors
-        else:
+        if node:
             return self.factors[node]
+
+        for _, fs in self.factors.items():
+            for factor in fs:
+                variables_key = '-'.join(sorted(factor.get_variables()))
+                if variables_key not in cache:
+                    cache[variables_key] = 1
+                    factors.append(factor)
+
+        return factors
 
     def get_variables(self):
         """
