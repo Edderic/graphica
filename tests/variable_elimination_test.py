@@ -5,6 +5,9 @@ from .conftest import assert_approx_value_df
 
 
 def test_independence(collider_and_descendant):
+    """
+    P(X | Y) = P(X)
+    """
     bayesian_network = collider_and_descendant
 
     algo = VariableElimination(
