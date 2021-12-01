@@ -32,6 +32,10 @@ def test_independence(collider_and_descendant):
 
 
 def test_collider(collider_and_descendant):
+    """
+    P(Z|Y) = ∑ P(Z | x, Y) ⨉ P(x)
+             x
+    """
     bayesian_network = collider_and_descendant
 
     algo = VariableElimination(
