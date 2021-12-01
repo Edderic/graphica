@@ -4,6 +4,50 @@ import pytest
 from ..linx.ds import BayesianNetwork, ConditionalProbabilityTable as CPT
 
 
+def assert_approx_value_df(
+    actual_df,
+    expected_df,
+    abs_tol=None
+):
+    """
+    Parameters:
+        actual_df: pd.DataFrame
+
+        expected_df: pd.DataFrame
+
+        abs_tol: float. Defaults to 0.01.
+            Absolute tolerance for approximation.
+
+    Returns: boolean
+    """
+    if abs_tol is None:
+        abs_tol = 0.01
+
+    variables = list(expected_df.columns)
+    actual_sorted = actual_df.sort_values(by=variables)
+    expected_sorted = expected_df.sort_values(by=variables)
+
+    for (_, x), (_, y) in zip(
+        actual_sorted.iterrows(),
+        expected_sorted.iterrows()
+    ):
+        assert x['count'] == pytest.approx(
+            y['count'],
+            abs=abs_tol
+        )
+
+        for variable in variables:
+            assert x[variable] == pytest.approx(
+                y[variable],
+                abs=abs_tol
+            )
+
+        assert x['Y'] == pytest.approx(
+            y['Y'],
+            abs=abs_tol
+        )
+
+
 @pytest.fixture
 def collider_and_descendant():
     r"""
