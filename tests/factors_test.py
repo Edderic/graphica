@@ -6,19 +6,19 @@ from ..linx.ds import Factors, Factor
 def test_looping():
     df1 = pd.DataFrame([
         {
-            'X': 0, 'count': 123,
+            'X': 0, 'value': 123,
         },
         {
-            'X': 1, 'count': 123,
+            'X': 1, 'value': 123,
         }
     ])
 
     df2 = pd.DataFrame([
         {
-            'Y': 0, 'count': 123,
+            'Y': 0, 'value': 123,
         },
         {
-            'Y': 1, 'count': 123,
+            'Y': 1, 'value': 123,
         }
     ])
 
@@ -39,34 +39,34 @@ def test_looping():
 def test_get_variables():
     df1 = pd.DataFrame([
         {
-            'X': 0, 'count': 123,
+            'X': 0, 'value': 123,
         },
         {
-            'X': 1, 'count': 123,
+            'X': 1, 'value': 123,
         }
     ])
 
     df2 = pd.DataFrame([
         {
-            'Y': 0, 'count': 123,
+            'Y': 0, 'value': 123,
         },
         {
-            'Y': 1, 'count': 123,
+            'Y': 1, 'value': 123,
         }
     ])
 
     df3 = pd.DataFrame([
         {
-            'Y': 0, 'A': 0, 'count': 123,
+            'Y': 0, 'A': 0, 'value': 123,
         },
         {
-            'Y': 0, 'A': 1, 'count': 123,
+            'Y': 0, 'A': 1, 'value': 123,
         },
         {
-            'Y': 1, 'A': 0, 'count': 123,
+            'Y': 1, 'A': 0, 'value': 123,
         },
         {
-            'Y': 1, 'A': 1, 'count': 123,
+            'Y': 1, 'A': 1, 'value': 123,
         },
     ])
 

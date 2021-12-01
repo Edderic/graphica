@@ -32,13 +32,13 @@ class ConditionalProbabilityTable:
     def __validate__(self):
         existing_cols = self.df.reset_index().columns
 
-        if 'count' not in existing_cols:
-            raise ValueError("The column 'count' must exist.")
+        if 'value' not in existing_cols:
+            raise ValueError("The column 'value' must exist.")
 
         given_plus_outcomes_cols = set(self.givens + self.outcomes)
 
         if given_plus_outcomes_cols.intersection(
-            set(existing_cols) - {'count'}
+            set(existing_cols) - {'value'}
         ) != given_plus_outcomes_cols:
 
             raise ValueError(
@@ -153,7 +153,7 @@ class Factor:
         """
         Return variables
         """
-        return list(set(self.df.columns) - {'count'})
+        return list(set(self.df.columns) - {'value'})
 
     def div(self, other):
         """
@@ -170,11 +170,11 @@ class Factor:
         )
 
         merged = self.df.merge(other.df, on=common)
-        merged['count'] = merged.count_x / merged.count_y
+        merged['value'] = merged.value_x / merged.value_y
 
         return Factor(
             merged[
-                list(left_vars.union(right_vars.union({'count'})))
+                list(left_vars.union(right_vars.union({'value'})))
             ]
         )
 
@@ -193,11 +193,11 @@ class Factor:
         )
 
         merged = self.df.merge(other.df, on=common)
-        merged['count'] = merged.count_x * merged.count_y
+        merged['value'] = merged.value_x * merged.value_y
 
         return Factor(
             merged[
-                list(left_vars.union(right_vars.union({'count'})))
+                list(left_vars.union(right_vars.union({'value'})))
             ]
         )
 
@@ -210,9 +210,9 @@ class Factor:
         Returns: Factor
         """
 
-        other_vars = list(set(self.get_variables()) - {'count', var})
+        other_vars = list(set(self.get_variables()) - {'value', var})
         new_df = self.df.groupby(other_vars)\
-            .sum()[['count']].reset_index()
+            .sum()[['value']].reset_index()
 
         return Factor(new_df)
 

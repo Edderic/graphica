@@ -18,10 +18,10 @@ def test_independence(collider_and_descendant):
     # independence
     expected_df = pd.DataFrame(
         [
-            {'count': 0.7, 'Y': 0, 'X': 0},
-            {'count': 0.3, 'Y': 0, 'X': 1},
-            {'count': 0.7, 'Y': 1, 'X': 0},
-            {'count': 0.3, 'Y': 1, 'X': 1},
+            {'value': 0.7, 'Y': 0, 'X': 0},
+            {'value': 0.3, 'Y': 0, 'X': 1},
+            {'value': 0.7, 'Y': 1, 'X': 0},
+            {'value': 0.3, 'Y': 1, 'X': 1},
         ]
     )
 
@@ -47,16 +47,16 @@ def test_collider(collider_and_descendant):
     result = algo.compute()
     expected_df = pd.DataFrame([
         {
-            'Z': 0, 'count': 0.55, 'Y': 0
+            'Z': 0, 'value': 0.55, 'Y': 0
         },
         {
-            'Z': 1, 'count': 0.45, 'Y': 0
+            'Z': 1, 'value': 0.45, 'Y': 0
         },
         {
-            'Z': 0, 'count': 0.45, 'Y': 1
+            'Z': 0, 'value': 0.45, 'Y': 1
         },
         {
-            'Z': 1, 'count': 0.55, 'Y': 1
+            'Z': 1, 'value': 0.55, 'Y': 1
         },
     ])
 
