@@ -34,7 +34,7 @@ def test_independence(collider_and_descendant):
     )
 
 
-def test_collider(collider_and_descendant):
+def test_collider_1(collider_and_descendant):
     """
     P(Z|Y) = ∑ P(Z | x, Y) ⨉ P(x)
              x
