@@ -415,3 +415,22 @@ class MarkovNetwork:
         """
 
         return list(self.factors.keys())
+
+    def remove_factor(self, factor):
+        """
+        Remove a factor.
+
+        Returns: list[string]
+        """
+        variables = factor.get_variables()
+        for node in variables:
+            factors = self.factors[node]
+            factors.remove(factor)
+
+    def to_markov_network(self):
+        """
+        Returns a copy of this markov network.
+
+        Returns: MarkovNetwork
+        """
+        # TODO: solve this
