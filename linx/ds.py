@@ -232,6 +232,9 @@ class Factors():
         for factor in self.factors:
             yield factor
 
+    def __repr__(self):
+        return f"Factors({self.factors})"
+
     def __len__(self):
         return len(self.factors)
 
