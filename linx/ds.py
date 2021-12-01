@@ -396,7 +396,7 @@ class MarkovNetwork:
         factors = Factors([])
 
         if node:
-            return self.factors[node]
+            return Factors(list(self.factors[node]))
 
         for _, fs in self.factors.items():
             for factor in fs:
