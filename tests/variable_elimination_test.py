@@ -1,10 +1,10 @@
 import pandas as pd
-import pytest
 
 from ..linx.infer import VariableElimination
+from .conftest import assert_approx_value_df
 
 
-def test_elimination(collider_and_descendant):
+def test_independence(collider_and_descendant):
     bayesian_network = collider_and_descendant
 
     algo = VariableElimination(
@@ -14,7 +14,8 @@ def test_elimination(collider_and_descendant):
     )
 
     result = algo.compute()
-    columns = ['X', 'Y', 'count']
+
+    # independence
     expected_df = pd.DataFrame(
         [
             {'count': 0.7, 'Y': 0, 'X': 0},
@@ -22,29 +23,40 @@ def test_elimination(collider_and_descendant):
             {'count': 0.7, 'Y': 1, 'X': 0},
             {'count': 0.3, 'Y': 1, 'X': 1},
         ]
-    )[columns].sort_values(by=columns)
+    )
 
-    sorted_result = result\
-        .df\
-        .sort_values(
-            by=columns
-        )[columns]
+    assert_approx_value_df(
+        actual_df=result.df,
+        expected_df=expected_df
+    )
 
-    for (_, x), (_, y) in zip(
-        sorted_result.iterrows(),
-        expected_df.iterrows()
-    ):
-        assert x['count'] == pytest.approx(
-            y['count'],
-            abs=0.01
-        )
 
-        assert x['X'] == pytest.approx(
-            y['X'],
-            abs=0.01
-        )
+def test_collider(collider_and_descendant):
+    bayesian_network = collider_and_descendant
 
-        assert x['Y'] == pytest.approx(
-            y['Y'],
-            abs=0.01
-        )
+    algo = VariableElimination(
+        network=bayesian_network,
+        outcomes=['Z'],
+        given=['Y']
+    )
+
+    result = algo.compute()
+    expected_df = pd.DataFrame([
+        {
+            'Z': 0, 'count': 0.55, 'Y': 0
+        },
+        {
+            'Z': 1, 'count': 0.45, 'Y': 0
+        },
+        {
+            'Z': 0, 'count': 0.45, 'Y': 1
+        },
+        {
+            'Z': 1, 'count': 0.55, 'Y': 1
+        },
+    ])
+
+    assert_approx_value_df(
+        actual_df=result.df,
+        expected_df=expected_df,
+    )
