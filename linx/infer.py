@@ -91,17 +91,18 @@ class VariableElimination:
         """
         numerator_eliminateables = list(
             set(self.network.get_variables())
-            - set(self.outcomes.union(set(self.given)))
+            - set(self.outcomes).union(set(self.given))
         )
 
         self.__compute__(
             numerator_eliminateables
         )
 
-        numerator_prod = self.network.get_factors().prod()
+        numer_factors = self.network.get_factors()
+        numerator_prod = numer_factors.prod()
 
         left_to_eliminate = list(
-            set(numerator_eliminateables) - set(self.given)
+            set(self.outcomes) - set(self.given)
         )
 
         self.__compute__(
@@ -114,33 +115,24 @@ class VariableElimination:
 
     def __compute__(self, eliminateables):
         while eliminateables:
-            best_eliminateable = self.greedy_heuristic(
+            best_eliminateable, _ = self.greedy_heuristic(
                 eliminateables=eliminateables,
                 network=self.network
             )
 
-            factors = self.network.find_factors([best_eliminateable])
-
-            # Remove old factors
-            for factor in factors:
-                variables = factor.get_variables()
-
-                for var in variables:
-                    self.network.remove_factor(
-                        var=var,
-                        factor=factor
-                    )
-
+            factors = self.network.get_factors(best_eliminateable)
             factor_prod = factors.prod()
 
             # Update network with new factor
             new_factor = factor_prod.sum(best_eliminateable)
+            self.network.add_factor(
+                factor=new_factor
+            )
 
-            variables_to_update = factor_prod.get_variables()
-            for var in variables_to_update:
-                self.network.add_factor(
-                    var=var,
-                    factor=new_factor
+            # Remove old factors
+            for factor in factors:
+                self.network.remove_factor(
+                    factor=factor
                 )
 
             eliminateables = list(
