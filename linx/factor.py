@@ -1,0 +1,84 @@
+"""
+Factor class
+"""
+
+
+class Factor:
+    """
+    Class for representing factors.
+    """
+    def __init__(self, df=None, cpt=None):
+        if df is not None:
+            self.df = df.copy()
+        else:
+            self.df = cpt.df.copy()
+
+    def __repr__(self):
+        return f"Factor({self.get_variables()})"
+
+    def get_variables(self):
+        """
+        Return variables
+        """
+        return list(set(self.df.columns) - {'value'})
+
+    def div(self, other):
+        """
+        Parameters:
+            other: Factor
+
+        Returns: Factor
+        """
+
+        left_vars = set(list(self.get_variables()))
+        right_vars = set(list(other.get_variables()))
+        common = list(
+            left_vars.intersection(right_vars)
+        )
+
+        merged = self.df.merge(other.df, on=common)
+        merged['value'] = merged.value_x / merged.value_y
+
+        return Factor(
+            merged[
+                list(left_vars.union(right_vars.union({'value'})))
+            ]
+        )
+
+    def prod(self, other):
+        """
+        Parameters:
+            other: Factor
+
+        Returns: Factor
+        """
+
+        left_vars = set(list(self.get_variables()))
+        right_vars = set(list(other.get_variables()))
+        common = list(
+            left_vars.intersection(right_vars)
+        )
+
+        merged = self.df.merge(other.df, on=common)
+        merged['value'] = merged.value_x * merged.value_y
+
+        return Factor(
+            merged[
+                list(left_vars.union(right_vars.union({'value'})))
+            ]
+        )
+
+    def sum(self, var):
+        """
+        Parameters:
+            var: string
+                The variable to be summed out.
+
+        Returns: Factor
+        """
+
+        other_vars = list(set(self.get_variables()) - {'value', var})
+        new_df = self.df.groupby(other_vars)\
+            .sum()[['value']].reset_index()
+
+        return Factor(new_df)
