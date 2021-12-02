@@ -1,6 +1,9 @@
 import pandas as pd
 import pytest
 from ..linx.ds import ConditionalProbabilityTable as CPT, Factor
+from ..linx.query import Query
+
+from .conftest import assert_approx_value_df
 
 
 def test_factor_div():
@@ -136,3 +139,39 @@ def test_factor_sum():
     ])
 
     assert new_factor.df.equals(expected_df)
+
+
+def test_factor_filter():
+    df = pd.DataFrame([
+        {'X': 0, 'Y': 0, 'value': 0.25},
+        {'X': 0, 'Y': 1, 'value': 0.75},
+        {'X': 1, 'Y': 0, 'value': 0.6},
+        {'X': 1, 'Y': 1, 'value': 0.4},
+    ])
+
+    cpt_1 = CPT(
+        df=df,
+        outcomes=['Y'],
+        givens=['X']
+    )
+
+    factor = Factor(cpt=cpt_1)
+
+    query = Query(
+        outcomes=[{'Y': lambda df: df['Y'] == 1}],
+        givens=[{'X': lambda df: df['X'] == 1}]
+    )
+    new_factor = factor.filter(query)
+
+    expected_df = pd.DataFrame(
+        [
+            {'X': 1, 'Y': 1, 'value': 0.4}
+        ]
+    )
+
+    new_factor.df.reset_index()
+
+    assert_approx_value_df(
+        new_factor.df.reset_index(),
+        expected_df,
+    )
