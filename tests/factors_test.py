@@ -3,6 +3,15 @@ import pandas as pd
 from ..linx.ds import Factors, Factor
 
 
+def test_subscriptable(two_factors):
+    factors = two_factors
+    first_factor = factors[0]
+    second_factor = factors[1]
+
+    assert first_factor.get_variables() == ['X']
+    assert second_factor.get_variables() == ['Y']
+
+
 def test_looping():
     df1 = pd.DataFrame([
         {

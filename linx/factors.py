@@ -24,6 +24,9 @@ class Factors():
     def __len__(self):
         return len(self.factors)
 
+    def __getitem__(self, item):
+        return self.factors[item]
+
     def append(self, factor):
         """
         Append a factor.
