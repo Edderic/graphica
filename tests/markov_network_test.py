@@ -1,7 +1,48 @@
 import pandas as pd
 
 from ..linx.ds import MarkovNetwork, ConditionalProbabilityTable as CPT, \
-    Factor
+    Factor, Query
+from .conftest import assert_approx_value_df
+
+
+def test_apply_query():
+    df = pd.DataFrame([
+        {'X': 0, 'Y': 0, 'value': 0.25},
+        {'X': 0, 'Y': 1, 'value': 0.75},
+        {'X': 1, 'Y': 0, 'value': 0.6},
+        {'X': 1, 'Y': 1, 'value': 0.4},
+    ])
+
+    cpt_1 = CPT(
+        df=df,
+        outcomes=['Y'],
+        givens=['X']
+    )
+
+    query = Query(
+        outcomes=[{'Y': lambda df: df['Y'] == 1}],
+        givens=[{'X': lambda df: df['X'] == 1}]
+    )
+
+    markov_network = MarkovNetwork()
+    factor = Factor(
+        cpt=cpt_1
+    )
+    markov_network.add_factor(factor)
+    markov_network.apply_query(query)
+
+    factors = markov_network.get_factors()
+
+    expected_df = pd.DataFrame(
+        [
+            {'X': 1, 'Y': 1, 'value': 0.4}
+        ]
+    )
+
+    assert_approx_value_df(
+        factors[0].df.reset_index(),
+        expected_df,
+    )
 
 
 def test_get_factors():

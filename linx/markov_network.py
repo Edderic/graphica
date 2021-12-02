@@ -70,6 +70,20 @@ class MarkovNetwork:
             factors = self.factors[node]
             factors.remove(factor)
 
+    def apply_query(self, query):
+        """
+        Replaces each factor with a filtered version of the factor, if the
+        query applies to it.
+
+        Parameters:
+            query: Query
+        """
+        factors = self.get_factors()
+
+        for factor in factors:
+            self.add_factor(factor.filter(query))
+            self.remove_factor(factor)
+
     def to_markov_network(self):
         """
         Returns a copy of this markov network.
