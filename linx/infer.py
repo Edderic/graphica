@@ -66,16 +66,14 @@ class VariableElimination:
     def __init__(
         self,
         network,
-        outcomes,
-        given,
+        query,
         greedy_heuristic=None
     ):
         # TODO: handle queries of do(x)
         # TODO: Maybe have "outcomes" and "given" be wrapped into a "Query"
         # object.
         self.network = network.to_markov_network()
-        self.outcomes = outcomes
-        self.given = given
+        self.query = query
 
         if greedy_heuristic is None:
             self.greedy_heuristic = min_fill_edges
@@ -91,7 +89,8 @@ class VariableElimination:
         """
         numerator_eliminateables = list(
             set(self.network.get_variables())
-            - set(self.outcomes).union(set(self.given))
+            - set(self.query.get_outcome_variables())
+            .union(set(self.query.get_given_variables()))
         )
 
         self.__compute__(
@@ -102,7 +101,8 @@ class VariableElimination:
         numerator_prod = numer_factors.prod()
 
         left_to_eliminate = list(
-            set(self.outcomes) - set(self.given)
+            set(self.query.get_outcome_variables()) -
+            set(self.query.get_given_variables())
         )
 
         self.__compute__(

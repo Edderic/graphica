@@ -1,6 +1,8 @@
 import pandas as pd
+import pytest
 
 from ..linx.infer import VariableElimination
+from ..linx.ds import Query
 from .conftest import assert_approx_value_df
 
 
@@ -10,10 +12,14 @@ def test_independence(collider_and_descendant):
     """
     bayesian_network = collider_and_descendant
 
+    query = Query(
+        outcomes=['X'],
+        givens=['Y']
+    )
+
     algo = VariableElimination(
         network=bayesian_network,
-        outcomes=['X'],
-        given=['Y']
+        query=query,
     )
 
     result = algo.compute()
@@ -41,10 +47,14 @@ def test_collider_1(collider_and_descendant):
     """
     bayesian_network = collider_and_descendant
 
+    query = Query(
+        outcomes=['Z'],
+        givens=['Y']
+    )
+
     algo = VariableElimination(
         network=bayesian_network,
-        outcomes=['Z'],
-        given=['Y']
+        query=query
     )
 
     result = algo.compute()
