@@ -87,6 +87,8 @@ class VariableElimination:
         Returns: Factor
             A factor that represents the query.
         """
+        self.network.apply_query(self.query)
+
         numerator_eliminateables = list(
             set(self.network.get_variables())
             - set(self.query.get_outcome_variables())
