@@ -51,6 +51,26 @@ class Query:
         self.outcomes = outcomes
         self.outcome_vars = []
         self.given_vars = []
+        self.filters = []
+
+    def get_filters(self):
+        """
+        Get filters
+
+        Returns: list[dict]
+        """
+        if self.filters:
+            return self.filters
+
+        for outcome in self.outcomes:
+            if isinstance(outcome, dict):
+                self.filters.append(outcome)
+
+        for given in self.givens:
+            if isinstance(given, dict):
+                self.filters.append(given)
+
+        return self.filters
 
     def get_outcome_variables(self):
         """
