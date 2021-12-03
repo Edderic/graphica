@@ -1,7 +1,8 @@
 import pandas as pd
 import pytest
 
-from ..linx.ds import BayesianNetwork, ConditionalProbabilityTable as CPT
+from ..linx.ds import BayesianNetwork, Factors, Factor,\
+    ConditionalProbabilityTable as CPT
 
 
 def assert_approx_value_df(
@@ -125,3 +126,29 @@ def collider_and_descendant():
         )
 
     return bayesian_network
+
+
+@pytest.fixture
+def two_factors():
+    df1 = pd.DataFrame([
+        {
+            'X': 0, 'value': 123,
+        },
+        {
+            'X': 1, 'value': 123,
+        }
+    ])
+
+    df2 = pd.DataFrame([
+        {
+            'Y': 0, 'value': 123,
+        },
+        {
+            'Y': 1, 'value': 123,
+        }
+    ])
+
+    factor_1 = Factor(df=df1)
+    factor_2 = Factor(df=df2)
+
+    return Factors([factor_1, factor_2])
