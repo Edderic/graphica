@@ -78,11 +78,14 @@ class MarkovNetwork:
         Parameters:
             query: Query
         """
-        factors = self.get_factors()
+        filters = query.get_filters()
 
-        for factor in factors:
-            self.add_factor(factor.filter(query))
-            self.remove_factor(factor)
+        for variable, filt in filters:
+            factors = self.get_factors(variable)
+
+            for factor in factors:
+                self.add_factor(factor.filter(query))
+                self.remove_factor(factor)
 
     def to_markov_network(self):
         """
