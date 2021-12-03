@@ -45,6 +45,28 @@ class Factor:
             ]
         )
 
+    def filter(self, query):
+        """
+        Apply filters of a query to this factor.
+
+        Parameters:
+            query: Query
+                Has get_filters()
+
+        Returns: Factor
+        """
+        df = self.df
+        filters = query.get_filters()
+
+        for f in filters:
+            key = list(f.keys())[0]
+            func = list(f.values())[0]
+
+            if key in self.get_variables():
+                df = df[func(df)]
+
+        return Factor(df)
+
     def prod(self, other):
         """
         Parameters:
