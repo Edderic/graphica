@@ -18,3 +18,18 @@ def test_query_get_given_variables():
 
     given_vars = query.get_given_variables()
     assert set(given_vars) == {'Z', 'A'}
+
+
+def test_query_get_filters():
+    query = Query(
+        outcomes=['X', {'Y': lambda df: df['Y'] > 5}],
+        givens=['Z', {'A': lambda df: df['A'] > 5}]
+    )
+
+    filters = query.get_filters()
+
+    keys = [list(f.keys())[0] for f in filters]
+    assert 'Y' in keys
+    assert 'A' in keys
+    assert 'X' not in keys
+    assert 'Z' not in keys
