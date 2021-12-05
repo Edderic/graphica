@@ -11,9 +11,18 @@ class BayesianNetwork(DirectedAcyclicGraph):
     Bayesian Network that stores ConditionalProbabilityTables.
     """
 
-    def __init__(self):
-        self.cpts = {}
+    def __init__(self, cpts=None, priors=None):
         super().__init__()
+        if cpts is None:
+            self.cpts = {}
+        else:
+            self.cpts = {}
+            for cpt in cpts:
+                self.add_edge(cpt)
+
+        if priors:
+            for prior_cpt in priors:
+                self.add_node(prior_cpt)
 
     def add_node(self, cpt):
         """
