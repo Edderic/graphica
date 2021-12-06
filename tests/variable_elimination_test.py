@@ -1,9 +1,14 @@
+import logging
+from pathlib import Path
+
 import pandas as pd
 import pytest
 
 from ..linx.infer import VariableElimination
-from ..linx.ds import Query
-from .conftest import assert_approx_value_df
+from ..linx.ds import Query, ConditionalProbabilityTable as CPT, \
+    BayesianNetwork
+from .conftest import assert_approx_value_df, create_df_easy, create_df_medium, \
+    create_df_hard, create_binary_prior_cpt, create_binary_CPT
 
 
 def test_independence(collider_and_descendant):
