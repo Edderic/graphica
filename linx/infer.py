@@ -7,7 +7,7 @@ Classes:
 Functions:
     min_neighbors
 """
-from .debug import log_debug
+import logging
 
 
 def min_fill_edges(eliminateables, network):
@@ -120,58 +120,42 @@ class VariableElimination:
 
     def __compute__(self, eliminateables):
         while eliminateables:
-            log_debug(
-                {
-                    'msg': 'top of eliminateables',
-                    'eliminateables': eliminateables
-                }
+            logging.debug(
+                "\nTOP OF ELIMINATEABLES: \ni\tELIMINATEABLES: %s",
+                eliminateables
             )
+
             best_eliminateable, _ = self.greedy_heuristic(
                 eliminateables=eliminateables,
                 network=self.network
             )
 
-            log_debug(
-                {
-                    'msg': 'best eliminateable',
-                    'best_eliminateable': best_eliminateable,
-                    'min': _
-                }
+            factors = self.network.get_factors(best_eliminateable)
+
+            logging.debug(
+                "\nbest_eliminateable: \n\t: %s, \n\tmin: %s, \n\tfactors: %s",
+                best_eliminateable,
+                _,
+                factors
             )
 
-            factors = self.network.get_factors(best_eliminateable)
-            log_debug(
-                {
-                    'msg': 'before prod',
-                    'factors for best eliminateable': factors
-                }
-            )
             factor_prod = factors.prod()
 
-            log_debug(
-                {
-                    'msg': 'after prod',
-                    'factor_prod': factor_prod
-                }
+            logging.debug(
+                "\nAfter prod. \n\tfactor_prod: \n\t%s",
+                factor_prod
             )
+
             # Update network with new factor
             new_factor = factor_prod.sum(best_eliminateable)
 
-            log_debug(
-                {
-                    'msg': 'after summing',
-                    'new_factor': new_factor
-                }
-            )
-            self.network.add_factor(
-                factor=new_factor
+            logging.debug(
+                "\nAfter sum. sum: \n\t%s",
+                new_factor
             )
 
-            log_debug(
-                {
-                    'msg': 'after adding',
-                    'network': self.network
-                }
+            self.network.add_factor(
+                factor=new_factor
             )
 
             # Remove old factors
@@ -180,11 +164,9 @@ class VariableElimination:
                     factor=factor
                 )
 
-            log_debug(
-                {
-                    'msg': 'after remove_factor',
-                    'network': self.network
-                }
+            logging.debug(
+                "\nAfter add and remove factor: Network:\n\t%s",
+                self.network
             )
 
             eliminateables = list(
