@@ -12,6 +12,9 @@ class MarkovNetwork:
     def __init__(self):
         self.factors = {}
 
+    def __repr__(self):
+        return f"MarkovNetwork({self.factors})"
+
     def add_factor(self, factor):
         """
         Add factor.
