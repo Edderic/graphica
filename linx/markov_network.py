@@ -83,7 +83,8 @@ class MarkovNetwork:
         """
         filters = query.get_filters()
 
-        for variable, filt in filters:
+        for obj in filters:
+            variable = list(obj.keys())[0]
             factors = self.get_factors(variable)
 
             for factor in factors:
