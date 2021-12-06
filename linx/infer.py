@@ -68,18 +68,20 @@ class VariableElimination:
         self,
         network,
         query,
-        greedy_heuristic=None
+        greedy_heuristic=None,
     ):
         # TODO: handle queries of do(x)
         # TODO: Maybe have "outcomes" and "given" be wrapped into a "Query"
         # object.
         self.network = network.to_markov_network()
         self.query = query
-
         if greedy_heuristic is None:
             self.greedy_heuristic = min_fill_edges
         else:
             self.greedy_heuristic = greedy_heuristic
+
+    def __repr__(self):
+        return f"VariableElimination({self.network})"
 
     def compute(self):
         """
