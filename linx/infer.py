@@ -120,18 +120,58 @@ class VariableElimination:
 
     def __compute__(self, eliminateables):
         while eliminateables:
+            log_debug(
+                {
+                    'msg': 'top of eliminateables',
+                    'eliminateables': eliminateables
+                }
+            )
             best_eliminateable, _ = self.greedy_heuristic(
                 eliminateables=eliminateables,
                 network=self.network
             )
 
+            log_debug(
+                {
+                    'msg': 'best eliminateable',
+                    'best_eliminateable': best_eliminateable,
+                    'min': _
+                }
+            )
+
             factors = self.network.get_factors(best_eliminateable)
+            log_debug(
+                {
+                    'msg': 'before prod',
+                    'factors for best eliminateable': factors
+                }
+            )
             factor_prod = factors.prod()
 
+            log_debug(
+                {
+                    'msg': 'after prod',
+                    'factor_prod': factor_prod
+                }
+            )
             # Update network with new factor
             new_factor = factor_prod.sum(best_eliminateable)
+
+            log_debug(
+                {
+                    'msg': 'after summing',
+                    'new_factor': new_factor
+                }
+            )
             self.network.add_factor(
                 factor=new_factor
+            )
+
+            log_debug(
+                {
+                    'msg': 'after adding',
+                    'network': self.network
+                }
             )
 
             # Remove old factors
@@ -139,6 +179,13 @@ class VariableElimination:
                 self.network.remove_factor(
                     factor=factor
                 )
+
+            log_debug(
+                {
+                    'msg': 'after remove_factor',
+                    'network': self.network
+                }
+            )
 
             eliminateables = list(
                 set(eliminateables) - {best_eliminateable}
