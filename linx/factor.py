@@ -1,6 +1,7 @@
 """
 Factor class
 """
+from .errors import ArgumentError
 
 
 class Factor:
@@ -12,6 +13,19 @@ class Factor:
             self.df = df.copy()
         else:
             self.df = cpt.df.copy()
+
+        self.__validate__()
+
+    def __validate__(self):
+        variables = self.get_variables()
+
+        counts = self.df.groupby(variables).count()['value']
+
+        if (counts > 1).sum(axis=0) > 0:
+            raise ArgumentError(
+                f"Dataframe {self.df} must not have duplicate "
+                + "entries with variables."
+            )
 
     def __repr__(self):
         return f"Factor({self.get_variables()})"
