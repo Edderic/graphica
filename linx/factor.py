@@ -28,7 +28,7 @@ class Factor:
             )
 
     def __repr__(self):
-        return f"Factor({self.get_variables()})"
+        return f"\nFactor(\nvariables: {self.get_variables()}, \ndf: \n{self.df})"
 
     def get_variables(self):
         """
