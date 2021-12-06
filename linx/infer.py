@@ -7,6 +7,7 @@ Classes:
 Functions:
     min_neighbors
 """
+from .debug import log_debug
 
 
 def min_fill_edges(eliminateables, network):
