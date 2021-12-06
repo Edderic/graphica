@@ -1,9 +1,24 @@
 import pandas as pd
 import pytest
 from ..linx.ds import ConditionalProbabilityTable as CPT, Factor
+from ..linx.errors import ArgumentError
 from ..linx.query import Query
 
 from .conftest import assert_approx_value_df
+
+
+def test_duplicate_entry_for_variables():
+    """
+    There's already an entry for X:0, Y:0. This is not valid. It should raise
+    an error.
+    """
+    df = pd.DataFrame([
+        {'X': 0, 'Y': 0, 'value': 0.25},
+        {'X': 0, 'Y': 0, 'value': 0.99},
+    ])
+
+    with pytest.raises(ArgumentError) as excinfo:
+        factor_1 = Factor(df=df)
 
 
 def test_factor_div():
