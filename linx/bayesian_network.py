@@ -24,6 +24,9 @@ class BayesianNetwork(DirectedAcyclicGraph):
             for prior_cpt in priors:
                 self.add_node(prior_cpt)
 
+    def __repr__(self):
+        return f"BayesianNetwork(\n\t{self.cpts})"
+
     def add_node(self, cpt):
         """
         Add a conditional probability table. This adds a node.
