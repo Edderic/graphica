@@ -8,6 +8,37 @@ from .conftest import assert_approx_value_df, create_df_easy, \
     create_prior_df
 
 
+def test_unconnected(two_vars_unconnected_bn):
+    """
+    P(X | Y) = P(X)
+    """
+    bayesian_network = two_vars_unconnected_bn
+
+    query = Query(
+        outcomes=['X'],
+        givens=['Y']
+    )
+
+    algo = VariableElimination(
+        network=bayesian_network,
+        query=query,
+    )
+
+    result = algo.compute()
+
+    expected_df = pd.DataFrame([
+        {'Y': 0, 'value': 0.1, 'X': 0},
+        {'Y': 0, 'value': 0.9, 'X': 1},
+        {'Y': 1, 'value': 0.1, 'X': 0},
+        {'Y': 1, 'value': 0.9, 'X': 1},
+    ])
+
+    assert_approx_value_df(
+        actual_df=result.df,
+        expected_df=expected_df
+    )
+
+
 def test_independence(collider_and_descendant):
     """
     P(X | Y) = P(X)
