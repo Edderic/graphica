@@ -22,6 +22,9 @@ class ConditionalProbabilityTable:
 
         self.__validate__()
 
+    def __repr__(self):
+        return f"ConditionalProbabilityTable(\n\tgivens: {self.givens},"\
+                +f"\n\toutcomes: {self.outcomes}\n\tdf:\n\t\n{self.df})"
     def __validate__(self):
         existing_cols = self.df.reset_index().columns
 
