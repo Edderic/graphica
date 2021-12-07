@@ -82,5 +82,3 @@ class DirectedAcyclicGraph:
             return []
 
         return self.children[node]
-
-
