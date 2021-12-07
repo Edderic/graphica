@@ -1,6 +1,7 @@
 """
 ConditionalProbabilityTable class
 """
+from .errors import ArgumentError
 
 
 class ConditionalProbabilityTable:
@@ -33,9 +34,9 @@ class ConditionalProbabilityTable:
             set(existing_cols) - {'value'}
         ) != given_plus_outcomes_cols:
 
-            raise ValueError(
-                "Mismatch between dataframe columns {existing_cols} and"
-                + " given and outcomes {given_plus_outcomes_cols}"
+            raise ArgumentError(
+                f"Mismatch between dataframe columns {existing_cols} and"
+                + f" given and outcomes {given_plus_outcomes_cols}"
             )
 
     def get_givens(self):
