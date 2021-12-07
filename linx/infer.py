@@ -105,9 +105,10 @@ class VariableElimination:
         numer_factors = self.network.get_factors()
         numerator_prod = numer_factors.prod()
 
+        given_vars = self.query.get_given_variables()
         left_to_eliminate = list(
             set(self.query.get_outcome_variables()) -
-            set(self.query.get_given_variables())
+            set(given_vars)
         )
 
         self.__compute__(
@@ -116,7 +117,9 @@ class VariableElimination:
 
         denom_prod = self.network.get_factors().prod()
 
-        return numerator_prod.div(denom_prod)
+        return numerator_prod\
+            .div(denom_prod)\
+            .normalize(given_vars)
 
     def __compute__(self, eliminateables):
         while eliminateables:
