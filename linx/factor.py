@@ -28,7 +28,8 @@ class Factor:
             )
 
     def __repr__(self):
-        return f"\nFactor(\nvariables: {self.get_variables()}, \ndf: \n{self.df})"
+        return f"\nFactor(\nvariables: {self.get_variables()}" \
+            + f", \ndf: \n{self.df})"
 
     def get_variables(self):
         """
@@ -112,9 +113,27 @@ class Factor:
 
         Returns: Factor
         """
-
         other_vars = list(set(self.get_variables()) - {'value', var})
         new_df = self.df.groupby(other_vars)\
             .sum()[['value']].reset_index()
 
         return Factor(new_df)
+
+    def normalize(self, variables):
+        """
+        Make sure the values represent probabilities.
+
+        Parameters:
+            variables: list[str]
+                The variables in the denominator.
+
+        Returns: Factor
+        """
+        normalizing_factor = Factor(
+            df=self.df
+            .groupby(variables)[['value']]
+            .sum([['value']])
+            .reset_index()
+        )
+
+        return self.div(normalizing_factor)
