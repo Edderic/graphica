@@ -117,9 +117,20 @@ class VariableElimination:
 
         denom_prod = self.network.get_factors().prod()
 
-        return numerator_prod\
-            .div(denom_prod)\
-            .normalize(given_vars)
+        div = numerator_prod\
+            .div(denom_prod)
+
+        normalized = div.normalize(given_vars)
+
+        logging.debug(
+            "\nNUMER_PROD\n\t:%s\nDENOM_PROD: \n\t%s\nDIV:\n\t%s\nNORMALIZED:\n\t%s",
+            numerator_prod,
+            denom_prod,
+            div,
+            normalized
+        )
+
+        return normalized
 
     def __compute__(self, eliminateables):
         while eliminateables:
