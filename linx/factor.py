@@ -67,7 +67,11 @@ class Factor:
 
         Parameters:
             query: Query
-                Has get_filters()
+                Implements get_filters. Each item is a dict.
+                key: string
+                    Name of the variable.
+                value: callable or string or float or integer
+                    We use this for filtering.
 
         Returns: Factor
         """
@@ -76,10 +80,14 @@ class Factor:
 
         for f in filters:
             key = list(f.keys())[0]
-            func = list(f.values())[0]
+            value = list(f.values())[0]
 
             if key in self.get_variables():
-                df = df[func(df)]
+                if callable(value):
+                    df = df[value(df)]
+                else:
+                    # We assume we're doing an equality
+                    df = df[df[key] == value]
 
         return Factor(df)
 
