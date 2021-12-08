@@ -18,13 +18,11 @@ requirements:
     - pip
     - python {{ python }}
   run:
-    - dask
+    - python-graphviz
     - matplotlib
     - numpy
     - pandas
     - python
-    - scipy
-    - tqdm
 
 about:
   home: "https://github.com/edderic/linx"
