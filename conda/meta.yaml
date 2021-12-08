@@ -37,7 +37,12 @@ extra:
 test:
   imports:
     - linx
-    - linx.ds.BayesianNetwork
-    - linx.ds.MarkovNetwork
-    - linx.ds.ConditionalProbabilityTable
-    - linx.infer.VariableElimination
+    - linx.ds
+    - linx.query
+    - linx.bayesian_network
+    - linx.markov_network
+    - linx.infer
+    - linx.conditional_probability_table
+    - linx.factor
+    - linx.variable_elimination
+

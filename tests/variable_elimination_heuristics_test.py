@@ -1,6 +1,6 @@
 import pandas as pd
 
-from ..linx.infer import min_fill_edges
+from ..linx.variable_elimination import min_fill_edges
 from ..linx.ds import BayesianNetwork, ConditionalProbabilityTable as CPT
 
 
