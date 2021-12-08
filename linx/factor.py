@@ -151,7 +151,7 @@ class Factor:
         """
         normalizing_factor = Factor(
             df=self.df
-            .groupby(variables)[['value']]
+            .groupby(list(set(variables)))[['value']]
             .sum([['value']])
             .reset_index()
         )

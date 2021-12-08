@@ -25,18 +25,16 @@ def assert_approx_value_df(
         abs_tol = 0.01
 
     variables = list(expected_df.columns)
-    actual_sorted = actual_df.sort_values(by=variables)
-    expected_sorted = expected_df.sort_values(by=variables)
+    variables_without_value = list(set(variables) - {'value'})
+
+    actual_sorted = actual_df.sort_values(by=variables_without_value)
+    expected_sorted = expected_df[actual_sorted.columns]\
+        .sort_values(by=variables_without_value)
 
     for (_, x), (_, y) in zip(
         actual_sorted.iterrows(),
         expected_sorted.iterrows()
     ):
-        assert x['value'] == pytest.approx(
-            y['value'],
-            abs=abs_tol
-        )
-
         for variable in variables:
             assert x[variable] == pytest.approx(
                 y[variable],
@@ -62,7 +60,8 @@ def create_binary_prior_cpt(outcome, value_for_1=None):
 def create_binary_CPT(
     given,
     outcome,
-    vals):
+    vals
+):
 
     # { x: 1, value: 0.9 }
     # { x: 0, value: 0.8 }
@@ -321,3 +320,39 @@ def two_factors():
     factor_2 = Factor(df=df2)
 
     return Factors([factor_1, factor_2])
+
+
+@pytest.fixture
+def two_vars_unconnected_bn():
+    df1 = pd.DataFrame([
+        {
+            'X': 0, 'value': 0.1,
+        },
+        {
+            'X': 1, 'value': 0.9,
+        }
+    ])
+
+    df2 = pd.DataFrame([
+        {
+            'Y': 0, 'value': 0.7,
+        },
+        {
+            'Y': 1, 'value': 0.3,
+        }
+    ])
+
+    bayesian_network = BayesianNetwork(
+        priors=[
+            CPT(
+                df=df1,
+                outcomes=['X'],
+            ),
+            CPT(
+                df=df2,
+                outcomes=['Y'],
+            )
+        ]
+    )
+
+    return bayesian_network
