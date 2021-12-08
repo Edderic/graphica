@@ -187,6 +187,6 @@ def test_factor_filter():
     new_factor.df.reset_index()
 
     assert_approx_value_df(
-        new_factor.df.reset_index(),
+        new_factor.df,
         expected_df,
     )
