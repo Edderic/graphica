@@ -2,6 +2,7 @@
 Factor class
 """
 from .errors import ArgumentError
+from .factor_one import FactorOne
 
 
 class Factor:
@@ -96,7 +97,15 @@ class Factor:
             left_vars.intersection(right_vars)
         )
 
-        merged = self.df.merge(other.df, on=common)
+        if common:
+            merged = self.df.merge(other.df, on=common)
+        else:
+            left_df = self.df.copy()
+            right_df = other.df.copy()
+            left_df['cross-join'] = 1
+            right_df['cross-join'] = 1
+            merged = left_df.merge(right_df, on='cross-join')
+
         merged['value'] = merged.value_x * merged.value_y
 
         return Factor(
@@ -114,6 +123,9 @@ class Factor:
         Returns: Factor
         """
         other_vars = list(set(self.get_variables()) - {'value', var})
+        if not other_vars:
+            return FactorOne()
+
         new_df = self.df.groupby(other_vars)\
             .sum()[['value']].reset_index()
 
