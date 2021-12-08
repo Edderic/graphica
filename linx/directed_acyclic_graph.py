@@ -1,7 +1,6 @@
 """
 DirectedAcyclicGraph class
 """
-from graphviz import Digraph
 
 
 class DirectedAcyclicGraph:
@@ -11,7 +10,6 @@ class DirectedAcyclicGraph:
     def __init__(self):
         self.children = {}
         self.nodes = {}
-        self.graphviz_dag = Digraph()
 
     def add_edge(self, start, end):
         """
@@ -29,8 +27,6 @@ class DirectedAcyclicGraph:
         elif end not in self.children[start]:
             self.children[start].append(end)
 
-        self.graphviz_dag.edge(start, end)
-
     def add_node(self, node):
         """
         Add edge from start node to end node.
@@ -42,8 +38,6 @@ class DirectedAcyclicGraph:
 
         if node not in self.nodes:
             self.nodes[node] = 1
-
-        self.graphviz_dag.node(node)
 
     def get_neighbors(self, node):
         """

@@ -4,15 +4,32 @@ Bayesian Network class
 from .directed_acyclic_graph import DirectedAcyclicGraph
 from .markov_network import MarkovNetwork
 from .factor import Factor
+from .null_graphviz_dag import NullGraphvizDag
 
 
 class BayesianNetwork(DirectedAcyclicGraph):
     """
     Bayesian Network that stores ConditionalProbabilityTables.
+
+    Parameters:
+        cpts: list[ConditionalProbabilityTable]. Optional.
+            Meant for specifying conditional probability tables of variables
+            that are endogenous..
+
+        priors: list[ConditionalProbabilityTable]. Optional.
+            Meant for probability tables of Variables that are exogenous.
+
+        graphviz_dag: DiGraph
+            Could be used to display the graph.
     """
 
-    def __init__(self, cpts=None, priors=None):
+    def __init__(self, cpts=None, priors=None, graphviz_dag=None):
         super().__init__()
+        if graphviz_dag is None:
+            self.graphviz_dag = NullGraphvizDag()
+        else:
+            self.graphviz_dag = graphviz_dag
+
         if cpts is None:
             self.cpts = {}
         else:
@@ -50,6 +67,7 @@ class BayesianNetwork(DirectedAcyclicGraph):
         for outcome in outcomes:
             self.cpts[outcome] = cpt
 
+            self.graphviz_dag.node(outcome)
             super().add_node(outcome)
 
     def add_edge(self, cpt):
@@ -72,6 +90,7 @@ class BayesianNetwork(DirectedAcyclicGraph):
             self.cpts[outcome] = cpt
 
             for given in givens:
+                self.graphviz_dag.edge(given, outcome)
                 super().add_edge(start=given, end=outcome)
 
     def find_cpt_for_node(self, node):
