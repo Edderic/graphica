@@ -17,8 +17,8 @@ def test_duplicate_entry_for_variables():
         {'X': 0, 'Y': 0, 'value': 0.99},
     ])
 
-    with pytest.raises(ArgumentError) as excinfo:
-        factor_1 = Factor(df=df)
+    with pytest.raises(ArgumentError):
+        Factor(df=df)
 
 
 def test_factor_div():
