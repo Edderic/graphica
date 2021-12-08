@@ -18,7 +18,6 @@ requirements:
     - pip
     - python {{ python }}
   run:
-    - python-graphviz
     - matplotlib
     - numpy
     - pandas
