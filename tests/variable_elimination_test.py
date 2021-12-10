@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from ..linx.infer import VariableElimination
@@ -322,3 +323,116 @@ def test_tree():
             actual_df=left,
             expected_df=right
         )
+
+
+def test_nothing_to_eliminate():
+    def create_anenometer_cpt_df(size):
+        dfs = []
+        minimum = 0
+        maximum = 15
+        for actual_cfs in np.arange(minimum, maximum, 0.1):
+            cubic_feet_per_second = \
+                np.random.normal(actual_cfs, 0.1, size=size)
+
+            df = pd.DataFrame({
+                'actual_fps': round(actual_cfs, 2),
+                'measured_fps': [
+                    round(cfs, 1) for cfs in cubic_feet_per_second
+                ],
+                'value': 0
+            })
+
+            dfs.append(df)
+
+        dfs = pd.concat(dfs)
+
+        rates = (
+            dfs.groupby(['actual_fps', 'measured_fps']).count()[['value']]
+            / dfs.groupby(['actual_fps']).count()[['value']]
+        ).reset_index()
+
+        valid_values = rates[(rates['measured_fps'] >= 0)]
+
+        normalized = valid_values\
+            .set_index(['actual_fps', 'measured_fps'])[['value']] \
+            / valid_values.groupby(['actual_fps']).sum()[['value']]
+
+        return normalized.reset_index()
+
+    def generate_cpts_for_anenometer_readings(
+        number_of_readings,
+        anenometer_reading_df
+    ):
+        """
+        Generate conditional probability tables of anenometer readings.
+
+        Parameters:
+            number_of_readings: integer
+            anenometer_reading_df: pd.DataFrame
+
+        Returns: list[CPT]
+        """
+        cpts = []
+
+        for i in range(number_of_readings):
+            cpt = CPT(
+                df=anenometer_reading_df.rename(
+                    columns={'measured_fps': f'measured_fps_{i}'}
+                ),
+                outcomes=[f'measured_fps_{i}'],
+                givens=['actual_fps']
+            )
+            cpts.append(cpt)
+
+        return cpts
+
+    def generate_flat_priors(start, end, step, name, round_to=1):
+        """
+        Parameters:
+            start: float
+                The lower bound
+            end: float
+                The upper bound
+            step: float
+                The increment that will be taken to go from start to end
+            round_to: integer
+                We round the value so that we can compare floats more easily.
+        """
+        array = np.arange(start, end, step)
+
+        proba = 1.0 / len(array)
+
+        return pd.DataFrame(
+            [{'value': proba, name: round(i, round_to)} for i in array]
+        )
+
+    anenometer_reading_df = create_anenometer_cpt_df(10000)
+
+    bn = BayesianNetwork(
+        cpts=generate_cpts_for_anenometer_readings(
+            number_of_readings=3,
+            anenometer_reading_df=anenometer_reading_df
+        ),
+        priors=[
+            CPT(
+                df=generate_flat_priors(0, 5, 0.1, 'actual_fps'),
+                outcomes=['actual_fps']
+            )
+        ]
+    )
+
+    layer_0_fps = VariableElimination(
+        network=bn,
+        query=Query(
+            outcomes=['actual_fps'],
+            givens=[
+                {'measured_fps_0': 0.5},
+                {'measured_fps_1': 0.7},
+                {'measured_fps_2': 0.8}
+            ]
+        )
+    ).compute()
+
+    assert layer_0_fps.df[
+        layer_0_fps.df['actual_fps'] == 0.7
+    ]['value'].values[0] > 0.5

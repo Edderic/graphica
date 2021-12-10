@@ -29,7 +29,7 @@ def min_fill_edges(eliminateables, network):
         factors = network.get_factors(eliminateable)
         num_vars = len(factors.get_variables())
 
-        if min_number_of_variables > num_vars:
+        if min_number_of_variables >= num_vars:
             min_number_of_variables = num_vars
             best_choice = eliminateable
 
