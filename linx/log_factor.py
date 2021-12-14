@@ -62,11 +62,38 @@ class LogFactor:
             LogFactor
         """
 
+        merged, variables = self.__merged__(other)
+        merged['value'] = merged.value_x + merged.value_y
+
+        return LogFactor(merged[variables])
+
+    def subtract(self, other):
+        """
+        Subtraction in log space. Let x be one factor and y be the "other"
+        factor.
+        Performs the following operation:
+            log(ɸ(x)) - log(ɸ(y)) = log(ɸ(x) / ɸ(y))
+
+        Parameters:
+            other: LogFactor
+
+        Returns:
+            LogFactor
+        """
+
+        merged, variables = self.__merged__(other)
+        merged['value'] = merged.value_x - merged.value_y
+
+        return LogFactor(merged[variables])
+
+    def __merged__(self, other):
         left_vars = set(list(self.get_variables()))
         right_vars = set(list(other.get_variables()))
         common = list(
             left_vars.intersection(right_vars)
         )
+
+        variables = list(left_vars.union(right_vars.union({'value'})))
 
         if common:
             merged = self.df.merge(other.df, on=common)
@@ -76,14 +103,7 @@ class LogFactor:
             left_df['cross-join'] = 1
             right_df['cross-join'] = 1
             merged = left_df.merge(right_df, on='cross-join')
-
-        merged['value'] = merged.value_x + merged.value_y
-
-        return LogFactor(
-            merged[
-                list(left_vars.union(right_vars.union({'value'})))
-            ]
-        )
+        return merged, variables
 
     def sum(self, var):
         """

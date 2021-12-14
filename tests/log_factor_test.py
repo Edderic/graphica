@@ -38,6 +38,38 @@ def test_log_factor_add():
     )
 
 
+def test_log_factor_subtract():
+    df_1 = pd.DataFrame([
+        {'x': 0, 'y': 0, 'value': np.log(0.5)},
+        {'x': 0, 'y': 1, 'value': np.log(0.6)},
+        {'x': 1, 'y': 0, 'value': np.log(0.9)},
+        {'x': 1, 'y': 1, 'value': np.log(0.3)},
+    ])
+
+    log_factor_1 = LogFactor(df=df_1)
+
+    df_2 = pd.DataFrame([
+        {'x': 0, 'value': np.log(0.1)},
+        {'x': 1, 'value': np.log(0.3)},
+    ])
+
+    log_factor_2 = LogFactor(df=df_2)
+
+    new_log_factor = log_factor_1.subtract(log_factor_2)
+
+    expected_df = pd.DataFrame([
+        {'x': 0, 'y': 0, 'value': np.log(5)},
+        {'x': 0, 'y': 1, 'value': np.log(6)},
+        {'x': 1, 'y': 0, 'value': np.log(3)},
+        {'x': 1, 'y': 1, 'value': np.log(1)},
+    ])
+
+    assert_approx_value_df(
+        new_log_factor.df,
+        expected_df,
+    )
+
+
 def test_sum_even_groupings_1():
     df_1 = pd.DataFrame([
         {'x': 0, 'y': 0, 'value': np.log(0.3)},
