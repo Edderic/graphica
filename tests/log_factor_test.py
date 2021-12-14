@@ -111,3 +111,51 @@ def test_sum_odd_groupings_1():
         new_log_factor.df,
         expected_df,
     )
+
+
+def test_sum_even_and_odd_groupings_1():
+    df_1 = pd.DataFrame([
+        {'x': 0, 'y': 1, 'value': np.log(0.2)},
+        {'x': 0, 'y': 2, 'value': np.log(0.2)},
+        {'x': 1, 'y': 0, 'value': np.log(0.3)},
+        {'x': 1, 'y': 1, 'value': np.log(0.4)},
+        {'x': 1, 'y': 2, 'value': np.log(0.1)},
+    ])
+
+    log_factor_1 = LogFactor(df=df_1)
+
+    new_log_factor = log_factor_1.sum('y')
+
+    expected_df = pd.DataFrame([
+        {'x': 0, 'value': np.log(0.4)},
+        {'x': 1, 'value': np.log(0.8)},
+    ])
+
+    assert_approx_value_df(
+        new_log_factor.df,
+        expected_df,
+    )
+
+
+def test_sum_only_one_row_groupings_1():
+    """
+    It should do nothing to the data.
+    """
+    df_1 = pd.DataFrame([
+        {'x': 0, 'y': 1, 'value': np.log(0.2)},
+        {'x': 1, 'y': 2, 'value': np.log(0.1)},
+    ])
+
+    log_factor_1 = LogFactor(df=df_1)
+
+    new_log_factor = log_factor_1.sum('y')
+
+    expected_df = pd.DataFrame([
+        {'x': 0, 'value': np.log(0.2)},
+        {'x': 1, 'value': np.log(0.1)},
+    ])
+
+    assert_approx_value_df(
+        new_log_factor.df,
+        expected_df,
+    )
