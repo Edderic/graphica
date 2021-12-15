@@ -1,42 +1,50 @@
 """
 Factor class
 """
+import numpy as np
+
 from .errors import ArgumentError
-from .factor_one import FactorOne
+from .log_factor import LogFactor
 
 
 class Factor:
     """
     Class for representing factors.
     """
-    def __init__(self, df=None, cpt=None):
+    def __init__(self, df=None, cpt=None, log_factor=None):
+        if log_factor is not None and df is not None:
+            raise ArgumentError(
+                "Factor must be supplied with only one of"
+                + " dataframe, ConditionalProbabilityTable, or LogFactor."
+            )
+        if cpt is not None and df is not None:
+            raise ArgumentError(
+                "Factor must be supplied with only one of"
+                + " dataframe, ConditionalProbabilityTable, or LogFactor"
+            )
+
         if df is not None:
             self.df = df.copy()
-        else:
+            self.df['value'] = np.log(self.df['value'])
+            self.log_factor = LogFactor(df=self.df)
+
+        elif cpt is not None:
             self.df = cpt.df.copy()
+            self.df['value'] = np.log(self.df['value'])
+            self.log_factor = LogFactor(df=self.df)
 
-        self.__validate__()
-
-    def __validate__(self):
-        variables = self.get_variables()
-
-        counts = self.df.groupby(variables).count()['value']
-
-        if (counts > 1).sum(axis=0) > 0:
-            raise ArgumentError(
-                f"Dataframe {self.df} must not have duplicate "
-                + "entries with variables."
-            )
+        else:
+            self.log_factor = log_factor
 
     def __repr__(self):
         return f"\nFactor(\nvariables: {self.get_variables()}" \
-            + f", \ndf: \n{self.df})"
+            + f", \nlog_factor: \n{self.log_factor}\n)"
 
     def get_variables(self):
         """
         Return variables
         """
-        return list(set(self.df.columns) - {'value'})
+        return self.log_factor.get_variables()
 
     def div(self, other):
         """
@@ -46,19 +54,8 @@ class Factor:
         Returns: Factor
         """
 
-        left_vars = set(list(self.get_variables()))
-        right_vars = set(list(other.get_variables()))
-        common = list(
-            left_vars.intersection(right_vars)
-        )
-
-        merged = self.df.merge(other.df, on=common)
-        merged['value'] = merged.value_x / merged.value_y
-
         return Factor(
-            merged[
-                list(left_vars.union(right_vars.union({'value'})))
-            ]
+            log_factor=self.log_factor.subtract(other.log_factor),
         )
 
     def filter(self, query):
@@ -75,21 +72,7 @@ class Factor:
 
         Returns: Factor
         """
-        df = self.df
-        filters = query.get_filters()
-
-        for f in filters:
-            key = list(f.keys())[0]
-            value = list(f.values())[0]
-
-            if key in self.get_variables():
-                if callable(value):
-                    df = df[value(df)]
-                else:
-                    # We assume we're doing an equality
-                    df = df[df[key] == value]
-
-        return Factor(df)
+        return Factor(log_factor=self.log_factor.filter(query))
 
     def prod(self, other):
         """
@@ -99,27 +82,8 @@ class Factor:
         Returns: Factor
         """
 
-        left_vars = set(list(self.get_variables()))
-        right_vars = set(list(other.get_variables()))
-        common = list(
-            left_vars.intersection(right_vars)
-        )
-
-        if common:
-            merged = self.df.merge(other.df, on=common)
-        else:
-            left_df = self.df.copy()
-            right_df = other.df.copy()
-            left_df['cross-join'] = 1
-            right_df['cross-join'] = 1
-            merged = left_df.merge(right_df, on='cross-join')
-
-        merged['value'] = merged.value_x * merged.value_y
-
         return Factor(
-            merged[
-                list(left_vars.union(right_vars.union({'value'})))
-            ]
+            log_factor=self.log_factor.add(other.log_factor)
         )
 
     def sum(self, var):
@@ -130,14 +94,8 @@ class Factor:
 
         Returns: Factor
         """
-        other_vars = list(set(self.get_variables()) - {'value', var})
-        if not other_vars:
-            return FactorOne()
 
-        new_df = self.df.groupby(other_vars)\
-            .sum()[['value']].reset_index()
-
-        return Factor(new_df)
+        return Factor(log_factor=self.log_factor.sum(var))
 
     def normalize(self, variables):
         """
@@ -149,11 +107,20 @@ class Factor:
 
         Returns: Factor
         """
-        normalizing_factor = Factor(
-            df=self.df
-            .groupby(variables)[['value']]
-            .sum([['value']])
-            .reset_index()
+
+        return self.div(
+            Factor(
+                log_factor=self.log_factor.sum(variables)
+            )
         )
 
-        return self.div(normalizing_factor)
+    def get_df(self):
+        """
+        Exponentiates the LogFactor values.
+
+        Returns: pd.DataFrame
+        """
+
+        df = self.log_factor.df.copy()
+        df['value'] = np.exp(df['value'])
+        return df

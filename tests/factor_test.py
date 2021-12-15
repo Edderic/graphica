@@ -64,7 +64,7 @@ def test_factor_div():
         {'A': 0, 'X': 1, 'Y': 1, 'value': 0.571},
         {'A': 1, 'X': 1, 'Y': 1, 'value': 1.33},
     ])
-    indexed_left = factor_3.df.set_index(["A", "X", "Y"])
+    indexed_left = factor_3.get_df().set_index(["A", "X", "Y"])
     indexed_right = expected_factor_df.set_index(["A", "X", "Y"])
 
     for (_, left), (_, right) in zip(
@@ -117,7 +117,7 @@ def test_factor_prod():
         {'A': 1, 'X': 1, 'Y': 1, 'value': 0.12},
     ])
 
-    indexed_left = factor_3.df.set_index(["A", "X", "Y"])
+    indexed_left = factor_3.get_df().set_index(["A", "X", "Y"])
     indexed_right = expected_factor_df.set_index(["A", "X", "Y"])
 
     for (_, left), (_, right) in zip(
@@ -153,7 +153,7 @@ def test_factor_sum():
         }
     ])
 
-    assert new_factor.df.equals(expected_df)
+    assert new_factor.get_df().equals(expected_df)
 
 
 def test_factor_filter_string():
@@ -184,10 +184,10 @@ def test_factor_filter_string():
         ]
     )
 
-    new_factor.df.reset_index()
+    new_factor.get_df().reset_index()
 
     assert_approx_value_df(
-        new_factor.df,
+        new_factor.get_df(),
         expected_df,
     )
 
@@ -220,9 +220,9 @@ def test_factor_filter():
         ]
     )
 
-    new_factor.df.reset_index()
+    new_factor.get_df().reset_index()
 
     assert_approx_value_df(
-        new_factor.df,
+        new_factor.get_df(),
         expected_df,
     )
