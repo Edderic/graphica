@@ -40,7 +40,7 @@ def test_apply_query():
     )
 
     assert_approx_value_df(
-        factors[0].df,
+        factors[0].get_df(),
         expected_df,
     )
 
