@@ -4,12 +4,14 @@ channels:
   - conda-forge
   - numba
   - defaults
+  - edderic
 dependencies:
   - cloudpickle=2.0.0
   - coiled=0.0.52
   - conda-build=3.21.4
   - dask=2021.8.0
   - jupyter
+  - linx
   - matplotlib=3.4.2
   - numba=0.54.0rc2
   - numpy=1.20.3
