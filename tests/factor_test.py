@@ -7,6 +7,28 @@ from ..linx.query import Query
 from .conftest import assert_approx_value_df
 
 
+def create_levels_df_mini():
+    collection = []
+    for narrative in range(5):
+        for viz in range(5):
+            for level in range(5):
+                true_level = min(
+                    narrative,
+                    viz,
+                )
+                if level == true_level:
+                    value = 1.0
+
+                    collection.append({
+                        'Narrative': narrative,
+                        'Visualization': viz,
+                        'Level': level,
+                        'value': value
+                    })
+
+    return pd.DataFrame(collection)
+
+
 def test_duplicate_entry_for_variables():
     """
     There's already an entry for X:0, Y:0. This is not valid. It should raise
@@ -154,6 +176,42 @@ def test_factor_sum():
     ])
 
     assert new_factor.get_df().equals(expected_df)
+
+
+def test_factor_sum_2():
+    df = create_levels_df_mini()
+
+    cpt_1 = CPT(
+        df=df,
+        outcomes=['Level'],
+        givens=['Narrative', 'Visualization']
+    )
+
+    factor = Factor(cpt=cpt_1)
+
+    new_factor = factor.sum('Visualization')
+    expected_df = pd.DataFrame([
+        {'Narrative': 1, 'Level': 0, 'value': 1.0},
+        {'Narrative': 2, 'Level': 0, 'value': 1.0},
+        {'Narrative': 2, 'Level': 1, 'value': 1.0},
+        {'Narrative': 3, 'Level': 0, 'value': 1.0},
+        {'Narrative': 3, 'Level': 1, 'value': 1.0},
+        {'Narrative': 3, 'Level': 2, 'value': 1.0},
+        {'Narrative': 4, 'Level': 0, 'value': 1.0},
+        {'Narrative': 4, 'Level': 1, 'value': 1.0},
+        {'Narrative': 4, 'Level': 2, 'value': 1.0},
+        {'Narrative': 4, 'Level': 3, 'value': 1.0},
+        {'Narrative': 4, 'Level': 4, 'value': 1.0},
+        {'Narrative': 3, 'Level': 3, 'value': 2.0},
+        {'Narrative': 1, 'Level': 1, 'value': 4.0},
+        {'Narrative': 0, 'Level': 0, 'value': 5.0},
+        {'Narrative': 2, 'Level': 2, 'value': 3.0},
+    ])
+
+    assert_approx_value_df(
+        new_factor.get_df(),
+        expected_df,
+    )
 
 
 def test_factor_filter_string():
