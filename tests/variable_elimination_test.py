@@ -34,8 +34,10 @@ def test_unconnected(two_vars_unconnected_bn):
         {'Y': 1, 'value': 0.9, 'X': 1},
     ])
 
+    result_df = result.get_df()
+
     assert_approx_value_df(
-        actual_df=result.df,
+        actual_df=result_df,
         expected_df=expected_df
     )
 
@@ -69,7 +71,7 @@ def test_independence(collider_and_descendant):
     )
 
     assert_approx_value_df(
-        actual_df=result.df,
+        actual_df=result.get_df(),
         expected_df=expected_df
     )
 
@@ -108,7 +110,7 @@ def test_collider_1(collider_and_descendant):
     ])
 
     assert_approx_value_df(
-        actual_df=result.df,
+        actual_df=result.get_df(),
         expected_df=expected_df,
     )
 
@@ -185,9 +187,10 @@ def test_tree_binary():
     )
 
     result = variable_elimination.compute()
+    result_df = result.get_df()
     assert_approx_value_df(
-        actual_df=result.df[result.df['E'] == 0],
-        expected_df=result.df[result.df['E'] == 0],
+        actual_df=result_df[result_df['E'] == 0],
+        expected_df=result_df[result_df['E'] == 0],
     )
 
 
@@ -313,11 +316,12 @@ def test_tree():
     )
 
     result = variable_elimination.compute()
+    result_df = result.get_df()
 
     for i in range(4):
         # B does not dependent on E
-        left = result.df[result.df['E'] == i][['value', 'B']]
-        right = result.df[result.df['E'] == i + 1][['value', 'B']]
+        left = result_df[result_df['E'] == i][['value', 'B']]
+        right = result_df[result_df['E'] == i + 1][['value', 'B']]
 
         assert_approx_value_df(
             actual_df=left,
@@ -433,6 +437,16 @@ def test_nothing_to_eliminate():
         )
     ).compute()
 
-    assert layer_0_fps.df[
-        layer_0_fps.df['actual_fps'] == 0.7
+    result_df = layer_0_fps.get_df()
+    result_df['value'] / result_df['value'].sum()
+    layer_0_fps.normalize(
+        [
+            'measured_fps_0',
+            'measured_fps_1',
+            'measured_fps_2'
+        ]
+    )
+
+    assert result_df[
+        result_df['actual_fps'] == 0.7
     ]['value'].values[0] > 0.5
