@@ -105,33 +105,20 @@ def create_df_easy(given, outcome):
         # If given is a 4, then Outcome will most likely be a 4
         {given: 4, outcome: 4, 'value': 0.99},
         {given: 4, outcome: 3, 'value': 0.01},
-        {given: 4, outcome: 2, 'value': 0.00},
-        {given: 4, outcome: 1, 'value': 0.0},
-        {given: 4, outcome: 0, 'value': 0.0},
         # If given is a 3, then Outcome will still likely be high
         {given: 3, outcome: 4, 'value': 0.90},
         {given: 3, outcome: 3, 'value': 0.10},
-        {given: 3, outcome: 2, 'value': 0.0},
-        {given: 3, outcome: 1, 'value': 0.0},
-        {given: 3, outcome: 0, 'value': 0.0},
         # If given is a 2, then Outcome will still likely be high
         {given: 2, outcome: 4, 'value': 0.10},
         {given: 2, outcome: 3, 'value': 0.80},
         {given: 2, outcome: 2, 'value': 0.10},
-        {given: 2, outcome: 1, 'value': 0.0},
-        {given: 2, outcome: 0, 'value': 0.0},
         # If Given is a 1, then Outcome will most likely score a
         # 1, but a 1 or 3 are possible.
-        {given: 1, outcome: 4, 'value': 0.0},
         {given: 1, outcome: 3, 'value': 0.10},
         {given: 1, outcome: 2, 'value': 0.40},
         {given: 1, outcome: 1, 'value': 0.50},
-        {given: 1, outcome: 0, 'value': 0.0},
         # If Given is a 0, then Outcome will most likely score a
         # 0, but a tiny chance a 1 will be scored
-        {given: 0, outcome: 4, 'value': 0.0},
-        {given: 0, outcome: 3, 'value': 0.0},
-        {given: 0, outcome: 2, 'value': 0.0},
         {given: 0, outcome: 1, 'value': 0.01},
         {given: 0, outcome: 0, 'value': 0.99},
     ])
@@ -144,34 +131,23 @@ def create_df_medium(given, outcome):
         {given: 4, outcome: 4, 'value': 0.9},
         {given: 4, outcome: 3, 'value': 0.07},
         {given: 4, outcome: 2, 'value': 0.03},
-        {given: 4, outcome: 1, 'value': 0.0},
-        {given: 4, outcome: 0, 'value': 0.0},
         # If Given is a 3, then Outcome will most likely score a
         # 3, but 2 or 4 are possible.
         {given: 3, outcome: 4, 'value': 0.05},
         {given: 3, outcome: 3, 'value': 0.9},
         {given: 3, outcome: 2, 'value': 0.05},
-        {given: 3, outcome: 1, 'value': 0.0},
-        {given: 3, outcome: 0, 'value': 0.0},
         # If Given is a 2, then Outcome will most likely score a
         # 2, but a 1 or 3 are possible.
-        {given: 2, outcome: 4, 'value': 0.00},
         {given: 2, outcome: 3, 'value': 0.05},
         {given: 2, outcome: 2, 'value': 0.9},
         {given: 2, outcome: 1, 'value': 0.05},
-        {given: 2, outcome: 0, 'value': 0.0},
         # If Given is a 1, then Outcome will most likely score a
         # 1, but a 1 or 3 are possible.
-        {given: 1, outcome: 4, 'value': 0.0},
-        {given: 1, outcome: 3, 'value': 0.0},
         {given: 1, outcome: 2, 'value': 0.05},
         {given: 1, outcome: 1, 'value': 0.93},
         {given: 1, outcome: 0, 'value': 0.02},
         # If Given is a 0, then Outcome will most likely score a
         # 0, or possibly a 1
-        {given: 0, outcome: 4, 'value': 0.0},
-        {given: 0, outcome: 3, 'value': 0.0},
-        {given: 0, outcome: 2, 'value': 0.0},
         {given: 0, outcome: 1, 'value': 0.01},
         {given: 0, outcome: 0, 'value': 0.99},
     ])
@@ -184,34 +160,22 @@ def create_df_hard(given, outcome):
         {given: 4, outcome: 4, 'value': 0.3},
         {given: 4, outcome: 3, 'value': 0.4},
         {given: 4, outcome: 2, 'value': 0.3},
-        {given: 4, outcome: 1, 'value': 0.0},
-        {given: 4, outcome: 0, 'value': 0.0},
         # If Given is a 3, then Outcome will most likely score a
         # 3, but 2 or 4 are possible.
         {given: 3, outcome: 4, 'value': 0.1},
         {given: 3, outcome: 3, 'value': 0.4},
         {given: 3, outcome: 2, 'value': 0.5},
-        {given: 3, outcome: 1, 'value': 0.0},
-        {given: 3, outcome: 0, 'value': 0.0},
         # If Given is a 2, then Outcome will most likely score a
         # 2, but a 1 or 3 are possible.
-        {given: 2, outcome: 4, 'value': 0.00},
-        {given: 2, outcome: 3, 'value': 0.0},
         {given: 2, outcome: 2, 'value': 0.4},
         {given: 2, outcome: 1, 'value': 0.6},
-        {given: 2, outcome: 0, 'value': 0.0},
         # If Given is a 1, then Outcome will most likely score a
         # 1, but a 1 or 3 are possible.
-        {given: 1, outcome: 4, 'value': 0.0},
-        {given: 1, outcome: 3, 'value': 0.0},
         {given: 1, outcome: 2, 'value': 0.05},
         {given: 1, outcome: 1, 'value': 0.93},
         {given: 1, outcome: 0, 'value': 0.02},
         # If Given is a 0, then Outcome will most likely score a
         # 0, or possibly a 1
-        {given: 0, outcome: 4, 'value': 0.0},
-        {given: 0, outcome: 3, 'value': 0.0},
-        {given: 0, outcome: 2, 'value': 0.0},
         {given: 0, outcome: 1, 'value': 0.01},
         {given: 0, outcome: 0, 'value': 0.99},
     ])
