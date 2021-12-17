@@ -108,11 +108,12 @@ class Factor:
         Returns: Factor
         """
 
-        return self.div(
-            Factor(
-                log_factor=self.log_factor.sum(variables)
-            )
-        )
+        df = self.get_df()
+        sum_df = df.groupby(variables)[['value']].sum()
+        merged = df.merge(sum_df, on=variables)
+        merged['value'] = merged['value_x'] / merged['value_y']
+
+        return Factor(df=merged.drop(columns=['value_x', 'value_y']))
 
     def get_df(self):
         """

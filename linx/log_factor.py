@@ -191,7 +191,7 @@ class LogFactor:
         # can run __compute_log_sum_exp__ again, to give us a final aggregation
         # for those groupings that had originally a set of rows that had
         # greater than 1.
-        to_add = \
+        only_one_row = \
             self.copy_df[
                 (self.copy_df['max_cumcount'] % 2 == 1) &
                 (self.copy_df['max_cumcount'] != 1) &
@@ -200,8 +200,7 @@ class LogFactor:
 
         # Finally, after we run the __compute_log_sum_exp__ twice, we'll append
         # the rows that only had one row. Those don't need to be processed.
-        only_one_row = \
-            self.copy_df[self.copy_df['max_cumcount'] == 1]
+        only_one_row = only_one_row.append(self.copy_df[self.copy_df['max_cumcount'] == 1])
 
         # evens. __compute_log_sum_exp__ perfectly handles the even case.
         self.copy_df = \
@@ -216,32 +215,38 @@ class LogFactor:
         # do evens
         while any(self.copy_df['cumcount'] > 1):
             self.__compute_log_sum_exp__(other_vars)
+            # See if there's anything to join with the only_one_row
+            # get evens
+            self.copy_df = self.copy_df[self.copy_df['cumcount'] % 2 == 1]
 
-        # At this point, we only have one value per groupby. Now we add the
-        # last row we removed from the odd-numbered groups
-        self.copy_df = self.copy_df.append(to_add)
+            self.copy_df['cumcount'] = self\
+                .copy_df.groupby(other_vars)['value'].transform('cumcount') + 1
+            self.copy_df.loc[:, 'max_cumcount'] = \
+                self.copy_df.groupby(other_vars)['cumcount'].transform(max)
 
-        self.copy_df['cumcount'] = \
-            self.copy_df.groupby(other_vars)['value'].transform('cumcount') + 1
-        self.copy_df.loc[:, 'max_cumcount'] = \
-            self.copy_df.groupby(other_vars)['cumcount'].transform(max)
+            # update only_one_row
+            only_one_row = only_one_row.append(
+                self.copy_df[self.copy_df['max_cumcount'] == 1]
+            )
+            self.copy_df = self.copy_df[self.copy_df['max_cumcount'] > 1]
 
-        # those that don't need more processing
-        good_to_go = self.copy_df[self.copy_df['max_cumcount'] == 1]
+        only_one_row = only_one_row.append(self.copy_df)
 
-        # those that might still need more processing
-        self.copy_df = self.copy_df[self.copy_df['max_cumcount'] != 1]
+        only_one_row['cumcount'] = only_one_row.groupby(other_vars)['value'].transform('cumcount') + 1
+        only_one_row.loc[:, 'max_cumcount'] = only_one_row.groupby(other_vars)['cumcount'].transform(max)
+
+        even_rows = only_one_row[only_one_row['max_cumcount'] != 1]
+        only_one_row = only_one_row[only_one_row['max_cumcount'] == 1]
+
+        self.copy_df = even_rows
+
+        self.__compute_log_sum_exp__(other_vars)
 
         vars_to_include = list(set(other_vars).union({'value'}))
 
-        # Combine odds
-        if self.df.shape[0] > 0:
-            self.__compute_log_sum_exp__(other_vars)
-
         returnables = pd.concat([
-            good_to_go[vars_to_include],
+            only_one_row[vars_to_include],
             self.copy_df[vars_to_include],
-            only_one_row[vars_to_include]
         ])
 
         return LogFactor(
