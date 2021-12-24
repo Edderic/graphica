@@ -1,5 +1,7 @@
 import pandas as pd
 
+from .conftest import clean_tmp, get_tmp_path
+from ..linx.data import ParquetData
 from ..linx.variable_elimination import min_fill_edges
 from ..linx.ds import BayesianNetwork, ConditionalProbabilityTable as CPT
 
@@ -44,23 +46,23 @@ def test_min_fill_edges():
     ])
 
     cpt_1 = CPT(
-        df=df1,
+        ParquetData(df1, storage_folder=get_tmp_path()),
         outcomes=['X'],
     )
 
     cpt_2 = CPT(
-        df=df2,
+        ParquetData(df2, storage_folder=get_tmp_path()),
         outcomes=['Y']
     )
 
     cpt_3 = CPT(
-        df=df3,
+        ParquetData(df3, storage_folder=get_tmp_path()),
         outcomes=['Z'],
         givens=['X', 'Y']
     )
 
     cpt_4 = CPT(
-        df=df4,
+        ParquetData(df4, storage_folder=get_tmp_path()),
         outcomes=['A'],
         givens=['Z']
     )
@@ -77,3 +79,5 @@ def test_min_fill_edges():
 
     assert best_choice == 'A'
     assert min_number_of_vars == 2
+
+    clean_tmp()
