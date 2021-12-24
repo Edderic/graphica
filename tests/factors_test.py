@@ -6,14 +6,14 @@ from ..linx.data import ParquetData
 
 
 def test_subscriptable(two_factors):
-    clean_tmp()
-
     factors = two_factors
     first_factor = factors[0]
     second_factor = factors[1]
 
     assert first_factor.get_variables() == ['X']
     assert second_factor.get_variables() == ['Y']
+
+    clean_tmp()
 
 
 def test_looping():
