@@ -56,7 +56,10 @@ def create_binary_prior_cpt(outcome, value_for_1=None):
     ])
 
     return CPT(
-        df=binary_prior_df,
+        ParquetData(
+            binary_prior_df,
+            storage_folder=get_tmp_path()
+        ),
         outcomes=[outcome],
     )
 
@@ -88,7 +91,7 @@ def create_binary_CPT(
     df = pd.DataFrame(df_rows)
 
     return CPT(
-        df=df,
+        ParquetData(df, storage_folder=get_tmp_path()),
         outcomes=[outcome],
         givens=[given]
     )
@@ -273,23 +276,23 @@ def collider_and_descendant():
     ])
 
     cpt_1 = CPT(
-        df=df1,
+        ParquetData(df1, storage_folder=get_tmp_path()),
         outcomes=['X'],
     )
 
     cpt_2 = CPT(
-        df=df2,
+        ParquetData(df2, storage_folder=get_tmp_path()),
         outcomes=['Y']
     )
 
     cpt_3 = CPT(
-        df=df3,
+        ParquetData(df3, storage_folder=get_tmp_path()),
         outcomes=['Z'],
         givens=['X', 'Y']
     )
 
     cpt_4 = CPT(
-        df=df4,
+        ParquetData(df4, storage_folder=get_tmp_path()),
         outcomes=['A'],
         givens=['Z']
     )
@@ -355,11 +358,11 @@ def two_vars_unconnected_bn():
     bayesian_network = BayesianNetwork(
         priors=[
             CPT(
-                df=df1,
+                ParquetData(df1, storage_folder=get_tmp_path()),
                 outcomes=['X'],
             ),
             CPT(
-                df=df2,
+                ParquetData(df2, storage_folder=get_tmp_path()),
                 outcomes=['Y'],
             )
         ]
