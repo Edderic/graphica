@@ -1,11 +1,14 @@
 import pandas as pd
 
+from ..linx.data import ParquetData
 from ..linx.ds import MarkovNetwork, ConditionalProbabilityTable as CPT, \
     Factor, Query
-from .conftest import assert_approx_value_df
+from .conftest import (assert_approx_value_df, clean_tmp, get_tmp_path)
 
 
 def test_apply_query():
+    clean_tmp()
+
     df = pd.DataFrame([
         {'X': 0, 'Y': 0, 'value': 0.25},
         {'X': 0, 'Y': 1, 'value': 0.75},
@@ -14,7 +17,7 @@ def test_apply_query():
     ])
 
     cpt_1 = CPT(
-        df=df,
+        ParquetData(df, storage_folder=get_tmp_path()),
         outcomes=['Y'],
         givens=['X']
     )
@@ -46,6 +49,8 @@ def test_apply_query():
 
 
 def test_get_factors():
+    clean_tmp()
+
     markov_network = MarkovNetwork()
 
     df = pd.DataFrame([
@@ -56,7 +61,7 @@ def test_get_factors():
     ])
 
     cpt_1 = CPT(
-        df=df,
+        ParquetData(df, storage_folder=get_tmp_path()),
         outcomes=['Y'],
         givens=['X']
     )
@@ -72,7 +77,7 @@ def test_get_factors():
     ])
 
     cpt_2 = CPT(
-        df=df_2,
+        ParquetData(df_2, storage_folder=get_tmp_path()),
         outcomes=['A'],
         givens=['X']
     )
@@ -86,7 +91,7 @@ def test_get_factors():
     ])
 
     cpt_3 = CPT(
-        df=df_3,
+        ParquetData(df_3, storage_folder=get_tmp_path()),
         outcomes=['X'],
     )
 
@@ -123,7 +128,7 @@ def test_get_variables():
     ])
 
     cpt_1 = CPT(
-        df=df,
+        ParquetData(df, storage_folder=get_tmp_path()),
         outcomes=['Y'],
         givens=['X']
     )
@@ -139,7 +144,7 @@ def test_get_variables():
     ])
 
     cpt_2 = CPT(
-        df=df_2,
+        ParquetData(df_2, storage_folder=get_tmp_path()),
         outcomes=['A'],
         givens=['X']
     )
@@ -153,7 +158,7 @@ def test_get_variables():
     ])
 
     cpt_3 = CPT(
-        df=df_3,
+        ParquetData(df_3, storage_folder=get_tmp_path()),
         outcomes=['X'],
     )
 
@@ -174,7 +179,7 @@ def test_remove_factors():
     ])
 
     cpt_1 = CPT(
-        df=df,
+        ParquetData(df, storage_folder=get_tmp_path()),
         outcomes=['Y'],
         givens=['X']
     )
@@ -190,7 +195,7 @@ def test_remove_factors():
     ])
 
     cpt_2 = CPT(
-        df=df_2,
+        ParquetData(df_2, storage_folder=get_tmp_path()),
         outcomes=['A'],
         givens=['X']
     )
