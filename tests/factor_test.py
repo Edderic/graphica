@@ -1,10 +1,11 @@
 import pandas as pd
 import pytest
+from ..linx.data import ParquetData
 from ..linx.ds import ConditionalProbabilityTable as CPT, Factor
 from ..linx.errors import ArgumentError
 from ..linx.query import Query
 
-from .conftest import assert_approx_value_df
+from .conftest import assert_approx_value_df, get_tmp_path, clean_tmp
 
 
 def create_levels_df_mini():
@@ -34,16 +35,24 @@ def test_duplicate_entry_for_variables():
     There's already an entry for X:0, Y:0. This is not valid. It should raise
     an error.
     """
+    clean_tmp()
+
     df = pd.DataFrame([
         {'X': 0, 'Y': 0, 'value': 0.25},
         {'X': 0, 'Y': 0, 'value': 0.99},
     ])
 
     with pytest.raises(ArgumentError):
-        Factor(df=df)
+        Factor(
+            data=ParquetData(
+                df,
+                storage_folder=get_tmp_path()
+            )
+        )
 
 
 def test_factor_div():
+    clean_tmp()
     df = pd.DataFrame([
         {'X': 0, 'Y': 0, 'value': 0.25},
         {'X': 0, 'Y': 1, 'value': 0.75},
@@ -52,7 +61,7 @@ def test_factor_div():
     ])
 
     cpt_1 = CPT(
-        df=df,
+        ParquetData(df, storage_folder=get_tmp_path()),
         outcomes=['Y'],
         givens=['X']
     )
@@ -67,7 +76,7 @@ def test_factor_div():
     ])
 
     cpt_2 = CPT(
-        df=df_2,
+        ParquetData(df_2, storage_folder=get_tmp_path()),
         outcomes=['A'],
         givens=['X']
     )
@@ -96,6 +105,8 @@ def test_factor_div():
 
 
 def test_factor_prod():
+    clean_tmp()
+
     df = pd.DataFrame([
         {'X': 0, 'Y': 0, 'value': 0.25},
         {'X': 0, 'Y': 1, 'value': 0.75},
@@ -104,7 +115,7 @@ def test_factor_prod():
     ])
 
     cpt_1 = CPT(
-        df=df,
+        ParquetData(df, storage_folder=get_tmp_path()),
         outcomes=['Y'],
         givens=['X']
     )
@@ -119,7 +130,7 @@ def test_factor_prod():
     ])
 
     cpt_2 = CPT(
-        df=df_2,
+        ParquetData(df_2, storage_folder=get_tmp_path()),
         outcomes=['A'],
         givens=['X']
     )
@@ -149,6 +160,8 @@ def test_factor_prod():
 
 
 def test_factor_sum():
+    clean_tmp()
+
     df = pd.DataFrame([
         {'X': 0, 'Y': 0, 'value': 0.25},
         {'X': 0, 'Y': 1, 'value': 0.75},
@@ -157,7 +170,7 @@ def test_factor_sum():
     ])
 
     cpt_1 = CPT(
-        df=df,
+        ParquetData(df, storage_folder=get_tmp_path()),
         outcomes=['Y'],
         givens=['X']
     )
@@ -179,10 +192,12 @@ def test_factor_sum():
 
 
 def test_factor_sum_2():
+    clean_tmp()
+
     df = create_levels_df_mini()
 
     cpt_1 = CPT(
-        df=df,
+        ParquetData(df, storage_folder=get_tmp_path()),
         outcomes=['Level'],
         givens=['Narrative', 'Visualization']
     )
@@ -215,6 +230,8 @@ def test_factor_sum_2():
 
 
 def test_factor_filter_string():
+    clean_tmp()
+
     df = pd.DataFrame([
         {'X': 0, 'Y': 0, 'value': 0.25},
         {'X': 0, 'Y': 1, 'value': 0.75},
@@ -223,7 +240,7 @@ def test_factor_filter_string():
     ])
 
     cpt_1 = CPT(
-        df=df,
+        ParquetData(df, storage_folder=get_tmp_path()),
         outcomes=['Y'],
         givens=['X']
     )
@@ -251,6 +268,8 @@ def test_factor_filter_string():
 
 
 def test_factor_filter():
+    clean_tmp()
+
     df = pd.DataFrame([
         {'X': 0, 'Y': 0, 'value': 0.25},
         {'X': 0, 'Y': 1, 'value': 0.75},
@@ -259,7 +278,7 @@ def test_factor_filter():
     ])
 
     cpt_1 = CPT(
-        df=df,
+        ParquetData(df, storage_folder=get_tmp_path()),
         outcomes=['Y'],
         givens=['X']
     )

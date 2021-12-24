@@ -3,6 +3,7 @@ Factor class
 """
 import numpy as np
 
+from .data import ParquetData
 from .errors import ArgumentError
 from .log_factor import LogFactor
 
@@ -11,27 +12,30 @@ class Factor:
     """
     Class for representing factors.
     """
-    def __init__(self, df=None, cpt=None, log_factor=None):
-        if log_factor is not None and df is not None:
+    def __init__(self, data=None, cpt=None, log_factor=None):
+        if log_factor is not None and data is not None:
             raise ArgumentError(
                 "Factor must be supplied with only one of"
-                + " dataframe, ConditionalProbabilityTable, or LogFactor."
+                + " Data, ConditionalProbabilityTable, or LogFactor."
             )
-        if cpt is not None and df is not None:
+        if cpt is not None and data is not None:
             raise ArgumentError(
                 "Factor must be supplied with only one of"
-                + " dataframe, ConditionalProbabilityTable, or LogFactor"
+                + " Data, ConditionalProbabilityTable, or LogFactor"
             )
 
-        if df is not None:
-            self.df = df.copy()
-            self.df['value'] = np.log(self.df['value'])
-            self.log_factor = LogFactor(df=self.df)
+        if data is not None:
+            self.log_factor = LogFactor(data=data)
 
         elif cpt is not None:
-            self.df = cpt.df.copy()
-            self.df['value'] = np.log(self.df['value'])
-            self.log_factor = LogFactor(df=self.df)
+            data = cpt.data
+
+            df = data.read()
+            df['value'] = np.log(df['value'])
+
+            self.log_factor = LogFactor(
+                data=ParquetData(df, data.storage_folder)
+            )
 
         else:
             self.log_factor = log_factor
@@ -113,7 +117,12 @@ class Factor:
         merged = df.merge(sum_df, on=variables)
         merged['value'] = merged['value_x'] / merged['value_y']
 
-        return Factor(df=merged.drop(columns=['value_x', 'value_y']))
+        return Factor(
+            data=ParquetData(
+                merged.drop(columns=['value_x', 'value_y']),
+                storage_folder=self.log_factor.get_data().get_storage_folder()
+            )
+        )
 
     def get_df(self):
         """
@@ -122,6 +131,6 @@ class Factor:
         Returns: pd.DataFrame
         """
 
-        df = self.log_factor.df.copy()
+        df = self.log_factor.data.read()
         df['value'] = np.exp(df['value'])
         return df
