@@ -1,9 +1,13 @@
 import pandas as pd
 
 from ..linx.ds import Factors, Factor
+from .conftest import clean_tmp, get_tmp_path
+from ..linx.data import ParquetData
 
 
 def test_subscriptable(two_factors):
+    clean_tmp()
+
     factors = two_factors
     first_factor = factors[0]
     second_factor = factors[1]
@@ -13,6 +17,8 @@ def test_subscriptable(two_factors):
 
 
 def test_looping():
+    clean_tmp()
+
     df1 = pd.DataFrame([
         {
             'X': 0, 'value': 123,
@@ -31,8 +37,12 @@ def test_looping():
         }
     ])
 
-    factor_1 = Factor(df=df1)
-    factor_2 = Factor(df=df2)
+    factor_1 = Factor(
+        ParquetData(df1, storage_folder=get_tmp_path())
+    )
+    factor_2 = Factor(
+        ParquetData(df2, storage_folder=get_tmp_path())
+    )
 
     expected_factors = [
         factor_1,
@@ -46,6 +56,8 @@ def test_looping():
 
 
 def test_get_variables():
+    clean_tmp()
+
     df1 = pd.DataFrame([
         {
             'X': 0, 'value': 123,
@@ -79,9 +91,15 @@ def test_get_variables():
         },
     ])
 
-    factor_1 = Factor(df=df1)
-    factor_2 = Factor(df=df2)
-    factor_3 = Factor(df=df3)
+    factor_1 = Factor(
+        ParquetData(df1, storage_folder=get_tmp_path())
+    )
+    factor_2 = Factor(
+        ParquetData(df2, storage_folder=get_tmp_path())
+    )
+    factor_3 = Factor(
+        ParquetData(df3, storage_folder=get_tmp_path())
+    )
     factors = Factors([factor_1, factor_2, factor_3])
     variables = factors.get_variables()
 
