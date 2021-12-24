@@ -1,9 +1,13 @@
 import pandas as pd
 
+from ..linx.data import ParquetData
 from ..linx.ds import BayesianNetwork as BN, ConditionalProbabilityTable as CPT
+from .conftest import clean_tmp, get_tmp_path
 
 
 def test_find_cpt_for_node():
+    clean_tmp()
+
     bayesian_network = BN()
     df = pd.DataFrame([
         {'X': 0, 'Y': 0, 'value': 0.25},
@@ -13,7 +17,7 @@ def test_find_cpt_for_node():
     ])
 
     cpt_1 = CPT(
-        df=df,
+        ParquetData(df, storage_folder=get_tmp_path()),
         outcomes=['Y'],
         givens=['X']
     )
@@ -28,7 +32,7 @@ def test_find_cpt_for_node():
     ])
 
     cpt_2 = CPT(
-        df=df_2,
+        ParquetData(df_2, storage_folder=get_tmp_path()),
         outcomes=['A'],
         givens=['X']
     )
@@ -41,7 +45,7 @@ def test_find_cpt_for_node():
     ])
 
     cpt_3 = CPT(
-        df=df_3,
+        ParquetData(df_3, storage_folder=get_tmp_path()),
         outcomes=['X'],
     )
 
@@ -53,6 +57,8 @@ def test_find_cpt_for_node():
 
 
 def test_to_markov_network():
+    clean_tmp()
+
     bayesian_network = BN()
     df = pd.DataFrame([
         {'X': 0, 'Y': 0, 'value': 0.25},
@@ -62,7 +68,7 @@ def test_to_markov_network():
     ])
 
     cpt_1 = CPT(
-        df=df,
+        ParquetData(df, storage_folder=get_tmp_path()),
         outcomes=['Y'],
         givens=['X']
     )
@@ -77,7 +83,7 @@ def test_to_markov_network():
     ])
 
     cpt_2 = CPT(
-        df=df_2,
+        ParquetData(df_2, storage_folder=get_tmp_path()),
         outcomes=['A'],
         givens=['X']
     )
@@ -90,7 +96,7 @@ def test_to_markov_network():
     ])
 
     cpt_3 = CPT(
-        df=df_3,
+        ParquetData(df_3, storage_folder=get_tmp_path()),
         outcomes=['X'],
     )
 
