@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import pytest
 
+from ..linx.data import ParquetData
 from ..linx.ds import BayesianNetwork, Factors, Factor,\
     ConditionalProbabilityTable as CPT
 
@@ -321,8 +322,12 @@ def two_factors():
         }
     ])
 
-    factor_1 = Factor(df=df1)
-    factor_2 = Factor(df=df2)
+    factor_1 = Factor(
+        ParquetData(df1, storage_folder=get_tmp_path())
+    )
+    factor_2 = Factor(
+        ParquetData(df2, storage_folder=get_tmp_path())
+    )
 
     return Factors([factor_1, factor_2])
 
