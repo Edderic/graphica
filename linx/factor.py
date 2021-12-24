@@ -25,7 +25,12 @@ class Factor:
             )
 
         if data is not None:
-            self.log_factor = LogFactor(data=data)
+            df = data.read()
+            df['value'] = np.log(df['value'])
+
+            self.log_factor = LogFactor(
+                data=ParquetData(df, data.storage_folder)
+            )
 
         elif cpt is not None:
             data = cpt.data

@@ -115,6 +115,12 @@ class LogFactor:
             )
         )
 
+    def get_data(self):
+        """
+        Return: Data
+        """
+        return self.data
+
     def get_variables(self):
         """
         Return variables

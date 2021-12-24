@@ -1,12 +1,14 @@
 import numpy as np
 import pandas as pd
 
-from ..linx.infer import VariableElimination
+from ..linx.data import ParquetData
 from ..linx.ds import Query, ConditionalProbabilityTable as CPT, \
     BayesianNetwork
-from .conftest import assert_approx_value_df, create_df_easy, \
-    create_df_medium, create_binary_prior_cpt, create_binary_CPT, \
-    create_prior_df
+from ..linx.infer import VariableElimination
+from .conftest import assert_approx_value_df, \
+    create_binary_prior_cpt, create_binary_CPT, \
+    create_prior_df, clean_tmp, get_tmp_path, \
+    create_df_easy, create_df_medium
 
 
 def test_unconnected(two_vars_unconnected_bn):
@@ -41,6 +43,8 @@ def test_unconnected(two_vars_unconnected_bn):
         expected_df=expected_df
     )
 
+    clean_tmp()
+
 
 def test_independence(collider_and_descendant):
     """
@@ -74,6 +78,8 @@ def test_independence(collider_and_descendant):
         actual_df=result.get_df(),
         expected_df=expected_df
     )
+
+    clean_tmp()
 
 
 def test_collider_1(collider_and_descendant):
@@ -113,6 +119,8 @@ def test_collider_1(collider_and_descendant):
         actual_df=result.get_df(),
         expected_df=expected_df,
     )
+
+    clean_tmp()
 
 
 def test_tree_binary():
@@ -164,7 +172,7 @@ def test_tree_binary():
     ])
 
     cpts['C'] = CPT(
-        df=c_df,
+        ParquetData(c_df, storage_folder=get_tmp_path()),
         outcomes=['C'],
         givens=['A', 'D']
     )
@@ -193,6 +201,8 @@ def test_tree_binary():
         expected_df=result_df[result_df['E'] == 0],
     )
 
+    clean_tmp()
+
 
 def test_tree():
     r"""
@@ -212,7 +222,10 @@ def test_tree():
     priors = {}
     for prior in priors:
         priors[prior] = CPT(
-            df=create_prior_df(outcome=prior),
+            ParquetData(
+                create_prior_df(outcome=prior),
+                storage_folder=get_tmp_path(),
+            ),
             outcomes=[prior],
         )
 
@@ -222,7 +235,13 @@ def test_tree():
 
     for start_var, end_var in easy_cpts:
         cpts[end_var] = CPT(
-            df=create_df_easy(given=start_var, outcome=end_var),
+            ParquetData(
+                create_df_easy(
+                    given=start_var,
+                    outcome=end_var,
+                ),
+                storage_folder=get_tmp_path(),
+            ),
             outcomes=[end_var],
             givens=[start_var]
         )
@@ -233,7 +252,13 @@ def test_tree():
 
     for start_var, end_var in med_cpts:
         cpts[end_var] = CPT(
-            df=create_df_medium(given=start_var, outcome=end_var),
+            ParquetData(
+                create_df_medium(
+                    given=start_var,
+                    outcome=end_var
+                ),
+                storage_folder=get_tmp_path()
+            ),
             outcomes=[end_var],
             givens=[start_var]
         )
@@ -291,7 +316,10 @@ def test_tree():
         {'A': 4, 'D': 4, 'C': 0, 'value': 0.96},
     ])
     cpts['C'] = CPT(
-        df=c_df,
+        ParquetData(
+            c_df,
+            storage_folder=get_tmp_path()
+        ),
         outcomes=['C'],
         givens=['A', 'D']
     )
@@ -328,9 +356,11 @@ def test_tree():
             expected_df=right
         )
 
+    clean_tmp()
+
 
 def test_nothing_to_eliminate():
-    def create_anenometer_cpt_df(size):
+    def create_anemometer_cpt_df(size):
         dfs = []
         minimum = 0
         maximum = 15
@@ -363,16 +393,16 @@ def test_nothing_to_eliminate():
 
         return normalized.reset_index()
 
-    def generate_cpts_for_anenometer_readings(
+    def generate_cpts_for_anemometer_readings(
         number_of_readings,
-        anenometer_reading_df
+        anemometer_reading_df
     ):
         """
-        Generate conditional probability tables of anenometer readings.
+        Generate conditional probability tables of anemometer readings.
 
         Parameters:
             number_of_readings: integer
-            anenometer_reading_df: pd.DataFrame
+            anemometer_reading_df: pd.DataFrame
 
         Returns: list[CPT]
         """
@@ -380,8 +410,11 @@ def test_nothing_to_eliminate():
 
         for i in range(number_of_readings):
             cpt = CPT(
-                df=anenometer_reading_df.rename(
-                    columns={'measured_fps': f'measured_fps_{i}'}
+                ParquetData(
+                    anemometer_reading_df.rename(
+                        columns={'measured_fps': f'measured_fps_{i}'}
+                    ),
+                    storage_folder=get_tmp_path()
                 ),
                 outcomes=[f'measured_fps_{i}'],
                 givens=['actual_fps']
@@ -410,16 +443,19 @@ def test_nothing_to_eliminate():
             [{'value': proba, name: round(i, round_to)} for i in array]
         )
 
-    anenometer_reading_df = create_anenometer_cpt_df(10000)
+    anemometer_reading_df = create_anemometer_cpt_df(10000)
 
     bn = BayesianNetwork(
-        cpts=generate_cpts_for_anenometer_readings(
+        cpts=generate_cpts_for_anemometer_readings(
             number_of_readings=3,
-            anenometer_reading_df=anenometer_reading_df
+            anemometer_reading_df=anemometer_reading_df
         ),
         priors=[
             CPT(
-                df=generate_flat_priors(0, 5, 0.1, 'actual_fps'),
+                ParquetData(
+                    generate_flat_priors(0, 5, 0.1, 'actual_fps'),
+                    storage_folder=get_tmp_path()
+                ),
                 outcomes=['actual_fps']
             )
         ]
@@ -450,3 +486,5 @@ def test_nothing_to_eliminate():
     assert result_df[
         result_df['actual_fps'] == 0.7
     ]['value'].values[0] > 0.5
+
+    clean_tmp()
