@@ -4,6 +4,8 @@ Variable Elimination module
 
 import logging
 
+from tqdm import tqdm
+
 
 def min_fill_edges(eliminateables, network):
     """
@@ -94,7 +96,8 @@ class VariableElimination:
         )
 
         self.__compute__(
-            numerator_eliminateables
+            numerator_eliminateables,
+            'numerator'
         )
 
         numer_factors = self.network.get_factors()
@@ -107,7 +110,8 @@ class VariableElimination:
         )
 
         self.__compute__(
-            left_to_eliminate
+            left_to_eliminate,
+            'denominator'
         )
 
         denom_prod = self.network.get_factors().prod()
@@ -127,57 +131,62 @@ class VariableElimination:
 
         return normalized
 
-    def __compute__(self, eliminateables):
-        while eliminateables:
-            logging.debug(
-                "\nTOP OF ELIMINATEABLES: \ni\tELIMINATEABLES: %s",
-                eliminateables
-            )
+    def __compute__(self, eliminateables, title):
+        len_eliminateables = len(eliminateables)
 
-            best_eliminateable, _ = self.greedy_heuristic(
-                eliminateables=eliminateables,
-                network=self.network
-            )
-
-            factors = self.network.get_factors(best_eliminateable)
-
-            logging.debug(
-                "\nbest_eliminateable: \n\t: %s, \n\tmin: %s, \n\tfactors: %s",
-                best_eliminateable,
-                _,
-                factors
-            )
-
-            factor_prod = factors.prod()
-
-            logging.debug(
-                "\nAfter prod. \n\tfactor_prod: \n\t%s",
-                factor_prod
-            )
-
-            # Update network with new factor
-            new_factor = factor_prod.sum(best_eliminateable)
-
-            logging.debug(
-                "\nAfter sum. sum: \n\t%s",
-                new_factor
-            )
-
-            self.network.add_factor(
-                factor=new_factor
-            )
-
-            # Remove old factors
-            for factor in factors:
-                self.network.remove_factor(
-                    factor=factor
+        with tqdm(total=len_eliminateables, desc=title) as progress_bar:
+            while eliminateables:
+                logging.debug(
+                    "\nTOP OF ELIMINATEABLES: \ni\tELIMINATEABLES: %s",
+                    eliminateables
                 )
 
-            logging.debug(
-                "\nAfter add and remove factor: Network:\n\t%s",
-                self.network
-            )
+                best_eliminateable, _ = self.greedy_heuristic(
+                    eliminateables=eliminateables,
+                    network=self.network
+                )
 
-            eliminateables = list(
-                set(eliminateables) - {best_eliminateable}
-            )
+                factors = self.network.get_factors(best_eliminateable)
+
+                logging.debug(
+                    "\nbest_eliminateable: \n\t: %s, \n\tmin: %s, \n\tfactors: %s",
+                    best_eliminateable,
+                    _,
+                    factors
+                )
+
+                factor_prod = factors.prod()
+
+                logging.debug(
+                    "\nAfter prod. \n\tfactor_prod: \n\t%s",
+                    factor_prod
+                )
+
+                # Update network with new factor
+                new_factor = factor_prod.sum(best_eliminateable)
+
+                logging.debug(
+                    "\nAfter sum. sum: \n\t%s",
+                    new_factor
+                )
+
+                self.network.add_factor(
+                    factor=new_factor
+                )
+
+                # Remove old factors
+                for factor in factors:
+                    self.network.remove_factor(
+                        factor=factor
+                    )
+
+                logging.debug(
+                    "\nAfter add and remove factor: Network:\n\t%s",
+                    self.network
+                )
+
+                eliminateables = list(
+                    set(eliminateables) - {best_eliminateable}
+                )
+
+                progress_bar.update()
