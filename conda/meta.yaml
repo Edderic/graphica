@@ -22,6 +22,7 @@ requirements:
     - numpy
     - pandas
     - python
+    - tqdm
 
 about:
   home: "https://github.com/edderic/linx"
