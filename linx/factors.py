@@ -59,7 +59,8 @@ class Factors():
         variables = set({})
 
         for factor in self.factors:
-            variables = variables.union(factor.get_variables())
+            get_vars = factor.get_variables()
+            variables = variables.union(get_vars)
 
         return variables
 

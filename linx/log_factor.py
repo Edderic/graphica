@@ -125,7 +125,7 @@ class LogFactor:
         """
         Return variables
         """
-        return list(set(self.data.read().columns) - {'value'})
+        return list(set(self.data.get_columns()) - {'value'})
 
     def add(self, other):
         """

@@ -31,6 +31,13 @@ class ParquetData:
             raise ArgumentError(f"{self.path} already exists")
 
         self.write(data)
+        self.columns = data.columns
+
+    def get_columns(self):
+        """
+        Return: pd.Index
+        """
+        return self.columns
 
     def get_storage_folder(self):
         """
