@@ -44,7 +44,7 @@ class Query:
     ):
 
         if givens is None:
-            givens = []
+            self.givens = []
         else:
             self.givens = givens
 
@@ -66,10 +66,9 @@ class Query:
             if isinstance(outcome, dict):
                 self.filters.append(outcome)
 
-        if self.givens:
-            for given in self.givens:
-                if isinstance(given, dict):
-                    self.filters.append(given)
+        for given in self.givens:
+            if isinstance(given, dict):
+                self.filters.append(given)
 
         return self.filters
 
