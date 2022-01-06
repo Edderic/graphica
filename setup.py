@@ -8,7 +8,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="linx",
-    version="0.0.6",
+    version="0.0.7",
     author="Edderic Ugaddan",
     author_email="edderic@gmail.com",
     description="Tools for Probabilistic Graphical Modeling",
