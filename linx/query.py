@@ -66,9 +66,10 @@ class Query:
             if isinstance(outcome, dict):
                 self.filters.append(outcome)
 
-        for given in self.givens:
-            if isinstance(given, dict):
-                self.filters.append(given)
+        if self.givens:
+            for given in self.givens:
+                if isinstance(given, dict):
+                    self.filters.append(given)
 
         return self.filters
 
