@@ -177,22 +177,27 @@ class LogFactor:
     def __merged__(self, other):
         left_vars = set(list(self.get_variables()))
         right_vars = set(list(other.get_variables()))
-        common = list(
-            left_vars.intersection(right_vars)
-        )
+        common = list(left_vars.intersection(right_vars))
 
         variables = list(left_vars.union(right_vars.union({'value'})))
 
-        df = self.data.read()
+        left_df = self.data.read()
+        right_df = other.data.read()
 
         if common:
-            merged = df.merge(other.data.read(), on=common)
+            merged = left_df.merge(right_df, on=common)
         else:
-            left_df = df
-            right_df = other.data.read()
             left_df['cross-join'] = 1
             right_df['cross-join'] = 1
             merged = left_df.merge(right_df, on='cross-join')
+
+        if merged.shape[0] == 0:
+            raise ArgumentError(
+                "Tables being merged have nothing in common:"
+                + "\ncommon: {common}"
+                + "\nLeft:\n{left_df[common]},"
+                + "\nRight:\n{right_df[common]}"
+            )
         return merged, variables
 
     def sum(self, variables):
