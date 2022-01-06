@@ -74,7 +74,7 @@ class LogFactor:
 
         if df.shape[0] == 0:
             raise ArgumentError(
-                "Dataframe is empty."
+                f"Dataframe is empty. Columns: {df.columns}"
             )
 
     def __repr__(self):
