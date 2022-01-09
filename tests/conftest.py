@@ -1,12 +1,10 @@
-from pathlib import Path
-import os
-
 import pandas as pd
 import pytest
 
 from ..linx.data import ParquetData
 from ..linx.ds import BayesianNetwork, Factors, Factor,\
     ConditionalProbabilityTable as CPT
+from ..linx.misc import get_tmp_path, clean_tmp
 
 
 def assert_approx_value_df(
@@ -186,44 +184,6 @@ def create_df_hard(given, outcome):
         {given: 0, outcome: 1, 'value': 0.01},
         {given: 0, outcome: 0, 'value': 0.99},
     ])
-
-
-def get_tmp_path():
-    """
-    Get the tmp path where temporary data for tests get stored.
-    """
-    path = Path(f"{os.getenv('HOME')}/tmp_linx_dev")
-    path.mkdir(exist_ok=True)
-
-    return path
-
-
-def clean_tmp(
-    path=get_tmp_path(),
-):
-    """
-    Clean the tmp folder.
-
-    Parameters:
-        path: Path-like object
-    """
-    path.mkdir(exist_ok=True)
-
-    matches = list(path.rglob("*"))
-    for match in matches:
-        if not match.is_dir():
-            match.unlink()
-
-    descending_matches = sorted(
-        matches,
-        key=lambda path: len(path.parents),
-        reverse=True
-    )
-
-    # Delete more nested folders first.
-    for match in descending_matches:
-        if match.is_dir():
-            match.rmdir()
 
 
 @pytest.fixture
