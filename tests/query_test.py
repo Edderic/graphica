@@ -33,3 +33,17 @@ def test_query_get_filters():
     assert 'A' in keys
     assert 'X' not in keys
     assert 'Z' not in keys
+
+
+def test_query_get_filters_without_givens():
+    query = Query(
+        outcomes=['X', {'Y': lambda df: df['Y'] > 5}],
+    )
+
+    filters = query.get_filters()
+
+    keys = [list(f.keys())[0] for f in filters]
+    assert 'Y' in keys
+    assert 'A' not in keys
+    assert 'X' not in keys
+    assert 'Z' not in keys
