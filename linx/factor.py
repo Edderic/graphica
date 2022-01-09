@@ -106,7 +106,7 @@ class Factor:
 
         return Factor(log_factor=self.log_factor.sum(var))
 
-    def normalize(self, variables):
+    def normalize(self, variables=None):
         """
         Make sure the values represent probabilities.
 
@@ -118,6 +118,18 @@ class Factor:
         """
 
         df = self.get_df()
+
+        if variables is None:
+            df['value'] = df['value'] / df['value'].sum()
+
+            return Factor(
+                data=ParquetData(
+                    df,
+                    storage_folder=self
+                    .log_factor.get_data().get_storage_folder()
+                )
+            )
+
         sum_df = df.groupby(variables)[['value']].sum()
         merged = df.merge(sum_df, on=variables)
         merged['value'] = merged['value_x'] / merged['value_y']
