@@ -116,6 +116,9 @@ class VariableElimination:
 
         denom_prod = self.network.get_factors().prod()
 
+        if denom_prod is None:
+            return numerator_prod.normalize()
+
         div = numerator_prod\
             .div(denom_prod)
 
@@ -149,7 +152,8 @@ class VariableElimination:
                 factors = self.network.get_factors(best_eliminateable)
 
                 logging.debug(
-                    "\nbest_eliminateable: \n\t: %s, \n\tmin: %s, \n\tfactors: %s",
+                    "\nbest_eliminateable: \n\t: %s, \n\tmin: %s, "
+                    "\n\tfactors: %s",
                     best_eliminateable,
                     _,
                     factors
