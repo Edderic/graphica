@@ -3,7 +3,6 @@ Factor class
 """
 import numpy as np
 
-from .data import ParquetData
 from .errors import ArgumentError
 from .log_factor import LogFactor
 from .factor_one import FactorOne
@@ -30,8 +29,9 @@ class Factor:
             df['value'] = np.log(df['value'])
 
             self.log_factor = LogFactor(
-                data=ParquetData(df, data.storage_folder)
+                data=data.__class__(df, data.get_storage_folder())
             )
+            self.data_class = data.__class__
 
         elif cpt is not None:
             data = cpt.data
@@ -40,11 +40,13 @@ class Factor:
             df['value'] = np.log(df['value'])
 
             self.log_factor = LogFactor(
-                data=ParquetData(df, data.storage_folder)
+                data=data.__class__(df, data.get_storage_folder())
             )
+            self.data_class = data.__class__
 
         else:
             self.log_factor = log_factor
+            self.data_class = self.log_factor.get_data().__class__
 
     def __repr__(self):
         return f"\nFactor(\nvariables: {self.get_variables()}" \
@@ -121,10 +123,11 @@ class Factor:
 
         if not other_vars:
             return FactorOne()
+
         return_df = df.groupby(other_vars).sum()[['value']].reset_index()
 
         return Factor(
-            data=ParquetData(
+            data=self.data_class(
                 return_df,
                 storage_folder=self.log_factor.get_data().get_storage_folder()
             )
@@ -147,7 +150,7 @@ class Factor:
             df['value'] = df['value'] / df['value'].sum()
 
             return Factor(
-                data=ParquetData(
+                data=self.data_class(
                     df,
                     storage_folder=self
                     .log_factor.get_data().get_storage_folder()
@@ -159,7 +162,7 @@ class Factor:
         merged['value'] = merged['value_x'] / merged['value_y']
 
         return Factor(
-            data=ParquetData(
+            data=self.data_class(
                 merged.drop(columns=['value_x', 'value_y']),
                 storage_folder=self.log_factor.get_data().get_storage_folder()
             )

@@ -4,7 +4,6 @@ Log Factor module
 import numpy as np
 import pandas as pd
 
-from .data import ParquetData
 from .errors import ArgumentError
 from .factor_one import FactorOne
 
@@ -46,6 +45,7 @@ class LogFactor:
     Working in the log space helps us prevent underflow error while still
     letting us represent really tiny probabilities.
     """
+
     def __init__(self, data=None, cpt=None):
         if data is not None:
             self.data = data
@@ -53,6 +53,7 @@ class LogFactor:
             self.data = cpt.get_data()
 
         self.__validate__()
+        self.data_class = self.data.__class__
 
     def __validate__(self):
         variables = self.get_variables()
@@ -110,7 +111,7 @@ class LogFactor:
                     df = df[df[key] == value]
 
         return LogFactor(
-            ParquetData(
+            self.data.__class__(
                 df, storage_folder=self.data.get_storage_folder()
             )
         )
@@ -143,11 +144,13 @@ class LogFactor:
         merged, variables = self.__merged__(other)
         merged['value'] = merged.value_x + merged.value_y
 
+        data = self.data.__class__(
+            merged[variables],
+            storage_folder=self.data.get_storage_folder()
+        )
+
         return LogFactor(
-            ParquetData(
-                merged[variables],
-                storage_folder=self.data.get_storage_folder()
-            )
+            data
         )
 
     def subtract(self, other):
@@ -168,7 +171,7 @@ class LogFactor:
         merged['value'] = merged.value_x - merged.value_y
 
         return LogFactor(
-            ParquetData(
+            self.data.__class__(
                 merged[variables],
                 storage_folder=self.data.get_storage_folder()
             )
@@ -305,9 +308,11 @@ class LogFactor:
             tmp_df[vars_to_include],
         ])
 
+        data = self.data.__class__(
+            data=returnables.reset_index()[other_vars + ['value']],
+            storage_folder=self.data.get_storage_folder()
+        )
+
         return LogFactor(
-            ParquetData(
-                data=returnables.reset_index()[other_vars + ['value']],
-                storage_folder=self.data.get_storage_folder()
-            )
+           data
         )
