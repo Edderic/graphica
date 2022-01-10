@@ -6,6 +6,7 @@ import numpy as np
 from .data import ParquetData
 from .errors import ArgumentError
 from .log_factor import LogFactor
+from .factor_one import FactorOne
 
 
 class Factor:
@@ -91,12 +92,17 @@ class Factor:
         Returns: Factor
         """
 
-        return Factor(
-            log_factor=self.log_factor.add(other.log_factor)
+        summation = self.log_factor.add(other.log_factor)
+        factor = Factor(
+            log_factor=summation
         )
+        return factor
 
     def sum(self, var):
         """
+        Get the other variables besides the one being passed in. Group by those
+        variables. Take the sum.
+
         Parameters:
             var: string
                 The variable to be summed out.
@@ -104,7 +110,25 @@ class Factor:
         Returns: Factor
         """
 
-        return Factor(log_factor=self.log_factor.sum(var))
+        if isinstance(var, str):
+            variables = [var]
+
+        df = self.get_df()
+
+        other_vars = list(
+            set(self.get_variables()) - set(variables)
+        )
+
+        if not other_vars:
+            return FactorOne()
+        return_df = df.groupby(other_vars).sum()[['value']].reset_index()
+
+        return Factor(
+            data=ParquetData(
+                return_df,
+                storage_folder=self.log_factor.get_data().get_storage_folder()
+            )
+        )
 
     def normalize(self, variables=None):
         """
@@ -119,7 +143,7 @@ class Factor:
 
         df = self.get_df()
 
-        if variables is None:
+        if not variables:
             df['value'] = df['value'] / df['value'].sum()
 
             return Factor(
