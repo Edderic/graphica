@@ -36,20 +36,27 @@ class ConditionalProbabilityTable:
             + f"\n\toutcomes: {self.outcomes}\n\tdf:\n\t\n{self.data.read()})"
 
     def __validate__(self):
-        existing_cols = self.data.read().reset_index().columns
+        existing_cols = list(
+            set(self.data.read().reset_index().columns)
+            - {'index'}
+        )
 
         if 'value' not in existing_cols:
             raise ValueError("The column 'value' must exist.")
 
         given_plus_outcomes_cols = set(self.givens + self.outcomes)
 
-        if given_plus_outcomes_cols.intersection(
-            set(existing_cols) - {'value'}
-        ) != given_plus_outcomes_cols:
+        intersection = given_plus_outcomes_cols.intersection(
+            set(existing_cols) - {'value', 'index'}
+        )
 
+        if intersection != given_plus_outcomes_cols:
             raise ArgumentError(
-                f"Mismatch between dataframe columns {existing_cols} and"
-                + f" given and outcomes {given_plus_outcomes_cols}"
+                "Mismatch between dataframe columns: "
+                + f"\n\n\t{existing_cols}\n\n and"
+                + f" given and outcomes \n\n\t{given_plus_outcomes_cols}\n\n"
+                + "given_plus_outcomes_cols - intersection: \n\n"
+                + f"\t{set(given_plus_outcomes_cols) - set(intersection)}"
             )
 
     def get_data(self):
