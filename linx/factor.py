@@ -1,16 +1,17 @@
 """
-Factor class
+Factor module
 """
 import numpy as np
 
 from .errors import ArgumentError
-from .log_factor import LogFactor
 from .factor_one import FactorOne
 
 
 class Factor:
     """
-    Class for representing factors.
+    Factor class.
+
+    A factor is something that can be multiplied with another factor.
     """
     def __init__(self, data=None, cpt=None, log_factor=None):
         if log_factor is not None and data is not None:
@@ -25,38 +26,94 @@ class Factor:
             )
 
         if data is not None:
-            df = data.read()
-            df['value'] = np.log(df['value'])
-
-            self.log_factor = LogFactor(
-                data=data.__class__(df, data.get_storage_folder())
-            )
-            self.data_class = data.__class__
-
+            self.data = data
         elif cpt is not None:
-            data = cpt.data
-
-            df = data.read()
-            df['value'] = np.log(df['value'])
-
-            self.log_factor = LogFactor(
-                data=data.__class__(df, data.get_storage_folder())
-            )
-            self.data_class = data.__class__
-
+            self.data = cpt.get_data()
         else:
-            self.log_factor = log_factor
-            self.data_class = self.log_factor.get_data().__class__
+            log_data = log_factor.get_data()
+            df = log_data.read()
+            df.loc[:, 'value'] = np.exp(df['value'])
+            self.data = log_data.__class__(df, log_data.get_storage_folder())
+
+        self.data_class = self.data.__class__
+
+        self.__validate__()
+
+    def __validate__(self):
+        variables = self.get_variables()
+
+        df = self.data.read()
+        counts = df.groupby(variables).count()['value']
+
+        if (counts > 1).sum(axis=0) > 0:
+            raise ArgumentError(
+                f"Dataframe {df} must not have duplicate "
+                + "entries with variables."
+            )
+
+        if df.shape[0] == 0:
+            raise ArgumentError(
+                f"Dataframe is empty. Columns: {df.columns}"
+            )
+
+    def __merged__(self, other):
+        left_vars = set(list(self.get_variables()))
+        right_vars = set(list(other.get_variables()))
+        common = list(left_vars.intersection(right_vars))
+
+        variables = list(left_vars.union(right_vars.union({'value'})))
+
+        left_df = self.data.read()
+        right_df = other.data.read()
+
+        if common:
+            merged = left_df.merge(right_df, on=common)
+        else:
+            left_df['cross-join'] = 1
+            right_df['cross-join'] = 1
+            merged = left_df.merge(right_df, on='cross-join')
+
+        if merged.shape[0] == 0:
+            raise ArgumentError(
+                "Tables being merged have nothing in common:"
+                + "\ncommon: {common}"
+                + "\nLeft:\n{left_df[common]},"
+                + "\nRight:\n{right_df[common]}"
+            )
+        return merged, variables
 
     def __repr__(self):
         return f"\nFactor(\nvariables: {self.get_variables()}" \
-            + f", \nlog_factor: \n{self.log_factor}\n)"
+            + f", \ndf: \n{self.get_df()}\n)"
 
     def get_variables(self):
         """
         Return variables
         """
-        return self.log_factor.get_variables()
+        return list(set(self.data.get_columns()) - {'value'})
+
+    def prod(self, other):
+        """
+        Multiplication of one factor with "other" factor.
+
+        Parameters:
+            other: Factor
+
+        Returns:
+            Factor
+        """
+
+        merged, variables = self.__merged__(other)
+        merged['value'] = merged.value_x * merged.value_y
+
+        data = self.data.__class__(
+            merged[variables],
+            storage_folder=self.data.get_storage_folder()
+        )
+
+        return Factor(
+            data
+        )
 
     def div(self, other):
         """
@@ -66,8 +123,14 @@ class Factor:
         Returns: Factor
         """
 
+        merged, variables = self.__merged__(other)
+        merged['value'] = merged.value_x / merged.value_y
+
         return Factor(
-            log_factor=self.log_factor.subtract(other.log_factor),
+            self.data.__class__(
+                merged[variables],
+                storage_folder=self.data.get_storage_folder()
+            )
         )
 
     def filter(self, query):
@@ -84,21 +147,30 @@ class Factor:
 
         Returns: Factor
         """
-        return Factor(log_factor=self.log_factor.filter(query))
+        df = self.data.read()
+        filters = query.get_filters()
 
-    def prod(self, other):
-        """
-        Parameters:
-            other: Factor
+        for f in filters:
+            key = list(f.keys())[0]
+            value = list(f.values())[0]
 
-        Returns: Factor
-        """
+            if key in self.get_variables():
+                if callable(value):
+                    df = df[value(df)]
+                else:
+                    # We assume we're doing an equality
+                    df = df[df[key] == value]
 
-        summation = self.log_factor.add(other.log_factor)
-        factor = Factor(
-            log_factor=summation
+                if df.shape[0] == 0:
+                    raise ArgumentError(
+                        f"Dataframe is empty after filtering using filter {f}.\n\tColumns: {df.columns}"
+                    )
+
+        return Factor(
+            self.data.__class__(
+                df, storage_folder=self.data.get_storage_folder()
+            )
         )
-        return factor
 
     def sum(self, var):
         """
@@ -129,7 +201,7 @@ class Factor:
         return Factor(
             data=self.data_class(
                 return_df,
-                storage_folder=self.log_factor.get_data().get_storage_folder()
+                storage_folder=self.get_data().get_storage_folder()
             )
         )
 
@@ -153,7 +225,7 @@ class Factor:
                 data=self.data_class(
                     df,
                     storage_folder=self
-                    .log_factor.get_data().get_storage_folder()
+                    .get_data().get_storage_folder()
                 )
             )
 
@@ -164,17 +236,23 @@ class Factor:
         return Factor(
             data=self.data_class(
                 merged.drop(columns=['value_x', 'value_y']),
-                storage_folder=self.log_factor.get_data().get_storage_folder()
+                storage_folder=self.get_data().get_storage_folder()
             )
         )
 
     def get_df(self):
         """
-        Exponentiates the LogFactor values.
+        Returns the dataframe.
 
         Returns: pd.DataFrame
         """
 
-        df = self.log_factor.data.read()
-        df['value'] = np.exp(df['value'])
-        return df
+        return self.get_data().read()
+
+    def get_data(self):
+        """
+        Return the data object.
+
+        Returns: Data
+        """
+        return self.data
