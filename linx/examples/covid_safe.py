@@ -7,13 +7,13 @@ import pandas as pd
 from scipy.stats import binom
 
 
-from linx.misc import get_tmp_path, clean_tmp
+from ..misc import get_tmp_path, clean_tmp
 
-from linx.ds import BayesianNetwork as BN, \
+from ..ds import BayesianNetwork as BN, \
     ConditionalProbabilityTable as CPT
-from linx.query import Query
-from linx.data import InMemoryData, ParquetData
-from linx.infer import VariableElimination as VE
+from ..query import Query
+from ..data import InMemoryData, ParquetData
+from ..infer import VariableElimination as VE
 
 
 def name(title, i, j=None, k=None):
@@ -279,7 +279,7 @@ def create_dose_tmp_3_df(suffix, unique):
     # the infection rate
     parameters = {
         f'dose_tmp_2_{suffix}': unique,
-        f'num_infected_{suffix}': range(10),
+        f'num_infected_{suffix}': range(100),
     }
 
     dtypes = {
@@ -414,14 +414,14 @@ def create_tmp_df(suffix, parameters, dtypes, new_key, func):
 
 def create_infectious_proba_tmp_1_df(suffix):
     parameters = {
-        f'reported_positivity_rate_{suffix}':
-            np.arange(0.0, 0.0001, 0.00001).round(5),
+        f'ratio_reported_cases_per_pop_{suffix}':
+            np.arange(0.0, 0.0005, 0.00001).round(5),
         f'reported_frac_given_infectious_{suffix}':
             np.arange(0.1, 0.9, 0.1).round(2)
     }
 
     dtypes = {
-        f'reported_positivity_rate_{suffix}':
+        f'ratio_reported_cases_per_pop_{suffix}':
             'float64',
         f'reported_frac_given_infectious_{suffix}': 'float64'
     }
@@ -542,7 +542,6 @@ def create_num_infected(suffix, bayesian_network):
         )
 
 
-@profile
 def create_dose(suffix, bayesian_network):
     """
     Create
@@ -619,12 +618,12 @@ def generate_household(self):
 if __name__ == '__main__':
     bayesian_network = BN(graphviz_dag=graphviz.Digraph())
 
-create_dose(
-    suffix=index_name('edderic', '1', 'work'),
-    bayesian_network=bayesian_network
-)
+    create_dose(
+        suffix=index_name('edderic', '1', 'work'),
+        bayesian_network=bayesian_network
+    )
 
-create_num_infected(
-    suffix=index_name('edderic', '1', 'work'),
-    bayesian_network=bayesian_network
-)
+    create_num_infected(
+        suffix=index_name('edderic', '1', 'work'),
+        bayesian_network=bayesian_network
+    )
