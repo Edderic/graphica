@@ -81,6 +81,44 @@ def test_infectious_proba():
     assert result_df.shape[0] == 1
     assert result_df.loc[0, 'value'] == 1
     assert result_df.loc[0, f'infectious_proba_{suffix}'] == 0.0266
+
+
+@pytest.mark.f
+def test_num_infected():
+    bayesian_network = BN(graphviz_dag=graphviz.Digraph())
+    create_num_infected(
+        suffix=index_name('edderic', '1', 'work'),
+        bayesian_network=bayesian_network
+    )
+    suffix = index_name('edderic', '1', 'work')
+    result = VE(
+        network=bayesian_network,
+        query=Query(
+            outcomes=[f"num_infected_{suffix}"],
+            givens=[
+                {
+                    f"reported_frac_given_infectious_{suffix}": 0.1
+                },
+                {
+                    f"ratio_reported_cases_per_pop_{suffix}": 0.00038
+                },
+                {
+                    "infectivity_period_length": 7
+                },
+                {
+                    f"num_people_seen_{suffix}": 2
+                },
+            ],
+        )
+    ).compute()
+
+
+    result_df = result.get_df()
+    sort = result_df.sort_values(by=f'num_infected_{suffix}')
+
+    assert sort.loc[0, 'value'] == pytest.approx(0.947508, abs=0.0001)
+    assert sort.loc[1, 'value'] == pytest.approx(0.051785, abs=0.0001)
+    assert sort.loc[2, 'value'] == pytest.approx(0.000708, abs=0.0001)
 #
 #
 # def test_create_dose_covid():
