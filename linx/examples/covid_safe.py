@@ -118,7 +118,7 @@ def create_vaccination_prior(
 def create_days_since_infection_covid(
     bayesian_network,
     suffix,
-    dose_probas,
+    dose_df,
     person,
     day,
 ):
@@ -163,23 +163,23 @@ def create_days_since_infection_covid(
                 }
             )
 
-        else:
-            # p must be "Susceptible"
-            for dose_proba in dose_probas:
-                collection.append(
-                    {
-                        prev_outcome_name: "Susceptible",
-                        outcome_name: '0',
-                        'dose_proba': dose_proba,
-                        'value': dose_proba
-                    }
-                )
-
     df = pd.DataFrame(collection)
+
+    copy = dose_proba.copy()
+    copy.loc[:, 'value'] = (1 - np.exp(-dose_df[f'dose_{suffix}'] * dose_df['value']))
+    copy[prev_outcome_name] = "Susceptible"
+    copy[outcome_name] = 0
+
+    concat_df = pd.concat(
+        [
+            df,
+            copy
+        ]
+    )
 
     add_edge_to_bn(
         bayesian_network,
-        df=df,
+        df=concat_df,
         outcome_var=outcome_name,
         storage_folder=None
     )
