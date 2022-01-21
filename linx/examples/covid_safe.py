@@ -36,7 +36,7 @@ def name(title, i, j=None, k=None):
         return f"{title}_({i}, {j}, {k})"
 
 
-def index_name(i, j=None, k=None):
+def index_name(i, j=None, k=None, l=None):
     """
     Provides formatting for a name, given title and up to 3 indices.
 
@@ -45,6 +45,7 @@ def index_name(i, j=None, k=None):
         i: string
         j: string
         k: string
+        l: string
 
     Returns: string
     """
@@ -54,6 +55,9 @@ def index_name(i, j=None, k=None):
         return f"({i}, {j})"
     if i is not None and j is not None and k is not None:
         return f"({i}, {j}, {k})"
+
+    if i is not None and j is not None and k is not None and l is not None:
+        return f"({i}, {j}, {k}, {l})"
 
 
 def add_edge_to_bn(bn, df, outcome_var, storage_folder):
