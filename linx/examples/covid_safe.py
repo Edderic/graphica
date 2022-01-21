@@ -271,8 +271,8 @@ def create_dose_tmp_2_df(suffix, unique):
 
     collection[f'dose_tmp_2_{suffix}'] = \
         collection[f'dose_tmp_2_{suffix}'].mask(
-        collection[f'dose_tmp_2_{suffix}'] > 5,
-        5
+        collection[f'dose_tmp_2_{suffix}'] > 1,
+        1
     )
 
     return collection
@@ -299,8 +299,8 @@ def create_dose_tmp_3_df(suffix, unique):
 
     collection[f'dose_tmp_3_{suffix}'] = \
         collection[f'dose_tmp_3_{suffix}'].mask(
-        collection[f'dose_tmp_3_{suffix}'] > 5,
-        5
+        collection[f'dose_tmp_3_{suffix}'] > 1,
+        1
     )
 
     return collection
@@ -328,8 +328,8 @@ def create_dose_tmp_4_df(suffix, unique):
 
     collection[f'dose_tmp_4_{suffix}'] = \
         collection[f'dose_tmp_4_{suffix}'].mask(
-        collection[f'dose_tmp_4_{suffix}'] > 5,
-        5
+        collection[f'dose_tmp_4_{suffix}'] > 1,
+        1
     )
 
     return collection
@@ -360,8 +360,8 @@ def create_dose_tmp_5_df(suffix, unique):
     # probability of infection is quick
     collection[f'dose_tmp_5_{suffix}'] = \
         collection[f'dose_tmp_5_{suffix}'].mask(
-        collection[f'dose_tmp_5_{suffix}'] > 5,
-        5
+        collection[f'dose_tmp_5_{suffix}'] > 1,
+        1
     ).round(4)
 
     return collection
@@ -390,8 +390,8 @@ def create_dose_df(suffix, unique):
 
     collection[f'dose_{suffix}'] = \
         collection[f'dose_{suffix}'].mask(
-        collection[f'dose_{suffix}'] > 5,
-        5
+        collection[f'dose_{suffix}'] > 1,
+        1
     )
 
     return collection
@@ -405,7 +405,7 @@ def div(df, key_1, key_2):
     return df[key_1] / df[key_2]
 
 
-def create_tmp_df(suffix, parameters, dtypes, new_key, func):
+def create_tmp_df(parameters, dtypes, new_key, func):
     collection = mega_join_cross_product(parameters, dtypes)
     keys = list(parameters.keys())
     key_1 = keys[0]
@@ -431,7 +431,6 @@ def create_infectious_proba_tmp_1_df(suffix):
     }
 
     df = create_tmp_df(
-        suffix,
         parameters,
         dtypes,
         new_key=f'infectious_proba_tmp_1_{suffix}',
@@ -456,7 +455,6 @@ def create_infectious_proba_df(suffix, unique):
     }
 
     df = create_tmp_df(
-        suffix,
         parameters,
         dtypes,
         new_key=f'infectious_proba_{suffix}',
