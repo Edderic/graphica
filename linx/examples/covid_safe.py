@@ -49,11 +49,11 @@ def index_name(i, j=None, k=None, l=None):
 
     Returns: string
     """
-    if i is not None and j is None and k is None:
+    if i is not None and j is None and k is None and l is None:
         return f"({i})"
-    if i is not None and j is not None and k is None:
+    if i is not None and j is not None and k is None and l is None:
         return f"({i}, {j})"
-    if i is not None and j is not None and k is not None:
+    if i is not None and j is not None and k is not None and l is None:
         return f"({i}, {j}, {k})"
 
     if i is not None and j is not None and k is not None and l is not None:
