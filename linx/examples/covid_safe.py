@@ -568,7 +568,7 @@ def create_dose(suffix, bayesian_network):
     # volume (m^3)
     #     v: 20, 40, 80, 160, 320, 640, 1280, 2560, 5120
     #
-    # lambda parameter for ventilation / air cleaning: 0.1 to 30
+    # ventilation parameter for ventilation / air cleaning: 0.1 to 30
     #     l: 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 2, 4, 8, 16, 20,
     #     30
 
