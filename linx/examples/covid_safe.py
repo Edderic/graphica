@@ -1064,13 +1064,6 @@ def create_dose_pair_between(
         potential_infectee
     )
 
-    pair_suffix_reversed = index_name(
-        time,
-        event,
-        potential_infectee,
-        potential_infector
-    )
-
     new_key_3 = f'{prefix}_3_{pair_suffix}'
     tmp_3_df = multiply_by(
         factor_1_unique=volume_vent_df[volume_vent_key].unique(),
@@ -1092,7 +1085,7 @@ def create_dose_pair_between(
     )
     cap(df=tmp_4_df, key=new_key_4, maximum=cap_at)
     tmp_4_df[new_key_4] = tmp_4_df[new_key_4].round(rounding)
-    new_key_5 = f'{prefix}_5_{pair_suffix_reversed}'
+    new_key_5 = f'{prefix}_5_{pair_suffix}'
 
     tmp_5_df = multiply_by(
         factor_1_unique=inhalation_factor_for_event_person_unique,
@@ -1255,21 +1248,21 @@ def create_doses(
             storage_folder=storage_folder
         )
 
-        inhalation_rate_key = \
-            f'inhalation_rate_{index_name(time, event, p1)}'
-
-        tmp_5a_df = create_activity_specific_breathing_rate_df(
-            p1,
-            time,
-            event,
-            inhalation_rate_key
-        )
-
         exhalation_factor_key = activity_exh_dict['exhalation_factor_key']
 
         for p2 in people:
             if p1 == p2:
                 continue
+
+            inhalation_rate_key = \
+                f'inhalation_rate_{index_name(time, event, p2)}'
+
+            tmp_5a_df = create_activity_specific_breathing_rate_df(
+                p2,
+                time,
+                event,
+                inhalation_rate_key
+            )
 
             unique_values = tmp_5a_df[inhalation_rate_key].unique()
             create_dose_pair_between(
