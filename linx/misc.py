@@ -10,7 +10,7 @@ def get_version():
     Get the current installed version of Linx.
     """
 
-    return "0.0.8"
+    return "0.0.10"
 
 
 def get_tmp_path():
