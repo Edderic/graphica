@@ -726,6 +726,50 @@ def multiply_by(
     return df
 
 
+def divide_by(
+    factor_1_unique,
+    factor_1_name,
+    factor_2_unique,
+    factor_2_name,
+    new_key,
+    factor_1_dtype='float64',
+    factor_2_dtype='float64',
+):
+    """
+    Divide 1 by some values.
+
+    Parameters:
+        divisor_unique: list
+            List of unique values that we'll divide by.
+
+        divisor_name: string
+            The current name of the divisor.
+
+        new_key: string
+            The name that we'll assign to the new column.
+
+    Returns: pd.DataFrame
+    """
+    parameters = {
+        factor_1_name: factor_1_unique,
+        factor_2_name: factor_2_unique
+    }
+
+    dtypes = {
+        factor_1_name: factor_1_dtype,
+        factor_2_name: factor_2_dtype,
+    }
+
+    df = create_tmp_df(
+        parameters,
+        dtypes,
+        new_key=new_key,
+        func=div
+    )
+
+    return df
+
+
 def multiply_mask_inhalation(unique):
     """
     Multiply the volume (m^3) and the ventilation (h^-1).
