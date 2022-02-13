@@ -879,7 +879,7 @@ def create_activity_specific_breathing_rate_df(
 
     Returns: tuple(pd.DataFrame)
     """
-    age_key = f'age_{person_breathing_in}'
+    age_key = f'age_({person_breathing_in})'
 
     person_time_event_index = index_name(
         time,
