@@ -1,6 +1,9 @@
 """
 Bayesian Network class
 """
+import pandas as pd
+
+from .conditional_probability_table import ConditionalProbabilityTable as CPT
 from .directed_acyclic_graph import DirectedAcyclicGraph
 from .markov_network import MarkovNetwork
 from .factor import Factor
@@ -43,6 +46,67 @@ class BayesianNetwork(DirectedAcyclicGraph):
 
     def __repr__(self):
         return f"BayesianNetwork(\n\t{self.cpts})"
+
+    def add_prior(self, cpt):
+        """
+        Add a conditional probability table. This adds a node.
+
+        Parameters
+            cpt: ConditionalProbabilityTable
+        """
+        self.add_node(cpt)
+
+    def set_priors(self, dictionary, data_class, data_storage_folder=None):
+        """
+        Parameters:
+            dictionary: dict
+                Ex: {
+                    'prior_var_a': {
+                        'value_it_can_take_1': 0.2,
+                        'value_it_can_take_2': 0.3,
+                        ...
+                    }
+                    'prior_var_b': {
+                        'value_it_can_take_1': 0.4,
+                        'value_it_can_take_2': 0.2,
+                        ...
+                    }
+                }
+        """
+        for prior_var, mapping in dictionary.items():
+            collection = []
+
+            for value_prior_var_can_take, proba in mapping.items():
+                collection.append(
+                    {
+                        prior_var: value_prior_var_can_take,
+                        'value': proba
+                    }
+                )
+
+            df = pd.DataFrame(collection)
+
+            givens = list(set(df.columns) - {'value', prior_var})
+
+            cpt = CPT(
+                data_class(
+                    df,
+                    data_storage_folder
+                ),
+                givens=givens,
+                outcomes=[prior_var]
+            )
+
+            self.add_prior(cpt)
+
+    def add_cpt(self, cpt):
+        """
+        Add a conditional probability table. This in turn adds an edge.
+
+        Parameters
+            cpt: ConditionalProbabilityTable
+        """
+        self.add_edge(cpt)
 
     def add_node(self, cpt):
         """
