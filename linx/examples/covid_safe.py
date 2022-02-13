@@ -625,7 +625,7 @@ def create_volume_ventilation_df(suffix, new_key):
             The name that we'll assign to the new column.
     """
     parameters = {
-        f'ventilation_{suffix}': [0.1, 1, 2, 4, 8, 16, 20, 40, 80, 160, 240, 480],
+        f'ventilation_{suffix}': [0.1, 1, 2, 4, 8, 16, 20, 500],
         f'volume_{suffix}':
             [10, 20, 40, 60, 100, 160, 260, 420, 680, 1100, 1780, 2880],
     }
