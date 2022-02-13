@@ -40,16 +40,7 @@ class Factor:
         self.__validate__()
 
     def __validate__(self):
-        variables = self.get_variables()
-
         df = self.data.read()
-        counts = df.groupby(variables).count()['value']
-
-        if (counts > 1).sum(axis=0) > 0:
-            raise ArgumentError(
-                f"Dataframe {df} must not have duplicate "
-                + "entries with variables."
-            )
 
         if df.shape[0] == 0:
             raise ArgumentError(
