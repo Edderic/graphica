@@ -4,7 +4,7 @@ CovidSafe: A Risk Estimation to make social gatherings safer.
 import graphviz
 import numpy as np
 import pandas as pd
-from scipy.stats import binom
+from scipy.stats import nbinom
 
 
 from ..ds import BayesianNetwork as BN, \
