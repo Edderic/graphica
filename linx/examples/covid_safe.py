@@ -567,76 +567,6 @@ def create_num_infected(suffix, bayesian_network):
             storage_folder=None
         )
 
-
-def create_dose(suffix, bayesian_network):
-    """
-    Create
-    """
-    # Emission at resting
-    #     ep0: 1 to 50 (1,2,4,8,16,32,64)
-    # Emission factor enhancement
-    #     r_e: 1-100ish (1,2,4,8,16,32,64,128)
-    #
-    # Inhalation factor enhancement
-    #     r_b: (1,2,5,10)
-    #
-    # Basic breathing rates of susceptible b_i
-    #     b_0i: 0.288 m^3 / h
-    #
-    # Infected exhalation Filtration eff factor:
-    #     f_e: 0.3, 0.5, 0.9, 0.99
-    #
-    # Susceptible inhalation Filtration eff factor:
-    #     f_i: 0.3, 0.5, 0.9, 0.99
-    #
-    # volume (m^3)
-    #     v: 20, 40, 80, 160, 320, 640, 1280, 2560, 5120
-    #
-    # ventilation parameter for ventilation / air cleaning: 0.1 to 30
-    #     l: 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 2, 4, 8, 16, 20,
-    #     30
-
-    dose_small_tmp_df = create_dose_small_tmp_df(suffix)
-    dose_tmp_2_df = create_dose_tmp_2_df(
-        suffix,
-        dose_small_tmp_df[f'dose_small_tmp_{suffix}'].unique()
-    )
-    dose_tmp_3_df = create_dose_tmp_3_df(
-        suffix,
-        dose_tmp_2_df[f'dose_tmp_2_{suffix}'].unique()
-    )
-    dose_tmp_4_df = create_dose_tmp_4_df(
-        suffix,
-        dose_tmp_3_df[f'dose_tmp_3_{suffix}'].unique()
-    )
-    dose_tmp_5_df = create_dose_tmp_5_df(
-        suffix,
-        dose_tmp_4_df[f'dose_tmp_4_{suffix}'].unique()
-    )
-
-    dose_df = create_dose_df(
-        suffix,
-        dose_tmp_5_df[f'dose_tmp_5_{suffix}'].unique()
-    )
-
-    mappings = {
-        f'dose_small_tmp_{suffix}': dose_small_tmp_df,
-        f'dose_tmp_2_{suffix}': dose_tmp_2_df,
-        f'dose_tmp_3_{suffix}': dose_tmp_3_df,
-        f'dose_tmp_4_{suffix}': dose_tmp_4_df,
-        f'dose_tmp_5_{suffix}': dose_tmp_5_df,
-        f'dose_{suffix}': dose_df
-    }
-
-    for outcome_name, df in mappings.items():
-        add_edge_to_bn(
-            bayesian_network,
-            df=df,
-            outcome_var=outcome_name,
-            storage_folder=None
-        )
-
-
 def create_volume_ventilation_df(suffix, new_key):
     """
     Multiply the volume (m^3) and the ventilation (h^-1).
@@ -1981,11 +1911,6 @@ def generate_household(self):
 
 if __name__ == '__main__':
     bayesian_network = BN(graphviz_dag=graphviz.Digraph())
-
-    create_dose(
-        suffix=index_name('edderic', '1', 'work'),
-        bayesian_network=bayesian_network
-    )
 
     create_num_infected(
         suffix=index_name('edderic', '1', 'work'),
