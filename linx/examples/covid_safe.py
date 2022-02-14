@@ -1857,18 +1857,6 @@ def create_virus_levels_tmp(suffix, bayesian_network, storage_folder=None):
     return df
 
 
-def create_pair_dose(
-    from_individual,
-    to_individual,
-    time,
-    location
-):
-    """
-    Create conditional probability tables representing dosage received by
-    "to_individual" from "from_individual".
-    """
-
-
 def generate_household(self):
     pass
 
