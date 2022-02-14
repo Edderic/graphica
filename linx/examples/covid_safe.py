@@ -184,6 +184,28 @@ def create_days_since_infection_covid(
 
 
 def mega_join_cross_product(parameters, dtypes):
+    """
+    Create cross product.
+
+    Parameters:
+        parameters: dict
+            E.g. {
+                'column_1': [1, 2, 3],
+                'column_2': [7, 8, 9],
+            }
+        dtypes: dict
+            E.g. {
+                'column_1': 'float64',
+                'column_2': 'float64',
+            }
+
+    Returns: pd.DataFrame
+        E.g.
+            pd.DataFrame({
+                'column_1': [1, 2, 3, 1, 2, 3, 1, 2, 3],
+                'column_8': [7, 8, 9, 7, 8, 9, 7, 8, 9],
+            })
+    """
     keys = list(parameters.keys())
 
     collection = pd.DataFrame([])
