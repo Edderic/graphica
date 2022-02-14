@@ -1779,36 +1779,6 @@ def create_dose_pair_tmp_df_5(suffix, unique):
     return df
 
 
-# def create_dose_pair_tmp_df_2(suffix, unique):
-    # parameters = {
-        # f'tmp_2_{suffix}': unique,
-        # f'volume_{suffix}':
-            # [10, 20, 40, 60, 100, 160, 260, 420, 680, 1100, 1780, 2880],
-        # f'ventilation_factor_{suffix}': [0.1, 0.5, 1, 2, 3, 5, 8, 13, 21, 34],
-        # f'inhalation_at_rest_{suffix}': [0.288]
-    # }
-#
-    # dtypes = {
-        # f'mask_exhalation_factor_{suffix}': 'float64',
-        # f'mask_inhalation_factor_{suffix}': 'float64',
-        # f'volume_{suffix}':
-            # 'int16',
-        # f'ventilation_factor_{suffix}': 'float64',
-        # f'inhalation_at_rest_{suffix}': 'float64'
-    # }
-#
-    # collection = mega_join_cross_product(parameters, dtypes)
-#
-    # collection[f'dose_small_tmp_{suffix}'] = \
-        # collection[f'mask_exhalation_factor_{suffix}'] * \
-        # collection[f'mask_inhalation_factor_{suffix}'] * \
-        # collection[f'inhalation_at_rest_{suffix}'] / \
-        # collection[f'volume_{suffix}'] / \
-        # collection[f'ventilation_factor_{suffix}']
-#
-    # return collection
-
-
 def create_virus_levels_tmp_df(suffix):
     """
     Create virus levels using days-since-infection, assuming that it is
