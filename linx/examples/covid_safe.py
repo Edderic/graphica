@@ -1857,9 +1857,5 @@ def create_virus_levels_tmp(suffix, bayesian_network, storage_folder=None):
     return df
 
 
-def generate_household(self):
-    pass
-
-
 if __name__ == '__main__':
     bayesian_network = BN(graphviz_dag=graphviz.Digraph())
