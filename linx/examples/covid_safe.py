@@ -531,42 +531,6 @@ def create_num_infected_df(suffix, tmp_df):
     return binomial
 
 
-def create_num_infected(suffix, bayesian_network):
-    infectious_proba_tmp_1_df = create_infectious_proba_tmp_1_df(
-        suffix
-    )
-
-    infectious_proba_df = create_infectious_proba_df(
-        suffix,
-        infectious_proba_tmp_1_df[
-            f'infectious_proba_tmp_1_{suffix}'
-        ].unique()
-    )
-
-    tmp_df = create_num_infected_tmp_df(
-        suffix,
-        infectious_proba_df[f'infectious_proba_{suffix}'].unique()
-    )
-
-    num_infected = create_num_infected_df(
-        suffix,
-        tmp_df
-    )
-
-    mappings = {
-        f'infectious_proba_tmp_1_{suffix}': infectious_proba_tmp_1_df,
-        f'infectious_proba_{suffix}': infectious_proba_df,
-        f'num_infected_{suffix}': num_infected
-    }
-
-    for outcome_name, df in mappings.items():
-        add_edge_to_bn(
-            bayesian_network,
-            df=df,
-            outcome_var=outcome_name,
-            storage_folder=None
-        )
-
 def create_volume_ventilation_df(suffix, new_key):
     """
     Multiply the volume (m^3) and the ventilation (h^-1).
@@ -1911,8 +1875,3 @@ def generate_household(self):
 
 if __name__ == '__main__':
     bayesian_network = BN(graphviz_dag=graphviz.Digraph())
-
-    create_num_infected(
-        suffix=index_name('edderic', '1', 'work'),
-        bayesian_network=bayesian_network
-    )
