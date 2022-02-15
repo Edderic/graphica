@@ -1012,6 +1012,45 @@ def create_dose_from_strangers(
     )
 
 
+def create_infection_from_dose(suffix):
+    """
+    Compute probability of infection given a dose.
+
+    Parameters:
+        suffix: string
+
+    Returns: pd.DataFrame
+    """
+    key_1 = f"dose_{suffix}"
+    key_2 = f"infected_{suffix}"
+
+    parameters = {
+        key_1: np.arange(0.0, 10.0, 0.0001).round(4),
+        key_2: [0.0, 1.0],
+    }
+
+    dtypes = {
+        key_1: 'float64',
+        key_2: 'int8',
+    }
+
+    df = mega_join_cross_product(
+        parameters,
+        dtypes
+    )
+
+    df['value'] = df['value'].mask(
+        df[key_2] == 1,
+        1 - np.exp(-df[key_1])
+    )
+    df['value'] = df['value'].mask(
+        df[key_2] == 0,
+        np.exp(-df[key_1])
+    )
+
+    return df
+
+
 def create_dose_pair_between(
     potential_infector,
     potential_infectee,
