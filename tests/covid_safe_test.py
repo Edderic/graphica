@@ -144,3 +144,31 @@ def test_create_at_least_one_inf_1():
 
     assert (results[0][outcome_col] * results[0]['value']).sum() > \
         (results[1][outcome_col] * results[1]['value']).sum()
+
+
+def test_create_infection_from_dose():
+    """
+    Test that each possible dose affects the probability of infection.
+    """
+    suffix = index_name('day_1', 'person_1')
+    df = create_infection_from_dose(suffix)
+
+    assert df[
+        (df[f'dose_{suffix}'] == 0) &
+        (df[f'infected_{suffix}'] == 0)
+    ].iloc[0]['value'] == 1
+
+    assert df[
+        (df[f'dose_{suffix}'] == 0) &
+        (df[f'infected_{suffix}'] == 1)
+    ].iloc[0]['value'] == 0
+
+    # high end
+    assert df[
+        (df[f'dose_{suffix}'] == 9.9999) &
+        (df[f'infected_{suffix}'] == 0)
+    ].iloc[0]['value'].round(6) == 0.000045
+    assert df[
+        (df[f'dose_{suffix}'] == 9.9999) &
+        (df[f'infected_{suffix}'] == 1)
+    ].iloc[0]['value'].round(6) == 0.999955
