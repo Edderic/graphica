@@ -185,6 +185,52 @@ def create_days_since_infection_covid(
     return df
 
 
+def create_viral_load_n(suffix):
+    """
+    Create parameter for the amount of virus in the system.
+
+    Parameters:
+        suffix: string
+    """
+    key_1 = f'viral_load_n_{suffix}'
+    key_2 = f'immunity_{suffix}'
+
+    parameters = {
+        key_1: [10, 11, 12, 13, 14, 15, 16],
+        key_2: [0, 1],
+    }
+
+    dtypes = {
+        key_1: 'int8',
+        key_2: 'int8',
+    }
+
+    return mega_join_cross_product(parameters, dtypes)
+
+
+def create_viral_load_p(suffix):
+    """
+    Create parameter for the amount of virus in the system.
+
+    Parameters:
+        suffix: string
+    """
+    key_1 = f'viral_load_p_{suffix}'
+    key_2 = f'immunity_{suffix}'
+
+    parameters = {
+        key_1: [0.6],
+        key_2: [0, 1],
+    }
+
+    dtypes = {
+        key_1: 'float64',
+        key_2: 'int8',
+    }
+
+    return mega_join_cross_product(parameters, dtypes)
+
+
 def mega_join_cross_product(parameters, dtypes):
     """
     Create cross product.
