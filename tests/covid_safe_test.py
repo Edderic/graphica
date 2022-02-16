@@ -9,6 +9,7 @@ from ..linx.infer import VariableElimination as VE
 from ..linx.data import InMemoryData
 
 from ..linx.examples.covid_safe import (
+    create_days_since_infection_covid,
     create_dose_from_strangers,
     create_infection_from_dose,
     create_volume_ventilation_df,
@@ -172,3 +173,37 @@ def test_create_infection_from_dose():
         (df[f'dose_{suffix}'] == 9.9999) &
         (df[f'infected_{suffix}'] == 1)
     ].iloc[0]['value'].round(6) == 0.999955
+
+
+def test_create_days_since_infection_covid():
+    pre_suffix = index_name(1, 'edderic')
+    suffix = index_name(2, 'edderic')
+
+    df = create_days_since_infection_covid(
+        suffix,
+        pre_suffix
+    )
+
+    # If person wasn't infected the day before, and the person didn't get
+    # infected for the day, then the person should have 0 for the dsi
+    assert df[
+        (df[f'dsi_{pre_suffix}'] == 0) &
+        (df[f'infected_{suffix}'] == 0)
+    ].iloc[0][f'dsi_{suffix}'] == 0
+
+    # If person wasn't infected the day before, and the person DID get
+    # infected for the day, then the person should have 1 for the dsi
+    assert df[
+        (df[f'dsi_{pre_suffix}'] == 0) &
+        (df[f'infected_{suffix}'] == 1)
+    ].iloc[0][f'dsi_{suffix}'] == 1
+
+    # If the previous day was the 27th day, then we reset back to 0
+    # (susceptible)
+    assert df[
+        (df[f'dsi_{pre_suffix}'] == 27)
+    ].iloc[0][f'dsi_{suffix}'] == 0
+
+    assert df[
+        (df[f'dsi_{pre_suffix}'] == 27)
+    ].iloc[1][f'dsi_{suffix}'] == 0

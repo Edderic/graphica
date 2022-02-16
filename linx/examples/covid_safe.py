@@ -112,73 +112,77 @@ def create_vaccination_prior(
 
 
 def create_days_since_infection_covid(
-    bayesian_network,
     suffix,
-    dose_df,
-    person,
-    day,
+    pre_suffix,
+    max_num_days_since_infection=28
 ):
     """
     Create days of infection for COVID.
 
-    If someone is susceptible and gets a strong enough dose, then the dose
-    determines their day-of-infection status.
-
-    If someone is already infected recently, then we just add 1 to it.
+    If someone is susceptible (represented as 0) and gets infected, then the
+    days-since-infection for the next day gets set to 1. Once the value for
+    days-since-infection is between 1 and 27 (inclusive), then
+    days-since-infection for the next day
+    increase by 1. When we reach day the max_num_days_since_infection,
+    we reset back to susceptible.
 
     Parameters:
-        bayesian_network: linx.bayesian_network.BayesianNetwork
-
         suffix: string
             A string for personalization.
 
+        pre_suffix: string
+            A string for personalization.
+
+        max_num_days_since_infection: string
+            The number of days to track
     """
-    collection = []
+    pre_dsi_suffix = f'dsi_{pre_suffix}'
+    dsi_suffix = f'dsi_{suffix}'
+    infected_suffix = f'infected_{suffix}'
 
-    num_days_of_infection = 30
-    days_of_infection = list(range(num_days_of_infection)) + ["Susceptible"]
-    previous_day_of_infection = list(days_of_infection)
-    # dsi: days since infection event
-    outcome_name = f'dsi_{name(person, day)}'
-    prev_outcome_name = f'dsi_{name(person, day - 1)}'
+    susceptible = 0
+    dsi = list(range(susceptible, max_num_days_since_infection))
 
-    for p in previous_day_of_infection:
-        if isinstance(p, int):
-            if p != num_days_of_infection - 1:
-                previous_day_of_infection = str(p)
-                current_day_of_infection = str(p + 1)
-            else:
-                previous_day_of_infection = str(p)
-                current_day_of_infection = "Susceptible"
+    parameters = {
+        pre_dsi_suffix: dsi,
+        infected_suffix: [0, 1],
+    }
 
-            collection.append(
-                {
-                    prev_outcome_name: previous_day_of_infection,
-                    outcome_name: current_day_of_infection,
-                    'value': 1
-                }
-            )
+    dtypes = {
+        pre_dsi_suffix: 'int8',
+        infected_suffix: 'int8',
+    }
 
-    df = pd.DataFrame(collection)
-
-    copy = dose_proba.copy()
-    copy.loc[:, 'value'] = (1 - np.exp(-dose_df[f'dose_{suffix}'] * dose_df['value']))
-    copy[prev_outcome_name] = "Susceptible"
-    copy[outcome_name] = 0
-
-    concat_df = pd.concat(
+    df = mega_join_cross_product(parameters, dtypes)
+    df[dsi_suffix] = df.groupby(
         [
-            df,
-            copy
+            infected_suffix
         ]
+    )[pre_dsi_suffix].shift(-1)
+
+    df[dsi_suffix].mask(
+        (df[pre_dsi_suffix] == susceptible) &
+        (df[infected_suffix] == 1),
+        1,
+        inplace=True
     )
 
-    add_edge_to_bn(
-        bayesian_network,
-        df=concat_df,
-        outcome_var=outcome_name,
-        storage_folder=None
+    df[dsi_suffix].mask(
+        (df[pre_dsi_suffix] == susceptible) &
+        (df[infected_suffix] == 0),
+        susceptible,
+        inplace=True
     )
+
+    df[dsi_suffix].mask(
+        (df[dsi_suffix].isna()),
+        0,
+        inplace=True
+    )
+
+    df[dsi_suffix] = df[dsi_suffix].astype('int8')
+
+    return df
 
 
 def mega_join_cross_product(parameters, dtypes):
