@@ -112,8 +112,9 @@ def create_vaccination_prior(
 
 
 def create_days_since_infection_covid(
-    suffix,
-    pre_suffix,
+    dsi_key,
+    pre_dsi_key,
+    infected_key,
     max_num_days_since_infection=28
 ):
     """
@@ -136,99 +137,666 @@ def create_days_since_infection_covid(
         max_num_days_since_infection: string
             The number of days to track
     """
-    pre_dsi_suffix = f'dsi_{pre_suffix}'
-    dsi_suffix = f'dsi_{suffix}'
-    infected_suffix = f'infected_{suffix}'
-
     susceptible = 0
     dsi = list(range(susceptible, max_num_days_since_infection))
 
     parameters = {
-        pre_dsi_suffix: dsi,
-        infected_suffix: [0, 1],
+        pre_dsi_key: dsi,
+        infected_key: [0, 1],
     }
 
     dtypes = {
-        pre_dsi_suffix: 'int8',
-        infected_suffix: 'int8',
+        pre_dsi_key: 'int8',
+        infected_key: 'int8',
     }
 
     df = mega_join_cross_product(parameters, dtypes)
-    df[dsi_suffix] = df.groupby(
+    df[dsi_key] = df.groupby(
         [
-            infected_suffix
+            infected_key
         ]
-    )[pre_dsi_suffix].shift(-1)
+    )[pre_dsi_key].shift(-1)
 
-    df[dsi_suffix].mask(
-        (df[pre_dsi_suffix] == susceptible) &
-        (df[infected_suffix] == 1),
+    df[dsi_key].mask(
+        (df[pre_dsi_key] == susceptible) &
+        (df[infected_key] == 1),
         1,
         inplace=True
     )
 
-    df[dsi_suffix].mask(
-        (df[pre_dsi_suffix] == susceptible) &
-        (df[infected_suffix] == 0),
+    df[dsi_key].mask(
+        (df[pre_dsi_key] == susceptible) &
+        (df[infected_key] == 0),
         susceptible,
         inplace=True
     )
 
-    df[dsi_suffix].mask(
-        (df[dsi_suffix].isna()),
+    df[dsi_key].mask(
+        (df[dsi_key].isna()),
         0,
         inplace=True
     )
 
-    df[dsi_suffix] = df[dsi_suffix].astype('int8')
+    df[dsi_key] = df[dsi_key].astype('int8')
 
     return df
 
 
-def create_viral_load_n(suffix):
+def create_viral_load_n(viral_load_n_key, immunity_key):
     """
     Create parameter for the amount of virus in the system.
 
     Parameters:
-        suffix: string
+        viral_load_n_key: string
+        immunity_key: string
     """
-    key_1 = f'viral_load_n_{suffix}'
-    key_2 = f'immunity_{suffix}'
 
-    parameters = {
-        key_1: [10, 11, 12, 13, 14, 15, 16],
-        key_2: [0, 1],
-    }
+    return pd.DataFrame(
+        {
+            viral_load_n_key: pd.Series([
+                10, 11, 12, 13, 14, 15, 16,
+                10, 11, 12, 13, 14, 15, 16,
+            ], dtype='int8'),
+            immunity_key: pd.Series([
+                1, 1, 1, 1, 1, 1, 1,
+                0, 0, 0, 0, 0, 0, 0
+            ], dtype='int8'),
+            'value': pd.Series([
+                0.2, 0.2, 0.2, 0.2, 0.1, 0.05, 0.05,
+                0.05, 0.05, 0.1, 0.2, 0.2, 0.2, 0.2,
+            ], dtype='float64')
+        }
+    )
 
-    dtypes = {
-        key_1: 'int8',
-        key_2: 'int8',
-    }
 
-    return mega_join_cross_product(parameters, dtypes)
-
-
-def create_viral_load_p(suffix):
+def create_viral_load_p(viral_load_p_key, immunity_key):
     """
     Create parameter for the amount of virus in the system.
 
     Parameters:
-        suffix: string
+        viral_load_p_key: string
+        immunity_key: string
     """
-    key_1 = f'viral_load_p_{suffix}'
-    key_2 = f'immunity_{suffix}'
 
+    return pd.DataFrame(
+        {
+            viral_load_p_key: pd.Series([
+                0.6, 0.6
+            ], dtype='float64'),
+            immunity_key: pd.Series([
+                0, 1
+            ], dtype='int8'),
+            'value': pd.Series([
+                1, 1
+            ], dtype='float64')
+        }
+    )
+
+
+def create_immunity_factor(immunity_key, immunity_factor_key):
+    """
+    Create immunity factor.
+
+    Parameters:
+        immunity_key: string
+        immunity_fator_key: string
+
+    Returns: pd.DataFrame
+    """
+    return pd.DataFrame({
+        immunity_key: [
+            0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 1,
+        ],
+        immunity_factor_key: pd.Series(
+            [
+                0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
+                0.5, 0.6, 0.7, 0.8, 0.9, 1.0
+            ],
+            dtype='float64'
+        ),
+        'value': pd.Series(
+            [
+                0.1, 0.1, 0.2, 0.2, 0.2, 0.2,
+                0.25, 0.25, 0.2, 0.2, 0.05, 0.05,
+            ],
+            dtype='float64'
+        )
+    })
+
+
+def create_viral_load(
+    n_key,
+    p_key,
+    dsi_key,
+    immunity_factor_key,
+    viral_load_key,
+    unique_n,
+    unique_p,
+    unique_immunity_factor,
+    num_days_since_infection=28
+):
+    """
+    Create viral load curve.
+
+    Parameters:
+        unique_n: list[integer]
+
+        unique_p: list[float]
+
+        num_days_since_infection: integer
+            Max number of days-since-infection.
+
+    Returns: pd.DataFrame
+    """
     parameters = {
-        key_1: [0.6],
-        key_2: [0, 1],
+        n_key: unique_n,
+        p_key: unique_p,
+        dsi_key: list(range(num_days_since_infection)),
+        immunity_factor_key: unique_immunity_factor
     }
 
     dtypes = {
-        key_1: 'float64',
-        key_2: 'int8',
+        n_key: 'int8',
+        p_key: 'float64',
+        dsi_key: 'int8',
+        immunity_factor_key: 'float64'
     }
 
-    return mega_join_cross_product(parameters, dtypes)
+    df = mega_join_cross_product(parameters, dtypes)
+
+    df[viral_load_key] = nbinom.pmf(
+        k=df[dsi_key],
+        n=df[n_key],
+        p=df[p_key]
+    )
+
+    df['max'] = df.groupby([n_key, p_key]).transform('max')['value']
+
+    # Normalize
+    df[viral_load_key] = df[viral_load_key] / df['max']
+
+    df[viral_load_key] = df[viral_load_key] * df[immunity_factor_key]
+    df[viral_load_key] = df[viral_load_key].round(4)
+
+    # 0 represents not infected. If not infected, then viral load should be 0.
+    df[viral_load_key].mask(df[dsi_key] == 0, 0.0, inplace=True)
+
+    return df.drop(columns=['max'])
+
+
+def create_quanta_curve(suffix, viral_load_unique, quanta_unique):
+    """
+    Produce quanta depending on viral load.
+
+    Parameters:
+        suffix: string
+        viral_load_unique: list[float]
+        quanta_unique: list[float]
+
+    Returns: pd.DataFrame
+    """
+    viral_load_key = f'viral_load_{suffix}'
+    quanta_key = f'quanta_{suffix}'
+
+    parameters = {
+        viral_load_key: viral_load_unique,
+        quanta_key: quanta_unique
+    }
+
+    dtypes = {
+        viral_load_key: 'float64',
+        quanta_key: 'float64'
+    }
+
+    df = mega_join_cross_product(parameters, dtypes)
+    mapping = {
+        0.9: 80,
+        0.8: 70,
+        0.7: 60,
+        0.6: 50,
+        0.5: 40,
+        0.4: 30,
+        0.3: 20,
+        0.2: 10,
+        0.1: 0
+
+    }
+
+    for viral_load, quanta in mapping.items():
+        df['value'].mask(
+            (df[viral_load_key] < viral_load + 0.1)
+            & (df[viral_load_key] > viral_load)
+            & (df[quanta_key] == quanta),
+            1.0,
+            inplace=True
+        )
+
+
+def create_rapid_tests(suffix, rapid_key, viral_load_unique):
+    """
+    Produce rapid test results depending on viral load.
+
+    Parameters:
+        suffix: string
+        viral_load_unique: list[float]
+        unique_rapid: list
+
+    Returns: pd.DataFrame
+    """
+    viral_load_key = f'viral_load_{suffix}'
+
+    parameters = {
+        viral_load_key: viral_load_unique,
+        rapid_key: [0, 1]
+    }
+
+    dtypes = {
+        viral_load_key: 'float64',
+        rapid_key: 'int8'
+    }
+
+    df = mega_join_cross_product(parameters, dtypes)
+    threshold = 0.5
+
+    df['value'].mask(
+        (df[viral_load_key] > threshold) &
+        (df[rapid_key] == 1),
+        0.95,
+        inplace=True
+    )
+
+    df['value'].mask(
+        (df[viral_load_key] > threshold) &
+        (df[rapid_key] == 0),
+        0.05,
+        inplace=True
+    )
+
+    df['value'].mask(
+        (df[viral_load_key] <= threshold) &
+        (df[rapid_key] == 1),
+        0.01,
+        inplace=True
+    )
+
+    df['value'].mask(
+        (df[viral_load_key] <= threshold) &
+        (df[rapid_key] == 0),
+        0.99,
+        inplace=True
+    )
+
+    return df
+
+
+def create_pcr_tests(suffix, pcr_key, viral_load_unique):
+    """
+    Produce pcr test results depending on viral load.
+
+    Parameters:
+        suffix: string
+        viral_load_unique: list[float]
+
+    Returns: pd.DataFrame
+    """
+    viral_load_key = f'viral_load_{suffix}'
+
+    parameters = {
+        viral_load_key: viral_load_unique,
+        pcr_key: [0, 1]
+    }
+
+    dtypes = {
+        viral_load_key: 'float64',
+        pcr_key: 'int8'
+    }
+
+    df = mega_join_cross_product(parameters, dtypes)
+    threshold = 0.2
+
+    df['value'].mask(
+        (df[viral_load_key] > threshold) &
+        (df[pcr_key] == 1),
+        0.99,
+        inplace=True
+    )
+
+    df['value'].mask(
+        (df[viral_load_key] > threshold) &
+        (df[pcr_key] == 0),
+        0.01,
+        inplace=True
+    )
+
+    df['value'].mask(
+        (df[viral_load_key] <= threshold) &
+        (df[pcr_key] == 1),
+        0.01,
+        inplace=True
+    )
+
+    df['value'].mask(
+        (df[viral_load_key] <= threshold) &
+        (df[pcr_key] == 0),
+        0.99,
+        inplace=True
+    )
+
+    return df
+
+
+def create_symptoms(
+    person,
+    time,
+    start_symp_key,
+    end_symp_key,
+    start_symp_unique,
+    end_symp_unique,
+):
+    """
+    Create symptoms for a given person and time.
+
+    Parameters:
+        person: string
+        time: string
+
+    Returns: pd.DataFrame
+    """
+    viral_load_threshold = 0.5
+    dsi_threshold = 5
+    not_infected_dsi = 0
+
+    person_suffix = index_name(person)
+    time_person_suffix = index_name(time, person)
+
+    symptomatic_key = f'symptomatic_{person_suffix}'
+    viral_load_key = f'viral_load_{time_person_suffix}'
+    symptomatic_time_key = f'symptomatic_{time_person_suffix}'
+    dsi_key = f'dsi_{time_person_suffix}'
+
+    parameters = {
+        symptomatic_key: [0, 1],
+        symptomatic_time_key: [0, 1],
+        start_symp_key: start_symp_unique,
+        end_symp_key: end_symp_unique,
+        viral_load_key: np.arange(0.0, 1.0, 0.0001).round(4),
+        dsi_key: list(range(0, 28))
+    }
+
+    dtypes = {
+        symptomatic_key: 'int8',
+        symptomatic_time_key: 'int8',
+        start_symp_key: 'int8',
+        end_symp_key: 'int8',
+        viral_load_key: 'float64',
+        dsi_key: 'int8'
+    }
+
+    df = mega_join_cross_product(parameters, dtypes)
+
+    # For those who will be symptomatic if sick with COVID
+    # If viral load is high
+    # OR
+    # If day_since_infection is below a threshold AND person has been infected
+    # OR
+    # the day since infection is between the start and start + end
+    get_symptoms = (
+        (df[symptomatic_key] == 1) &
+        (
+            (df[viral_load_key] > viral_load_threshold) |
+            (
+                (df[dsi_key] < dsi_threshold) &
+                (df[dsi_key] != not_infected_dsi)
+            ) |
+            (
+                (
+                    df[start_symp_key] <= df[dsi_key]
+                ) &
+                (
+                    df[end_symp_key] + df[start_symp_key] > df[dsi_key]
+                )
+            )
+        )
+    )
+
+    # For those who will be "asymptomatic"
+    # Most of the time they don't have symptoms
+    df['value'].mask(
+        (df[symptomatic_time_key] == 1),
+        0.05,
+        inplace=True
+    )
+
+    # For those who will be "asymptomatic"
+    # Sometimes they do have symptoms
+    df['value'].mask(
+        (df[symptomatic_time_key] == 0),
+        0.95,
+        inplace=True
+    )
+
+    # For those who will be "symptomatic"
+    # Then they are likely to get symptoms if they meet some criteria
+    df['value'].mask(
+        (df[symptomatic_time_key] == 1) & get_symptoms,
+        0.95,
+        inplace=True
+    )
+
+    # However, it's still possible not to get symptoms even if some criteria
+    # are met.
+    df['value'].mask(
+        (df[symptomatic_time_key] == 0) & get_symptoms,
+        0.05,
+        inplace=True
+    )
+
+    return df, symptomatic_time_key
+
+
+def create_inf_dsi_viral_load_measurements(
+    person,
+    time,
+    dose_key,
+    bayesian_network
+):
+    prev_time_person_index = index_name(
+        time-1,
+        person
+    )
+
+    time_person_index = index_name(time, person)
+    person_index = index_name(person)
+
+    infected_key = f'infected_{time_person_index}'
+    infection_df = create_infection_from_dose(
+        suffix=time_person_index,
+        dose_key=dose_key,
+        infected_key=infected_key
+    )
+
+    dsi_key = f'dsi_{time_person_index}'
+    pre_dsi_key = f'dsi_{prev_time_person_index}'
+
+    dsi_df = create_days_since_infection_covid(
+        dsi_key,
+        pre_dsi_key,
+        infected_key,
+    )
+
+    viral_load_n_key = f'viral_load_n_{person_index}'
+    viral_load_p_key = f'viral_load_p_{person_index}'
+    immunity_key = f'immunity_{person_index}'
+    immunity_factor_key = f'immunity_factor_{person_index}'
+
+    viral_load_n_df = create_viral_load_n(
+        viral_load_n_key=viral_load_n_key,
+        immunity_key=immunity_key
+    )
+
+    viral_load_p_df = create_viral_load_p(
+        viral_load_p_key=viral_load_p_key,
+        immunity_key=immunity_key
+    )
+
+    immunity_factor_df = create_immunity_factor(
+        immunity_key=immunity_key,
+        immunity_factor_key=immunity_factor_key
+    )
+
+    viral_load_key = f'viral_load_{time_person_index}'
+
+    viral_load_df = create_viral_load(
+        n_key=viral_load_n_key,
+        p_key=viral_load_p_key,
+        dsi_key=dsi_key,
+        immunity_factor_key=immunity_factor_key,
+        viral_load_key=viral_load_key,
+        unique_n=viral_load_n_df[viral_load_n_key].unique(),
+        unique_p=viral_load_p_df[viral_load_p_key].unique(),
+        unique_immunity_factor=immunity_factor_df[immunity_factor_key].unique()
+    )
+
+    rapid_key = f'rapid_{time_person_index}'
+    rapid_test_df = create_rapid_tests(
+        suffix=time_person_index,
+        rapid_key=rapid_key,
+        viral_load_unique=viral_load_df[viral_load_key].unique()
+    )
+
+    pcr_key = f'pcr_{time_person_index}'
+    pcr_test_df = create_pcr_tests(
+        suffix=time_person_index,
+        pcr_key=pcr_key,
+        viral_load_unique=viral_load_df[viral_load_key].unique()
+    )
+
+    start_symp_key = f'start_symp_{time_person_index}'
+    end_symp_key = f'end_symp_{time_person_index}'
+
+    start_symp_df = create_start_symp(
+        immunity_key=immunity_key,
+        start_symp_key=start_symp_key
+
+    )
+
+    end_symp_df = create_end_symp(
+        immunity_key=immunity_key,
+        end_symp_key=end_symp_key
+    )
+
+    symptoms_df, symptomatic_time_key = create_symptoms(
+        person,
+        time,
+        start_symp_key=start_symp_key,
+        end_symp_key=end_symp_key,
+        start_symp_unique=start_symp_df[start_symp_key].unique(),
+        end_symp_unique=end_symp_df[end_symp_key].unique()
+    )
+
+    keys = [
+        infected_key,
+        dsi_key,
+        immunity_factor_key,
+        viral_load_n_key,
+        viral_load_p_key,
+        viral_load_key,
+        rapid_key,
+        pcr_key,
+        start_symp_key,
+        end_symp_key,
+        symptomatic_time_key
+
+    ]
+
+    dfs = [
+        infection_df,
+        dsi_df,
+        immunity_factor_df,
+        viral_load_n_df,
+        viral_load_p_df,
+        viral_load_df,
+        rapid_test_df,
+        pcr_test_df,
+        start_symp_df,
+        end_symp_df,
+        symptoms_df,
+    ]
+
+    for key, df in zip(keys, dfs):
+        add_edge_to_bn(
+            bayesian_network,
+            df=df,
+            outcome_var=key,
+            storage_folder=None
+        )
+
+
+def create_end_symp(immunity_key, end_symp_key):
+    """
+    Create the end day of symptoms.
+
+    Parameters:
+        immunity_key: string
+        end_symp_key: string
+    """
+    return pd.DataFrame({
+        immunity_key: pd.Series(
+            [
+                0, 0, 0, 0, 0,
+                1, 1, 1, 1, 1,
+            ],
+            dtype='int8'
+        ),
+        end_symp_key: pd.Series(
+            [
+                3, 4, 5, 6, 7,
+                3, 4, 5, 6, 7,
+            ],
+            dtype='int8'
+        ),
+        'value': pd.Series(
+            [
+                0.05, 0.05, 0.3, 0.3, 0.3,
+                0.2, 0.2, 0.2, 0.2, 0.2,
+            ],
+            dtype='float16'
+        )
+    })
+
+
+def create_start_symp(immunity_key, start_symp_key):
+    """
+    Create the start day of symptoms.
+
+    Parameters:
+        immunity_key: string
+        start_symp_key: string
+    """
+    return pd.DataFrame({
+        immunity_key: pd.Series(
+            [
+                0, 0, 0, 0, 0,
+                1, 1, 1, 1, 1,
+            ],
+            dtype='int8'
+        ),
+        start_symp_key: pd.Series(
+            [
+                3, 4, 5, 6, 7,
+                3, 4, 5, 6, 7,
+            ],
+            dtype='int8'
+        ),
+        'value': pd.Series(
+            [
+                0.05, 0.05, 0.3, 0.3, 0.3,
+                0.2, 0.2, 0.2, 0.2, 0.2,
+            ],
+            dtype='float16'
+        )
+    })
 
 
 def mega_join_cross_product(parameters, dtypes):
@@ -1062,7 +1630,7 @@ def create_dose_from_strangers(
     )
 
 
-def create_infection_from_dose(suffix):
+def create_infection_from_dose(suffix, dose_key, infected_key):
     """
     Compute probability of infection given a dose.
 
@@ -1071,17 +1639,16 @@ def create_infection_from_dose(suffix):
 
     Returns: pd.DataFrame
     """
-    key_1 = f"dose_{suffix}"
-    key_2 = f"infected_{suffix}"
+    infected_key = f"infected_{suffix}"
 
     parameters = {
-        key_1: np.arange(0.0, 10.0, 0.0001).round(4),
-        key_2: [0.0, 1.0],
+        dose_key: np.arange(0.0, 10.0, 0.0001).round(4),
+        infected_key: [0.0, 1.0],
     }
 
     dtypes = {
-        key_1: 'float64',
-        key_2: 'int8',
+        dose_key: 'float64',
+        infected_key: 'int8',
     }
 
     df = mega_join_cross_product(
@@ -1090,12 +1657,12 @@ def create_infection_from_dose(suffix):
     )
 
     df['value'] = df['value'].mask(
-        df[key_2] == 1,
-        1 - np.exp(-df[key_1])
+        df[infected_key] == 1,
+        1 - np.exp(-df[dose_key])
     )
     df['value'] = df['value'].mask(
-        df[key_2] == 0,
-        np.exp(-df[key_1])
+        df[infected_key] == 0,
+        np.exp(-df[dose_key])
     )
 
     return df

@@ -12,6 +12,8 @@ from ..linx.examples.covid_safe import (
     create_days_since_infection_covid,
     create_dose_from_strangers,
     create_infection_from_dose,
+    create_viral_load,
+    create_viral_load_n,
     create_volume_ventilation_df,
     divide_1_by,
     index_name
@@ -207,3 +209,41 @@ def test_create_days_since_infection_covid():
     assert df[
         (df[f'dsi_{pre_suffix}'] == 27)
     ].iloc[1][f'dsi_{suffix}'] == 0
+
+
+def test_create_viral_load_n():
+    suffix = index_name(1, 'edderic')
+    df = create_viral_load_n(suffix)
+
+    assert df[
+        (df[f'viral_load_n_{suffix}'] == 10) &
+        (df[f'immunity_{suffix}'] == 1)
+    ].iloc[0]['value'] == 0.2
+
+
+def test_create_viral_load():
+    suffix = index_name(1, 'edderic')
+    person_index = index_name('edderic')
+    dsi_key = f'dsi_{suffix}'
+    viral_load_n_key = f'viral_load_n_{suffix}'
+    viral_load_p_key = f'viral_load_p_{suffix}'
+    immunity_factor_key = f'immunity_factor_{person_index}'
+    viral_load_key = f'viral_load_{suffix}'
+
+    df = create_viral_load(
+        unique_n=[10, 11, 12, 13, 14, 15, 16],
+        unique_p=[0.6],
+        unique_immunity_factor=[0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+        dsi_key=dsi_key,
+        immunity_factor_key=immunity_factor_key,
+        viral_load_key=viral_load_key,
+        n_key=viral_load_n_key,
+        p_key=viral_load_p_key,
+        num_days_since_infection=28
+    )
+
+    assert all(
+        df[
+            (df[f'dsi_{suffix}'] == 0)
+        ][f'viral_load_{suffix}'] == 0
+    )
