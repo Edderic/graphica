@@ -154,26 +154,33 @@ def test_create_infection_from_dose():
     Test that each possible dose affects the probability of infection.
     """
     suffix = index_name('day_1', 'person_1')
-    df = create_infection_from_dose(suffix)
+    dose_key = f'dose_{suffix}'
+    infected_key = f'infected_{suffix}'
+
+    df = create_infection_from_dose(
+        suffix,
+        dose_key=dose_key,
+        infected_key=infected_key
+    )
 
     assert df[
-        (df[f'dose_{suffix}'] == 0) &
-        (df[f'infected_{suffix}'] == 0)
+        (df[dose_key] == 0) &
+        (df[infected_key] == 0)
     ].iloc[0]['value'] == 1
 
     assert df[
-        (df[f'dose_{suffix}'] == 0) &
-        (df[f'infected_{suffix}'] == 1)
+        (df[dose_key] == 0) &
+        (df[infected_key] == 1)
     ].iloc[0]['value'] == 0
 
     # high end
     assert df[
-        (df[f'dose_{suffix}'] == 9.9999) &
-        (df[f'infected_{suffix}'] == 0)
+        (df[dose_key] == 9.9999) &
+        (df[infected_key] == 0)
     ].iloc[0]['value'].round(6) == 0.000045
     assert df[
-        (df[f'dose_{suffix}'] == 9.9999) &
-        (df[f'infected_{suffix}'] == 1)
+        (df[dose_key] == 9.9999) &
+        (df[infected_key] == 1)
     ].iloc[0]['value'].round(6) == 0.999955
 
 
@@ -181,43 +188,54 @@ def test_create_days_since_infection_covid():
     pre_suffix = index_name(1, 'edderic')
     suffix = index_name(2, 'edderic')
 
+    pre_dsi_key = f'dsi_{pre_suffix}'
+    dsi_key = f'dsi_{suffix}'
+    infected_key = f'infected_{suffix}'
+
     df = create_days_since_infection_covid(
-        suffix,
-        pre_suffix
+        dsi_key,
+        pre_dsi_key,
+        infected_key,
     )
 
     # If person wasn't infected the day before, and the person didn't get
     # infected for the day, then the person should have 0 for the dsi
     assert df[
-        (df[f'dsi_{pre_suffix}'] == 0) &
-        (df[f'infected_{suffix}'] == 0)
-    ].iloc[0][f'dsi_{suffix}'] == 0
+        (df[pre_dsi_key] == 0) &
+        (df[infected_key] == 0)
+    ].iloc[0][dsi_key] == 0
 
     # If person wasn't infected the day before, and the person DID get
     # infected for the day, then the person should have 1 for the dsi
     assert df[
-        (df[f'dsi_{pre_suffix}'] == 0) &
-        (df[f'infected_{suffix}'] == 1)
-    ].iloc[0][f'dsi_{suffix}'] == 1
+        (df[pre_dsi_key] == 0) &
+        (df[infected_key] == 1)
+    ].iloc[0][dsi_key] == 1
 
     # If the previous day was the 27th day, then we reset back to 0
     # (susceptible)
     assert df[
-        (df[f'dsi_{pre_suffix}'] == 27)
-    ].iloc[0][f'dsi_{suffix}'] == 0
+        (df[pre_dsi_key] == 27)
+    ].iloc[0][dsi_key] == 0
 
     assert df[
-        (df[f'dsi_{pre_suffix}'] == 27)
-    ].iloc[1][f'dsi_{suffix}'] == 0
+        (df[pre_dsi_key] == 27)
+    ].iloc[1][dsi_key] == 0
 
 
 def test_create_viral_load_n():
     suffix = index_name(1, 'edderic')
-    df = create_viral_load_n(suffix)
+    viral_load_n_key = f'viral_load_n_{suffix}'
+    immunity_key = f'immunity_{suffix}'
+
+    df = create_viral_load_n(
+        viral_load_n_key=viral_load_n_key,
+        immunity_key=immunity_key
+    )
 
     assert df[
-        (df[f'viral_load_n_{suffix}'] == 10) &
-        (df[f'immunity_{suffix}'] == 1)
+        (df[viral_load_n_key] == 10) &
+        (df[immunity_key] == 1)
     ].iloc[0]['value'] == 0.2
 
 
