@@ -2,7 +2,9 @@
 Variable Elimination module
 """
 
+from datetime import datetime
 import logging
+import time
 
 from tqdm import tqdm
 
@@ -136,9 +138,13 @@ class VariableElimination:
 
     def __compute__(self, eliminateables, title):
         len_eliminateables = len(eliminateables)
+        logging.debug(
+            "Running __compute__ for %s on %s", title, datetime.now()
+        )
 
         with tqdm(total=len_eliminateables, desc=title) as progress_bar:
             while eliminateables:
+                t1 = time.time()
                 logging.debug(
                     "\nTOP OF ELIMINATEABLES: \ni\tELIMINATEABLES: %s",
                     eliminateables
@@ -191,6 +197,17 @@ class VariableElimination:
 
                 eliminateables = list(
                     set(eliminateables) - {best_eliminateable}
+                )
+
+                t2 = time.time()
+
+                logging.debug(
+                    "elapsed: %s"
+                    "\nbest_eliminateable: \n\t: %s, "
+                    "\n\tfactors: %s",
+                    t2 - t1,
+                    best_eliminateable,
+                    factors
                 )
 
                 progress_bar.update()

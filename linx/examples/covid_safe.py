@@ -115,7 +115,7 @@ def create_days_since_infection_covid(
     dsi_key,
     pre_dsi_key,
     infected_key,
-    max_num_days_since_infection=28
+    max_num_days_since_infection=21
 ):
     """
     Create days of infection for COVID.
@@ -274,7 +274,8 @@ def create_viral_load(
     unique_n,
     unique_p,
     unique_immunity_factor,
-    num_days_since_infection=28
+    max_num_days_since_infection=21,
+    viral_load_rounding=2
 ):
     """
     Create viral load curve.
@@ -284,7 +285,7 @@ def create_viral_load(
 
         unique_p: list[float]
 
-        num_days_since_infection: integer
+        max_num_days_since_infection: integer
             Max number of days-since-infection.
 
     Returns: pd.DataFrame
@@ -292,7 +293,7 @@ def create_viral_load(
     parameters = {
         n_key: unique_n,
         p_key: unique_p,
-        dsi_key: list(range(num_days_since_infection)),
+        dsi_key: list(range(max_num_days_since_infection)),
         immunity_factor_key: unique_immunity_factor
     }
 
@@ -317,7 +318,7 @@ def create_viral_load(
     df[viral_load_key] = df[viral_load_key] / df['max']
 
     df[viral_load_key] = df[viral_load_key] * df[immunity_factor_key]
-    df[viral_load_key] = df[viral_load_key].round(4)
+    df[viral_load_key] = df[viral_load_key].round(viral_load_rounding)
 
     # 0 represents not infected. If not infected, then viral load should be 0.
     df[viral_load_key].mask(df[dsi_key] == 0, 0.0, inplace=True)
@@ -493,6 +494,8 @@ def create_symptoms(
     end_symp_key,
     start_symp_unique,
     end_symp_unique,
+    viral_load_unique,
+    max_num_days_since_infection,
 ):
     """
     Create symptoms for a given person and time.
@@ -520,8 +523,8 @@ def create_symptoms(
         symptomatic_time_key: [0, 1],
         start_symp_key: start_symp_unique,
         end_symp_key: end_symp_unique,
-        viral_load_key: np.arange(0.0, 1.0, 0.0001).round(4),
-        dsi_key: list(range(0, 28))
+        viral_load_key: viral_load_unique,
+        dsi_key: list(range(0, max_num_days_since_infection))
     }
 
     dtypes = {
@@ -606,6 +609,7 @@ def create_inf_dsi_viral_load_measurements(
         person
     )
 
+    max_num_days_since_infection = 21
     time_person_index = index_name(time, person)
     person_index = index_name(person)
 
@@ -623,12 +627,16 @@ def create_inf_dsi_viral_load_measurements(
         dsi_key,
         pre_dsi_key,
         infected_key,
+        max_num_days_since_infection=max_num_days_since_infection
     )
 
     viral_load_n_key = f'viral_load_n_{person_index}'
     viral_load_p_key = f'viral_load_p_{person_index}'
     immunity_key = f'immunity_{person_index}'
     immunity_factor_key = f'immunity_factor_{person_index}'
+    viral_load_rounding = 2
+    viral_load_unique = np.arange(0.0, 1.0, 0.01)\
+        .round(viral_load_rounding)
 
     viral_load_n_df = create_viral_load_n(
         viral_load_n_key=viral_load_n_key,
@@ -655,7 +663,11 @@ def create_inf_dsi_viral_load_measurements(
         viral_load_key=viral_load_key,
         unique_n=viral_load_n_df[viral_load_n_key].unique(),
         unique_p=viral_load_p_df[viral_load_p_key].unique(),
-        unique_immunity_factor=immunity_factor_df[immunity_factor_key].unique()
+        unique_immunity_factor=immunity_factor_df[
+            immunity_factor_key
+        ].unique(),
+        max_num_days_since_infection=max_num_days_since_infection,
+        viral_load_rounding=viral_load_rounding
     )
 
     rapid_key = f'rapid_{time_person_index}'
@@ -692,7 +704,9 @@ def create_inf_dsi_viral_load_measurements(
         start_symp_key=start_symp_key,
         end_symp_key=end_symp_key,
         start_symp_unique=start_symp_df[start_symp_key].unique(),
-        end_symp_unique=end_symp_df[end_symp_key].unique()
+        end_symp_unique=end_symp_df[end_symp_key].unique(),
+        viral_load_unique=viral_load_unique,
+        max_num_days_since_infection=max_num_days_since_infection
     )
 
     keys = [
