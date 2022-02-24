@@ -2,9 +2,11 @@
 CovidSafe: A Risk Estimation to make social gatherings safer.
 """
 import graphviz
+from datetime import timedelta
 import numpy as np
 import pandas as pd
 from scipy.stats import nbinom
+
 
 
 from ..ds import BayesianNetwork as BN, \
@@ -312,7 +314,7 @@ def create_viral_load(
         p=df[p_key]
     )
 
-    df['max'] = df.groupby([n_key, p_key]).transform('max')['value']
+    df['max'] = df.groupby([n_key, p_key]).transform('max')[viral_load_key]
 
     # Normalize
     df[viral_load_key] = df[viral_load_key] / df['max']
@@ -326,20 +328,21 @@ def create_viral_load(
     return df.drop(columns=['max'])
 
 
-def create_quanta_curve(suffix, viral_load_unique, quanta_unique):
+def create_quanta_curve(
+    viral_load_unique,
+    quanta_unique,
+    viral_load_key,
+    quanta_key
+):
     """
     Produce quanta depending on viral load.
 
     Parameters:
-        suffix: string
         viral_load_unique: list[float]
         quanta_unique: list[float]
 
     Returns: pd.DataFrame
     """
-    viral_load_key = f'viral_load_{suffix}'
-    quanta_key = f'quanta_{suffix}'
-
     parameters = {
         viral_load_key: viral_load_unique,
         quanta_key: quanta_unique
@@ -360,7 +363,8 @@ def create_quanta_curve(suffix, viral_load_unique, quanta_unique):
         0.4: 30,
         0.3: 20,
         0.2: 10,
-        0.1: 0
+        0.1: 0,
+        0.0: 0
 
     }
 
@@ -372,6 +376,8 @@ def create_quanta_curve(suffix, viral_load_unique, quanta_unique):
             1.0,
             inplace=True
         )
+
+    return df
 
 
 def create_rapid_tests(suffix, rapid_key, viral_load_unique):
@@ -602,16 +608,25 @@ def create_inf_dsi_viral_load_measurements(
     person,
     time,
     dose_key,
-    bayesian_network
+    bayesian_network,
+    time_format,
+    viral_load_n_key,
+    viral_load_p_key,
+    viral_load_n_df,
+    viral_load_p_df,
+    immunity_key,
+    immunity_factor_key,
+    immunity_factor_df,
+
 ):
     prev_time_person_index = index_name(
-        time-1,
+        (time-timedelta(days=1)).strftime(time_format),
         person
     )
 
+    time_str = time.strftime(time_format)
     max_num_days_since_infection = 21
-    time_person_index = index_name(time, person)
-    person_index = index_name(person)
+    time_person_index = index_name(time_str, person)
 
     infected_key = f'infected_{time_person_index}'
     infection_df = create_infection_from_dose(
@@ -630,28 +645,9 @@ def create_inf_dsi_viral_load_measurements(
         max_num_days_since_infection=max_num_days_since_infection
     )
 
-    viral_load_n_key = f'viral_load_n_{person_index}'
-    viral_load_p_key = f'viral_load_p_{person_index}'
-    immunity_key = f'immunity_{person_index}'
-    immunity_factor_key = f'immunity_factor_{person_index}'
     viral_load_rounding = 2
     viral_load_unique = np.arange(0.0, 1.0, 0.01)\
         .round(viral_load_rounding)
-
-    viral_load_n_df = create_viral_load_n(
-        viral_load_n_key=viral_load_n_key,
-        immunity_key=immunity_key
-    )
-
-    viral_load_p_df = create_viral_load_p(
-        viral_load_p_key=viral_load_p_key,
-        immunity_key=immunity_key
-    )
-
-    immunity_factor_df = create_immunity_factor(
-        immunity_key=immunity_key,
-        immunity_factor_key=immunity_factor_key
-    )
 
     viral_load_key = f'viral_load_{time_person_index}'
 
@@ -700,7 +696,7 @@ def create_inf_dsi_viral_load_measurements(
 
     symptoms_df, symptomatic_time_key = create_symptoms(
         person,
-        time,
+        time_str,
         start_symp_key=start_symp_key,
         end_symp_key=end_symp_key,
         start_symp_unique=start_symp_df[start_symp_key].unique(),
@@ -709,33 +705,39 @@ def create_inf_dsi_viral_load_measurements(
         max_num_days_since_infection=max_num_days_since_infection
     )
 
+    quanta_key = f'quanta_{time_person_index}'
+    viral_load_key = f'viral_load_{time_person_index}'
+
+    quanta_unique = list(range(0, 90, 10))
+    quanta_df = create_quanta_curve(
+        viral_load_unique=viral_load_unique,
+        quanta_unique=quanta_unique,
+        quanta_key=quanta_key,
+        viral_load_key=viral_load_key,
+    )
+
     keys = [
         infected_key,
         dsi_key,
-        immunity_factor_key,
-        viral_load_n_key,
-        viral_load_p_key,
         viral_load_key,
         rapid_key,
         pcr_key,
         start_symp_key,
         end_symp_key,
-        symptomatic_time_key
-
+        symptomatic_time_key,
+        quanta_key
     ]
 
     dfs = [
         infection_df,
         dsi_df,
-        immunity_factor_df,
-        viral_load_n_df,
-        viral_load_p_df,
         viral_load_df,
         rapid_test_df,
         pcr_test_df,
         start_symp_df,
         end_symp_df,
         symptoms_df,
+        quanta_df
     ]
 
     for key, df in zip(keys, dfs):
@@ -1488,21 +1490,106 @@ def create_at_least_one_inf(
     }
 
 
+def create_longitudinal(
+    dates,
+    person,
+    bayesian_network,
+    storage_folder=None
+):
+    """
+    Parameters:
+        dates: pd.Series([pd.Date])
+        person: string
+        bayesian_network: BayesianNetwork
+    """
+    # TODO: the dose_key might depend on how many people there are in a
+    # household.
+    event = 'work'
+    time_format = '%m-%d-%y'
+
+    person_index = index_name(person)
+    viral_load_n_key = f'viral_load_n_{person_index}'
+    viral_load_p_key = f'viral_load_p_{person_index}'
+
+    immunity_key = f'immunity_{person_index}'
+
+    viral_load_n_df = create_viral_load_n(
+        viral_load_n_key=viral_load_n_key,
+        immunity_key=immunity_key
+    )
+
+    viral_load_p_df = create_viral_load_p(
+        viral_load_p_key=viral_load_p_key,
+        immunity_key=immunity_key
+    )
+    immunity_factor_key = f'immunity_factor_{person_index}'
+    immunity_factor_df = create_immunity_factor(
+        immunity_key=immunity_key,
+        immunity_factor_key=immunity_factor_key
+    )
+
+    keys = [viral_load_n_key, viral_load_p_key, immunity_factor_key]
+    dfs = [viral_load_n_df, viral_load_p_df, immunity_factor_df]
+
+    add_dfs_to_bn(
+        bayesian_network,
+        dfs,
+        keys,
+        storage_folder=storage_folder
+    )
+
+    for date in dates:
+        date_event_others_to_person = index_name(
+            date.strftime(time_format),
+            event,
+            'others',
+            person
+        )
+        dose_key = f"dose_tmp_13_{date_event_others_to_person}"
+
+        create_dose_from_strangers(
+            time=date,
+            person=person,
+            event=event,
+            bayesian_network=bayesian_network,
+            storage_folder=storage_folder,
+            time_format=time_format
+        )
+
+        create_inf_dsi_viral_load_measurements(
+            person=person,
+            time=date,
+            dose_key=dose_key,
+            bayesian_network=bayesian_network,
+            time_format=time_format,
+            viral_load_n_key=viral_load_n_key,
+            viral_load_p_key=viral_load_p_key,
+            viral_load_n_df=viral_load_n_df,
+            viral_load_p_df=viral_load_p_df,
+            immunity_key=immunity_key,
+            immunity_factor_key=immunity_factor_key,
+            immunity_factor_df=immunity_factor_df
+        )
+
+
 def create_dose_from_strangers(
     time,
     person,
     event,
     bayesian_network,
+    time_format,
     storage_folder=None,
     rounding=5
 ):
+    time_str = time.strftime(time_format)
+
     volume_vent_key, volume_vent_event_df = create_room_event(
-        event_suffix=index_name(time, person, event),
+        event_suffix=index_name(time_str, person, event),
         bayesian_network=bayesian_network
     )
 
-    suffix = index_name(time, event, "others", person)
-    date_event_self_suffix = index_name(time, event, person)
+    suffix = index_name(time_str, event, "others", person)
+    date_event_self_suffix = index_name(time_str, event, person)
 
     res = create_activity_exhalation(
         suffix,
@@ -1524,11 +1611,11 @@ def create_dose_from_strangers(
     round_column(tmp_1_df, new_key_1, rounding=rounding)
 
     inhalation_rate_key = \
-        f'inhalation_rate_{index_name(time, event, person)}'
+        f'inhalation_rate_{index_name(time_str, event, person)}'
 
     tmp_2_df = create_activity_specific_breathing_rate_df(
         person,
-        time,
+        time_str,
         event,
         inhalation_rate_key
     )
@@ -1593,7 +1680,7 @@ def create_dose_from_strangers(
     cap(df=tmp_8_df, key=new_key_8, maximum=1000)
 
     dictionary = create_at_least_one_inf(
-        time,
+        time_str,
         prefix,
         suffix,
         bayesian_network,

@@ -12,6 +12,8 @@ from ..linx.examples.covid_safe import (
     create_days_since_infection_covid,
     create_dose_from_strangers,
     create_infection_from_dose,
+    create_inf_dsi_viral_load_measurements,
+    create_longitudinal,
     create_viral_load,
     create_viral_load_n,
     create_volume_ventilation_df,
@@ -265,3 +267,219 @@ def test_create_viral_load():
             (df[f'dsi_{suffix}'] == 0)
         ][f'viral_load_{suffix}'] == 0
     )
+
+
+def test_create_inf_dsi_viral_load_measurements_1():
+    """
+    Test that getting a positive PCR makes it more likely that someone has a
+    high viral load than when we don't know the PCR result.
+    """
+    bayesian_network_1 = BN(graphviz_dag=graphviz.Digraph())
+
+    person = 'edderic'
+    date_event_others_to_person = index_name(1, 'work', 'others', person)
+    date_self_suffix = index_name(1, person)
+    day = 1
+    dose_key = f"dose_tmp_13_{date_event_others_to_person}"
+    outcome_col = f'viral_load_{date_self_suffix}'
+
+    bn = bayesian_network_1
+
+    create_inf_dsi_viral_load_measurements(
+        person=person,
+        time=day,
+        dose_key=dose_key,
+        bayesian_network=bayesian_network_1
+    )
+
+    result = VE(
+        network=bn,
+        query=Query(
+            outcomes=[outcome_col],
+            givens=[
+                {
+                    f'pcr_{date_self_suffix}': 0
+                }
+            ],
+        )
+    ).compute()
+
+    result_df = result.get_df()
+    mean_1 = (result_df[outcome_col] * result_df['value']).sum()
+
+    result_2 = VE(
+        network=bn,
+        query=Query(
+            outcomes=[outcome_col],
+            givens=[
+                {
+                    f'pcr_{date_self_suffix}': 1
+                }
+            ],
+        )
+    ).compute()
+
+    result_df_2 = result_2.get_df()
+    mean_2 = (result_df_2[outcome_col] * result_df_2['value']).sum()
+
+    assert mean_1 < mean_2
+
+
+def test_create_inf_dsi_viral_load_measurements_2():
+    """
+    Test that getting a positive rapid test should make us more certain that
+    someone has a high viral load than getting a positive PCR.
+    """
+    bayesian_network_1 = BN(graphviz_dag=graphviz.Digraph())
+
+    person = 'edderic'
+    date_event_others_to_person = index_name(1, 'work', 'others', person)
+    date_self_suffix = index_name(1, person)
+    day = 1
+    dose_key = f"dose_tmp_13_{date_event_others_to_person}"
+    outcome_col = f'viral_load_{date_self_suffix}'
+
+    bn = bayesian_network_1
+
+    create_inf_dsi_viral_load_measurements(
+        person=person,
+        time=day,
+        dose_key=dose_key,
+        bayesian_network=bayesian_network_1
+    )
+
+    result = VE(
+        network=bn,
+        query=Query(
+            outcomes=[outcome_col],
+            givens=[
+                {
+                    f'rapid_{date_self_suffix}': 1
+                }
+            ],
+        )
+    ).compute()
+
+    result_df = result.get_df()
+    rapid_mean = (result_df[outcome_col] * result_df['value']).sum()
+
+    result_2 = VE(
+        network=bn,
+        query=Query(
+            outcomes=[outcome_col],
+            givens=[
+                {
+                    f'pcr_{date_self_suffix}': 1
+                }
+            ],
+        )
+    ).compute()
+
+    result_df_2 = result_2.get_df()
+    pcr_mean = (result_df_2[outcome_col] * result_df_2['value']).sum()
+
+    assert rapid_mean > pcr_mean
+
+
+@pytest.mark.f
+def test_create_inf_dsi_viral_load_measurements_4():
+    """
+    Rapid tests show positive when viral loads are high. In contrast, PCR is
+    more sensitive, and could give a positive result, even when person is not
+    infectious. So if we have two people, and one of them tests positive in a
+    PCR, while the other tests positive in a rapid test, the latter's mean day
+    since infection should be lower than the former's day since infection.
+
+    """
+    bayesian_network_1 = BN(graphviz_dag=graphviz.Digraph())
+
+    person = 'edderic'
+    date_event_others_to_person = index_name(1, 'work', 'others', person)
+    date_self_suffix = index_name(1, person)
+    day = 1
+    dose_key = f"dose_tmp_13_{date_event_others_to_person}"
+    outcome_col = f'dsi_{date_self_suffix}'
+
+    bn = bayesian_network_1
+
+    create_inf_dsi_viral_load_measurements(
+        person=person,
+        time=day,
+        dose_key=dose_key,
+        bayesian_network=bayesian_network_1
+    )
+
+    result = VE(
+        network=bn,
+        query=Query(
+            outcomes=[outcome_col],
+            givens=[
+                {
+                    f'rapid_{date_self_suffix}': 1
+                }
+            ],
+        )
+    ).compute()
+
+    result_df = result.get_df()
+    rapid_mean = (result_df[outcome_col] * result_df['value']).sum()
+
+    result_2 = VE(
+        network=bn,
+        query=Query(
+            outcomes=[outcome_col],
+            givens=[
+                {
+                    f'pcr_{date_self_suffix}': 1
+                }
+            ],
+        )
+    ).compute()
+
+    result_df_2 = result_2.get_df()
+    pcr_mean = (result_df_2[outcome_col] * result_df_2['value']).sum()
+
+    assert rapid_mean < pcr_mean
+
+
+def test_create_inf_dsi_viral_load_measurements_3():
+    """
+    Create longitudinal data. Test that we can run inference.
+    """
+    bayesian_network_1 = BN(graphviz_dag=graphviz.Digraph())
+
+    person = 'edderic'
+    bn = bayesian_network_1
+
+    dates = pd.date_range(start='02/23/2022', end='02/25/22')
+    create_longitudinal(dates)
+    for date in dates:
+        date_person_event_suffix = index_name(date, person, 'work')
+        date_event_others_to_person = index_name(date, 'work', 'others', person)
+        date_event_self_suffix = index_name(date, 'work', person)
+        date_self_suffix = index_name(date, person)
+        day = date
+        day_index = index_name(day)
+        self_suffix = index_name(person)
+        dose_key = f"dose_tmp_13_{date_event_others_to_person}"
+        outcome_col = f'viral_load_{date_self_suffix}'
+
+        create_inf_dsi_viral_load_measurements(
+            person=person,
+            time=day,
+            dose_key=dose_key,
+            bayesian_network=bayesian_network_1
+        )
+
+    result = VE(
+        network=bn,
+        query=Query(
+            outcomes=[outcome_col],
+            givens=[],
+        )
+    ).compute()
+
+    result_df = result.get_df()
+    (result_df[outcome_col] * result_df['value']).sum()
+    result_df
+    import pdb; pdb.set_trace()
