@@ -11,11 +11,13 @@ from ..linx.data import InMemoryData
 from ..linx.examples.covid_safe import (
     create_days_since_infection_covid,
     create_dose_from_strangers,
+    create_immunity_factor,
     create_infection_from_dose,
     create_inf_dsi_viral_load_measurements,
     create_longitudinal,
     create_viral_load,
     create_viral_load_n,
+    create_viral_load_p,
     create_volume_ventilation_df,
     divide_1_by,
     index_name
@@ -55,19 +57,27 @@ def test_create_at_least_one_inf_1():
     bayesian_network_1 = BN(graphviz_dag=graphviz.Digraph())
     bayesian_network_2 = BN()
 
-    date_person_event_suffix = index_name(1, 'edderic', 'work')
-    date_event_others_to_person = index_name(1, 'work', 'others', 'edderic')
-    date_event_self_suffix = index_name(1, 'work', 'edderic')
+    time_format = '%m-%d-%y'
+    date = pd.date_range(start='02-23-2022', end='02-23-2022')[0]
+    date_str = date.strftime(time_format)
+    date_person_event_suffix = index_name(date_str, 'edderic', 'work')
+    date_event_others_to_person = index_name(
+        date_str,
+        'work',
+        'others',
+        'edderic'
+    )
+    date_event_self_suffix = index_name(date_str, 'work', 'edderic')
     self_suffix = index_name('edderic')
-    day = 1
-    day_index = index_name(day)
+    day_index = index_name(date_str)
     outcome_col = f"dose_tmp_13_{date_event_others_to_person}"
 
     results = []
 
     for bn in [bayesian_network_1, bayesian_network_2]:
         create_dose_from_strangers(
-            time=1,
+            time=date,
+            time_format=time_format,
             person='edderic',
             event='work',
             bayesian_network=bn,
@@ -151,6 +161,7 @@ def test_create_at_least_one_inf_1():
         (results[1][outcome_col] * results[1]['value']).sum()
 
 
+@pytest.mark.f
 def test_create_infection_from_dose():
     """
     Test that each possible dose affects the probability of infection.
@@ -162,7 +173,7 @@ def test_create_infection_from_dose():
     df = create_infection_from_dose(
         suffix,
         dose_key=dose_key,
-        infected_key=infected_key
+        infected_key=infected_key,
     )
 
     assert df[
@@ -193,11 +204,13 @@ def test_create_days_since_infection_covid():
     pre_dsi_key = f'dsi_{pre_suffix}'
     dsi_key = f'dsi_{suffix}'
     infected_key = f'infected_{suffix}'
+    max_num_days_since_infection = 21
 
     df = create_days_since_infection_covid(
         dsi_key,
         pre_dsi_key,
         infected_key,
+        max_num_days_since_infection=max_num_days_since_infection
     )
 
     # If person wasn't infected the day before, and the person didn't get
@@ -217,11 +230,11 @@ def test_create_days_since_infection_covid():
     # If the previous day was the 27th day, then we reset back to 0
     # (susceptible)
     assert df[
-        (df[pre_dsi_key] == 27)
+        (df[pre_dsi_key] == max_num_days_since_infection - 1)
     ].iloc[0][dsi_key] == 0
 
     assert df[
-        (df[pre_dsi_key] == 27)
+        (df[pre_dsi_key] == max_num_days_since_infection - 1)
     ].iloc[1][dsi_key] == 0
 
 
@@ -259,7 +272,7 @@ def test_create_viral_load():
         viral_load_key=viral_load_key,
         n_key=viral_load_n_key,
         p_key=viral_load_p_key,
-        num_days_since_infection=28
+        max_num_days_since_infection=21
     )
 
     assert all(
@@ -277,19 +290,55 @@ def test_create_inf_dsi_viral_load_measurements_1():
     bayesian_network_1 = BN(graphviz_dag=graphviz.Digraph())
 
     person = 'edderic'
-    date_event_others_to_person = index_name(1, 'work', 'others', person)
-    date_self_suffix = index_name(1, person)
-    day = 1
+    date = pd.date_range(start='02/23/22', end='02/23/22')[0]
+    time_format = '%m-%d-%y'
+    date_str = date.strftime(time_format)
+    person_index = index_name(person)
+    date_event_others_to_person = index_name(
+        date_str,
+        'work',
+        'others',
+        person
+    )
+    date_self_suffix = index_name(date_str, person)
     dose_key = f"dose_tmp_13_{date_event_others_to_person}"
     outcome_col = f'viral_load_{date_self_suffix}'
 
     bn = bayesian_network_1
 
+    viral_load_n_key = f'viral_load_n_{person_index}'
+    viral_load_p_key = f'viral_load_p_{person_index}'
+
+    immunity_key = f'immunity_{person_index}'
+
+    viral_load_n_df = create_viral_load_n(
+        viral_load_n_key=viral_load_n_key,
+        immunity_key=immunity_key
+    )
+
+    viral_load_p_df = create_viral_load_p(
+        viral_load_p_key=viral_load_p_key,
+        immunity_key=immunity_key
+    )
+    immunity_factor_key = f'immunity_factor_{person_index}'
+    immunity_factor_df = create_immunity_factor(
+        immunity_key=immunity_key,
+        immunity_factor_key=immunity_factor_key
+    )
+
     create_inf_dsi_viral_load_measurements(
         person=person,
-        time=day,
+        time=date,
         dose_key=dose_key,
-        bayesian_network=bayesian_network_1
+        bayesian_network=bayesian_network_1,
+        time_format=time_format,
+        viral_load_n_key=viral_load_n_key,
+        viral_load_p_key=viral_load_p_key,
+        viral_load_n_df=viral_load_n_df,
+        viral_load_p_df=viral_load_p_df,
+        immunity_key=immunity_key,
+        immunity_factor_key=immunity_factor_key,
+        immunity_factor_df=immunity_factor_df,
     )
 
     result = VE(
@@ -333,19 +382,55 @@ def test_create_inf_dsi_viral_load_measurements_2():
     bayesian_network_1 = BN(graphviz_dag=graphviz.Digraph())
 
     person = 'edderic'
-    date_event_others_to_person = index_name(1, 'work', 'others', person)
-    date_self_suffix = index_name(1, person)
-    day = 1
+    person_index = index_name(person)
+    date = pd.date_range(start='02/23/22', end='02/23/22')[0]
+    time_format = '%m-%d-%y'
+    date_str = date.strftime(time_format)
+    date_event_others_to_person = index_name(
+        date_str,
+        'work',
+        'others',
+        person
+    )
+    date_self_suffix = index_name(date_str, person)
+
     dose_key = f"dose_tmp_13_{date_event_others_to_person}"
     outcome_col = f'viral_load_{date_self_suffix}'
 
     bn = bayesian_network_1
+    viral_load_n_key = f'viral_load_n_{person_index}'
+    viral_load_p_key = f'viral_load_p_{person_index}'
+
+    immunity_key = f'immunity_{person_index}'
+
+    viral_load_n_df = create_viral_load_n(
+        viral_load_n_key=viral_load_n_key,
+        immunity_key=immunity_key
+    )
+
+    viral_load_p_df = create_viral_load_p(
+        viral_load_p_key=viral_load_p_key,
+        immunity_key=immunity_key
+    )
+    immunity_factor_key = f'immunity_factor_{person_index}'
+    immunity_factor_df = create_immunity_factor(
+        immunity_key=immunity_key,
+        immunity_factor_key=immunity_factor_key
+    )
 
     create_inf_dsi_viral_load_measurements(
         person=person,
-        time=day,
+        time=date,
         dose_key=dose_key,
-        bayesian_network=bayesian_network_1
+        bayesian_network=bayesian_network_1,
+        time_format=time_format,
+        viral_load_n_key=viral_load_n_key,
+        viral_load_p_key=viral_load_p_key,
+        viral_load_n_df=viral_load_n_df,
+        viral_load_p_df=viral_load_p_df,
+        immunity_key=immunity_key,
+        immunity_factor_key=immunity_factor_key,
+        immunity_factor_df=immunity_factor_df,
     )
 
     result = VE(
@@ -381,7 +466,6 @@ def test_create_inf_dsi_viral_load_measurements_2():
     assert rapid_mean > pcr_mean
 
 
-@pytest.mark.f
 def test_create_inf_dsi_viral_load_measurements_4():
     """
     Rapid tests show positive when viral loads are high. In contrast, PCR is
@@ -394,19 +478,55 @@ def test_create_inf_dsi_viral_load_measurements_4():
     bayesian_network_1 = BN(graphviz_dag=graphviz.Digraph())
 
     person = 'edderic'
-    date_event_others_to_person = index_name(1, 'work', 'others', person)
-    date_self_suffix = index_name(1, person)
-    day = 1
+    person_index = index_name(person)
+    time_format = '%m-%d-%y'
+    date = pd.date_range(start='02/23/2022', end='02/23/2022')[0]
+    date_str = date.strftime(time_format)
+    date_event_others_to_person = index_name(
+        date_str,
+        'work',
+        'others',
+        person
+    )
+    date_self_suffix = index_name(date_str, person)
     dose_key = f"dose_tmp_13_{date_event_others_to_person}"
     outcome_col = f'dsi_{date_self_suffix}'
 
     bn = bayesian_network_1
 
+    viral_load_n_key = f'viral_load_n_{person_index}'
+    viral_load_p_key = f'viral_load_p_{person_index}'
+
+    immunity_key = f'immunity_{person_index}'
+
+    viral_load_n_df = create_viral_load_n(
+        viral_load_n_key=viral_load_n_key,
+        immunity_key=immunity_key
+    )
+
+    viral_load_p_df = create_viral_load_p(
+        viral_load_p_key=viral_load_p_key,
+        immunity_key=immunity_key
+    )
+    immunity_factor_key = f'immunity_factor_{person_index}'
+    immunity_factor_df = create_immunity_factor(
+        immunity_key=immunity_key,
+        immunity_factor_key=immunity_factor_key
+    )
+
     create_inf_dsi_viral_load_measurements(
         person=person,
-        time=day,
+        time=date,
         dose_key=dose_key,
-        bayesian_network=bayesian_network_1
+        bayesian_network=bayesian_network_1,
+        time_format=time_format,
+        viral_load_n_key=viral_load_n_key,
+        viral_load_p_key=viral_load_p_key,
+        viral_load_n_df=viral_load_n_df,
+        viral_load_p_df=viral_load_p_df,
+        immunity_key=immunity_key,
+        immunity_factor_key=immunity_factor_key,
+        immunity_factor_df=immunity_factor_df,
     )
 
     result = VE(
@@ -442,44 +562,3 @@ def test_create_inf_dsi_viral_load_measurements_4():
     assert rapid_mean < pcr_mean
 
 
-def test_create_inf_dsi_viral_load_measurements_3():
-    """
-    Create longitudinal data. Test that we can run inference.
-    """
-    bayesian_network_1 = BN(graphviz_dag=graphviz.Digraph())
-
-    person = 'edderic'
-    bn = bayesian_network_1
-
-    dates = pd.date_range(start='02/23/2022', end='02/25/22')
-    create_longitudinal(dates)
-    for date in dates:
-        date_person_event_suffix = index_name(date, person, 'work')
-        date_event_others_to_person = index_name(date, 'work', 'others', person)
-        date_event_self_suffix = index_name(date, 'work', person)
-        date_self_suffix = index_name(date, person)
-        day = date
-        day_index = index_name(day)
-        self_suffix = index_name(person)
-        dose_key = f"dose_tmp_13_{date_event_others_to_person}"
-        outcome_col = f'viral_load_{date_self_suffix}'
-
-        create_inf_dsi_viral_load_measurements(
-            person=person,
-            time=day,
-            dose_key=dose_key,
-            bayesian_network=bayesian_network_1
-        )
-
-    result = VE(
-        network=bn,
-        query=Query(
-            outcomes=[outcome_col],
-            givens=[],
-        )
-    ).compute()
-
-    result_df = result.get_df()
-    (result_df[outcome_col] * result_df['value']).sum()
-    result_df
-    import pdb; pdb.set_trace()
