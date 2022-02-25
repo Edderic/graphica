@@ -11,10 +11,12 @@ from ..linx.data import InMemoryData
 from ..linx.examples.covid_safe import (
     create_days_since_infection_covid,
     create_dose_from_strangers,
+    create_end_symp,
     create_immunity_factor,
     create_infection_from_dose,
     create_inf_dsi_viral_load_measurements,
     create_longitudinal,
+    create_start_symp,
     create_viral_load,
     create_viral_load_n,
     create_viral_load_p,
@@ -161,7 +163,6 @@ def test_create_at_least_one_inf_1():
         (results[1][outcome_col] * results[1]['value']).sum()
 
 
-@pytest.mark.f
 def test_create_infection_from_dose():
     """
     Test that each possible dose affects the probability of infection.
@@ -282,6 +283,7 @@ def test_create_viral_load():
     )
 
 
+@pytest.mark.f
 def test_create_inf_dsi_viral_load_measurements_1():
     """
     Test that getting a positive PCR makes it more likely that someone has a
@@ -326,6 +328,20 @@ def test_create_inf_dsi_viral_load_measurements_1():
         immunity_factor_key=immunity_factor_key
     )
 
+    start_symp_key = f'start_symp_{person_index}'
+    end_symp_key = f'end_symp_{person_index}'
+
+    start_symp_df = create_start_symp(
+        immunity_key=immunity_key,
+        start_symp_key=start_symp_key
+
+    )
+
+    end_symp_df = create_end_symp(
+        immunity_key=immunity_key,
+        end_symp_key=end_symp_key
+    )
+
     create_inf_dsi_viral_load_measurements(
         person=person,
         time=date,
@@ -339,6 +355,10 @@ def test_create_inf_dsi_viral_load_measurements_1():
         immunity_key=immunity_key,
         immunity_factor_key=immunity_factor_key,
         immunity_factor_df=immunity_factor_df,
+        start_symp_key=start_symp_key,
+        end_symp_key=end_symp_key,
+        start_symp_df=start_symp_df,
+        end_symp_df=end_symp_df,
     )
 
     result = VE(
@@ -418,6 +438,20 @@ def test_create_inf_dsi_viral_load_measurements_2():
         immunity_factor_key=immunity_factor_key
     )
 
+    start_symp_key = f'start_symp_{person_index}'
+    end_symp_key = f'end_symp_{person_index}'
+
+    start_symp_df = create_start_symp(
+        immunity_key=immunity_key,
+        start_symp_key=start_symp_key
+
+    )
+
+    end_symp_df = create_end_symp(
+        immunity_key=immunity_key,
+        end_symp_key=end_symp_key
+    )
+
     create_inf_dsi_viral_load_measurements(
         person=person,
         time=date,
@@ -431,6 +465,10 @@ def test_create_inf_dsi_viral_load_measurements_2():
         immunity_key=immunity_key,
         immunity_factor_key=immunity_factor_key,
         immunity_factor_df=immunity_factor_df,
+        start_symp_key=start_symp_key,
+        end_symp_key=end_symp_key,
+        start_symp_df=start_symp_df,
+        end_symp_df=end_symp_df,
     )
 
     result = VE(
@@ -514,6 +552,20 @@ def test_create_inf_dsi_viral_load_measurements_4():
         immunity_factor_key=immunity_factor_key
     )
 
+    start_symp_key = f'start_symp_{person_index}'
+    end_symp_key = f'end_symp_{person_index}'
+
+    start_symp_df = create_start_symp(
+        immunity_key=immunity_key,
+        start_symp_key=start_symp_key
+
+    )
+
+    end_symp_df = create_end_symp(
+        immunity_key=immunity_key,
+        end_symp_key=end_symp_key
+    )
+
     create_inf_dsi_viral_load_measurements(
         person=person,
         time=date,
@@ -527,6 +579,10 @@ def test_create_inf_dsi_viral_load_measurements_4():
         immunity_key=immunity_key,
         immunity_factor_key=immunity_factor_key,
         immunity_factor_df=immunity_factor_df,
+        start_symp_key=start_symp_key,
+        end_symp_key=end_symp_key,
+        start_symp_df=start_symp_df,
+        end_symp_df=end_symp_df,
     )
 
     result = VE(
@@ -608,6 +664,20 @@ def test_create_inf_dsi_viral_load_measurements_5():
         immunity_factor_key=immunity_factor_key
     )
 
+    start_symp_key = f'start_symp_{person_index}'
+    end_symp_key = f'end_symp_{person_index}'
+
+    start_symp_df = create_start_symp(
+        immunity_key=immunity_key,
+        start_symp_key=start_symp_key
+
+    )
+
+    end_symp_df = create_end_symp(
+        immunity_key=immunity_key,
+        end_symp_key=end_symp_key
+    )
+
     create_inf_dsi_viral_load_measurements(
         person=person,
         time=date,
@@ -621,6 +691,10 @@ def test_create_inf_dsi_viral_load_measurements_5():
         immunity_key=immunity_key,
         immunity_factor_key=immunity_factor_key,
         immunity_factor_df=immunity_factor_df,
+        start_symp_key=start_symp_key,
+        end_symp_key=end_symp_key,
+        start_symp_df=start_symp_df,
+        end_symp_df=end_symp_df,
     )
 
     dictionary = {
