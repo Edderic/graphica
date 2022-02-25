@@ -562,3 +562,119 @@ def test_create_inf_dsi_viral_load_measurements_4():
     assert rapid_mean < pcr_mean
 
 
+@pytest.mark.f
+def test_create_inf_dsi_viral_load_measurements_5():
+    """
+    People with no symptoms are more likely to not be infected at the moment
+    than someone with symptoms.
+
+    """
+    bayesian_network_1 = BN(graphviz_dag=graphviz.Digraph())
+
+    person = 'edderic'
+    person_index = index_name(person)
+    time_format = '%m-%d-%y'
+    date = pd.date_range(start='02/23/2022', end='02/23/2022')[0]
+    date_str = date.strftime(time_format)
+    date_event_others_to_person = index_name(
+        date_str,
+        'work',
+        'others',
+        person
+    )
+    date_self_suffix = index_name(date_str, person)
+    dose_key = f"dose_tmp_13_{date_event_others_to_person}"
+    outcome_col = f'dsi_{date_self_suffix}'
+
+    bn = bayesian_network_1
+
+    viral_load_n_key = f'viral_load_n_{person_index}'
+    viral_load_p_key = f'viral_load_p_{person_index}'
+
+    immunity_key = f'immunity_{person_index}'
+
+    viral_load_n_df = create_viral_load_n(
+        viral_load_n_key=viral_load_n_key,
+        immunity_key=immunity_key
+    )
+
+    viral_load_p_df = create_viral_load_p(
+        viral_load_p_key=viral_load_p_key,
+        immunity_key=immunity_key
+    )
+    immunity_factor_key = f'immunity_factor_{person_index}'
+    immunity_factor_df = create_immunity_factor(
+        immunity_key=immunity_key,
+        immunity_factor_key=immunity_factor_key
+    )
+
+    create_inf_dsi_viral_load_measurements(
+        person=person,
+        time=date,
+        dose_key=dose_key,
+        bayesian_network=bayesian_network_1,
+        time_format=time_format,
+        viral_load_n_key=viral_load_n_key,
+        viral_load_p_key=viral_load_p_key,
+        viral_load_n_df=viral_load_n_df,
+        viral_load_p_df=viral_load_p_df,
+        immunity_key=immunity_key,
+        immunity_factor_key=immunity_factor_key,
+        immunity_factor_df=immunity_factor_df,
+    )
+
+    dictionary = {
+        f"infected_{date_self_suffix}": {
+            0: 0.95,
+            1: 0.05
+        },
+    }
+
+    bn.set_priors(
+        dictionary=dictionary,
+        data_class=InMemoryData,
+    )
+
+    result = VE(
+        network=bn,
+        query=Query(
+            outcomes=[outcome_col],
+            givens=[
+                {
+                    f'symptomatic_{date_self_suffix}': 1
+                }
+            ],
+        )
+    ).compute()
+
+    symptomatic_df = result.get_df()
+
+    result_2 = VE(
+        network=bn,
+        query=Query(
+            outcomes=[outcome_col],
+            givens=[
+                {
+                    f'symptomatic_{date_self_suffix}': 0
+                }
+            ],
+        )
+    ).compute()
+
+    asymptomatic_df = result_2.get_df()
+
+    symptomatic_value = symptomatic_df[
+        symptomatic_df['dsi_(02-23-22, edderic)'] == 0
+    ].loc[0, 'value']
+
+    asymptomatic_value = asymptomatic_df[
+        asymptomatic_df['dsi_(02-23-22, edderic)'] == 0
+    ].loc[0, 'value']
+
+    # dsi of 0 should be more likely in the asymptomatic case
+    assert symptomatic_value < asymptomatic_value
+
+    # when someone is symptomatic, their day since infection between 1-13
+    # becomes more likely than if someone was not symptomatic
+    assert symptomatic_df['value'].loc[1:14].mean() \
+        > asymptomatic_df['value'].loc[1:14].mean()
