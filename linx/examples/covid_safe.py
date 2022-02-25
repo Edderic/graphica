@@ -617,7 +617,10 @@ def create_inf_dsi_viral_load_measurements(
     immunity_key,
     immunity_factor_key,
     immunity_factor_df,
-
+    start_symp_key,
+    end_symp_key,
+    start_symp_df,
+    end_symp_df,
 ):
     prev_time_person_index = index_name(
         (time-timedelta(days=1)).strftime(time_format),
@@ -680,20 +683,6 @@ def create_inf_dsi_viral_load_measurements(
         viral_load_unique=viral_load_df[viral_load_key].unique()
     )
 
-    start_symp_key = f'start_symp_{time_person_index}'
-    end_symp_key = f'end_symp_{time_person_index}'
-
-    start_symp_df = create_start_symp(
-        immunity_key=immunity_key,
-        start_symp_key=start_symp_key
-
-    )
-
-    end_symp_df = create_end_symp(
-        immunity_key=immunity_key,
-        end_symp_key=end_symp_key
-    )
-
     symptoms_df, symptomatic_time_key = create_symptoms(
         person,
         time_str,
@@ -722,8 +711,6 @@ def create_inf_dsi_viral_load_measurements(
         viral_load_key,
         rapid_key,
         pcr_key,
-        start_symp_key,
-        end_symp_key,
         symptomatic_time_key,
         quanta_key
     ]
@@ -734,8 +721,6 @@ def create_inf_dsi_viral_load_measurements(
         viral_load_df,
         rapid_test_df,
         pcr_test_df,
-        start_symp_df,
-        end_symp_df,
         symptoms_df,
         quanta_df
     ]
@@ -1528,8 +1513,35 @@ def create_longitudinal(
         immunity_factor_key=immunity_factor_key
     )
 
-    keys = [viral_load_n_key, viral_load_p_key, immunity_factor_key]
-    dfs = [viral_load_n_df, viral_load_p_df, immunity_factor_df]
+    start_symp_key = f'start_symp_{person_index}'
+    end_symp_key = f'end_symp_{person_index}'
+
+    start_symp_df = create_start_symp(
+        immunity_key=immunity_key,
+        start_symp_key=start_symp_key
+
+    )
+
+    end_symp_df = create_end_symp(
+        immunity_key=immunity_key,
+        end_symp_key=end_symp_key
+    )
+
+    keys = [
+        viral_load_n_key,
+        viral_load_p_key,
+        immunity_factor_key,
+        start_symp_key,
+        end_symp_key
+    ]
+
+    dfs = [
+        viral_load_n_df,
+        viral_load_p_df,
+        immunity_factor_df,
+        start_symp_df,
+        end_symp_df
+    ]
 
     add_dfs_to_bn(
         bayesian_network,
@@ -1568,7 +1580,11 @@ def create_longitudinal(
             viral_load_p_df=viral_load_p_df,
             immunity_key=immunity_key,
             immunity_factor_key=immunity_factor_key,
-            immunity_factor_df=immunity_factor_df
+            immunity_factor_df=immunity_factor_df,
+            start_symp_key=start_symp_key,
+            end_symp_key=end_symp_key,
+            start_symp_df=start_symp_df,
+            end_symp_df=end_symp_df,
         )
 
 
