@@ -1361,17 +1361,38 @@ def create_avg_mask_reduction_from_others(suffix):
     return avg_mask_reduction_from_others, new_key
 
 
-def round_column(df, key, rounding, lower_bound=1):
+def round_column(df, key, rounding):
     """
     Round numbers to decrease the memory footprint.
     """
-    df[key].mask(
-        df[key] > lower_bound,
-        df[key].round(0),
-        inplace=True
-    )
+    ranges = [
+        0,
+        1,
+        10,
+        100,
+        1000,
+        10_000,
+        100_000,
+        1_000_000,
+        10_000_000,
+        100_000_000
+    ]
 
-    df.loc[:, key] = df[key].round(rounding)
+    for i, val in enumerate(ranges[:-1]):
+        next_val = ranges[i + 1]
+
+        if i == 0:
+            actual_rounding = rounding
+            power = 0
+        else:
+            actual_rounding = 0
+            power = i - 1
+
+        df[key].mask(
+            (df[key] > val) & (df[key] <= next_val),
+            (df[key] / 10**(power)).round(actual_rounding) * 10**(power),
+            inplace=True
+        )
 
 
 def create_at_least_one_inf(
@@ -1788,14 +1809,6 @@ def create_dose_from_people(
 
     key_to_df[vol_vent_mult_key] = multiplied_df
 
-    vol_vent_df = divide_1_by(
-        divisor_unique=multiplied_df[vol_vent_mult_key],
-        divisor_name=vol_vent_mult_key,
-        new_key=vol_vent_key
-    )
-
-    key_to_df[vol_vent_key] = vol_vent_df
-
     # Add branch for others.
     # Loop through friends.Connect them
     quanta_unique = list(range(0, 90, 10))
@@ -1938,7 +1951,9 @@ def create_dose_from_people(
                 factor_2_name=tmp_1_key,
                 new_key=tmp_5_key
             )
+            # TODO: round to preserve memory
             key_to_df[tmp_5_key] = tmp_5_df
+            round_column(tmp_5_df, tmp_5_key, rounding=5)
 
             # Add inhalation
             inhalation_rate_key = \
@@ -1960,6 +1975,8 @@ def create_dose_from_people(
                 factor_2_name=inhalation_rate_key,
                 new_key=tmp_6_key
             )
+            round_column(tmp_6_df, tmp_6_key, rounding=5)
+
             key_to_df[tmp_6_key] = tmp_6_df
             # Add effect of masking the inhaler
             tmp_7_key = f'tmp_7_{time_event_giver_to_receiver}'
@@ -1970,11 +1987,11 @@ def create_dose_from_people(
                 factor_2_name=tmp_6_key,
                 new_key=tmp_7_key
             )
+            round_column(tmp_7_df, tmp_7_key, rounding=5)
             key_to_df[tmp_7_key] = tmp_7_df
             # TODO: pair limited ventilation / volume with
 
             giver_data = giver_dict[giver]
-            # receiver_data = receiver_dict[receiver]
 
             tmp_8_key = f'tmp_8_{time_event_giver_to_receiver}'
             tmp_8_df = divide_by(
@@ -1985,23 +2002,8 @@ def create_dose_from_people(
                 new_key=tmp_8_key
             )
 
+            round_column(tmp_8_df, tmp_8_key, rounding=5)
             key_to_df[tmp_8_key] = tmp_8_df
-
-            # receive_dose_key = f'dose_{time_event_giver_to_receiver}'
-            # tmp_dose_received = multiply_by(
-                # factor_1_unique=giver_data['df'][giver_data['key']].unique(),
-                # factor_1_name=giver_data['key'],
-                # factor_2_unique=receiver_data['md_df'][
-                    # receiver_data['md_key']
-                # ].unique(),
-                # factor_2_name=receiver_data['md_key'],
-                # new_key=receive_dose_key
-            # )
-#
-            # TODO: hook up mask duration of givers to receivers
-            # TODO: Create a product of mask and duration for each individual
-            # that doesn't listen to vol_vent so that it's more reusable
-            # key_to_df[receive_dose_key] = tmp_dose_received
 
     add_dfs_to_bn(
         bayesian_network=bayesian_network,
@@ -2010,6 +2012,16 @@ def create_dose_from_people(
         storage_folder=storage_folder
     )
 
+    # sum_up_doses_of_people(
+        # friends,
+        # time_str,
+        # event,
+        # bayesian_network,
+        # prefix=f'tmp_8',
+        # rounding=4,
+        # storage_folder=storage_folder
+    # )
+#
     # TODO: sum the doses.
 
 
@@ -2484,6 +2496,7 @@ def sum_up_doses_of_people(
     bayesian_network,
     prefix="tmp_9",
     rounding=5,
+    max_val=10,
     storage_folder=None
 ):
     """
@@ -2513,8 +2526,8 @@ def sum_up_doses_of_people(
             # Below, we have two keys available
 
             parameters = {
-                key_1: np.arange(0.0, 10.0, 0.0001).round(rounding),
-                key_2: np.arange(0.0, 10.0, 0.0001).round(rounding),
+                key_1: np.arange(0.0, float(max_val), 1.0 / rounding).round(rounding),
+                key_2: np.arange(0.0, float(max_val), 1.0 / rounding).round(rounding),
             }
 
             dtypes = {
@@ -2531,7 +2544,7 @@ def sum_up_doses_of_people(
                 func=add
             )
 
-            cap(df=df, key=new_key, maximum=2)
+            cap(df=df, key=new_key, maximum=max_val)
             df[new_key] = df[new_key].round(rounding)
 
             add_edge_to_bn(

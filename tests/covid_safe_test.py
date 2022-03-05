@@ -9,6 +9,7 @@ from ..linx.infer import VariableElimination as VE
 from ..linx.data import InMemoryData
 
 from ..linx.examples.covid_safe import (
+    create_bayesian_network,
     create_days_since_infection_covid,
     create_dose_from_strangers,
     create_end_symp,
@@ -22,10 +23,26 @@ from ..linx.examples.covid_safe import (
     create_viral_load_p,
     create_volume_ventilation_df,
     divide_1_by,
-    index_name
+    index_name,
+    round_column,
 )
 
 from ..linx.misc import get_tmp_path, clean_tmp
+
+
+def test_round_column():
+    key = 'the_key'
+    df = pd.DataFrame({
+        key: [0.123456, 0.123, 2.34, 23.45, 345.67]
+    })
+
+    expected = pd.DataFrame({
+        key: [0.12346, 0.123, 2.0, 20.0, 300.0]
+    })
+
+    round_column(df, key, rounding=5)
+
+    assert df.equals(expected)
 
 
 def test_divide_1_by():
@@ -283,7 +300,6 @@ def test_create_viral_load():
     )
 
 
-@pytest.mark.f
 def test_create_inf_dsi_viral_load_measurements_1():
     """
     Test that getting a positive PCR makes it more likely that someone has a
@@ -618,7 +634,6 @@ def test_create_inf_dsi_viral_load_measurements_4():
     assert rapid_mean < pcr_mean
 
 
-@pytest.mark.f
 def test_create_inf_dsi_viral_load_measurements_5():
     """
     People with no symptoms are more likely to not be infected at the moment
