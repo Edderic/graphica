@@ -329,31 +329,21 @@ def create_viral_load(
 
 
 def create_quanta_curve(
-    viral_load_unique,
     quanta_unique,
     viral_load_key,
-    quanta_key
+    quanta_key,
+    viral_load_unique=None,
 ):
     """
     Produce quanta depending on viral load.
 
     Parameters:
         viral_load_unique: list[float]
+            Currently unused.
         quanta_unique: list[float]
 
     Returns: pd.DataFrame
     """
-    parameters = {
-        viral_load_key: viral_load_unique,
-        quanta_key: quanta_unique
-    }
-
-    dtypes = {
-        viral_load_key: 'float64',
-        quanta_key: 'float64'
-    }
-
-    df = mega_join_cross_product(parameters, dtypes)
     mapping = {
         0.9: 80,
         0.8: 70,
@@ -367,6 +357,17 @@ def create_quanta_curve(
         0.0: 0
 
     }
+    parameters = {
+        viral_load_key: list(mapping.keys()),
+        quanta_key: quanta_unique
+    }
+
+    dtypes = {
+        viral_load_key: 'float64',
+        quanta_key: 'float64'
+    }
+
+    df = mega_join_cross_product(parameters, dtypes)
 
     for viral_load, quanta in mapping.items():
         df['value'].mask(
@@ -622,6 +623,10 @@ def create_inf_dsi_viral_load_measurements(
     start_symp_df,
     end_symp_df,
 ):
+    """
+    Create probability of infection, days-since-infection, viral load,
+    symptoms, pcr & rapid test results.
+    """
     prev_time_person_index = index_name(
         (time-timedelta(days=1)).strftime(time_format),
         person
@@ -919,9 +924,9 @@ def create_volume_ventilation_df(suffix, new_key):
             The name that we'll assign to the new column.
     """
     parameters = {
-        f'ventilation_{suffix}': [0.1, 1, 2, 4, 8, 16, 20, 500],
+        f'ventilation_{suffix}': [0.5, 1, 2, 4, 8, 10, 16, 20, 500],
         f'volume_{suffix}':
-            [10, 20, 40, 60, 100, 160, 260, 420, 680, 1100, 1780, 2880],
+            [10, 20, 30, 40, 60, 100, 160, 260, 420, 680, 1100, 1780, 2880, 10000],
     }
 
     dtypes = {
@@ -1198,7 +1203,7 @@ def create_activity_specific_breathing_rate_df(
             '11 to <16':
                 np.arange(0.0054, 0.0075, 0.0001).round(rounding),
             '16 to <21':
-                np.arange(0.0053, 0.0072, 0.0001).round(4),
+                np.arange(0.0053, 0.0072, 0.0001).round(rounding),
             '21 to <31':
                 np.arange(0.0042, 0.0065, 0.0001).round(rounding),
             '31 to <41':
@@ -1568,6 +1573,29 @@ def create_longitudinal(
             time_format=time_format
         )
 
+        # TODO: create interactions between known individuals.
+        # Then add the sum of doses from individuals with dose from strangers.
+        # We could have this part be delegated to a function to make it more
+        # flexible.
+
+        # Scenario 1: The person is a loner and doesn't have friends. In that
+        # point of view, everyone else is a stranger.
+
+        # Scenario 2: The person is not a loner. The person hangs out with only
+        # known people.
+
+        # Scenario 3: The person hangs out with a mix of known people and
+        # strangers (e.g. at a restaurant).
+        #     Person and known people share
+        #         - location/gathering type
+        #         - ventilation
+        #         - volume
+        #         - activity
+        #         - number of people seen
+        #         - unreported cases
+        #         - duration hyperprior?
+
+
         create_inf_dsi_viral_load_measurements(
             person=person,
             time=date,
@@ -1586,6 +1614,395 @@ def create_longitudinal(
             start_symp_df=start_symp_df,
             end_symp_df=end_symp_df,
         )
+
+
+def create_event_mapping(
+    outcome_name,
+    outcome_mappings,
+    event_suffix
+):
+    """
+    Useful for dynamically generating CPTs related to the event.
+    Some CPTs are stable -- anyone could use them. However, some CPTs are very
+    specific to other people, so it makes sense to sometimes not have
+    hard-coded CPTs
+    """
+    collection = []
+
+    for event, obj in outcome_mappings.items():
+        for outcome, proba in obj.items():
+            collection.append({
+                f'event_{event_suffix}': event,
+                outcome_name: outcome,
+                'value': proba
+            })
+
+    return pd.DataFrame(collection)
+
+
+def create_duration_between_two_people(
+    time,
+    event,
+    person_1,
+    person_2,
+    duration_unique
+):
+    key_1 = f'duration_{index_name(time, event, person_1)}'
+    key_2 = f'duration_{index_name(time, event, person_2)}'
+    min_dur_key = f'min_duration_{index_name(time, event, person_1, person_2)}'
+
+    parameters = {
+        key_1: duration_unique,
+        key_2: duration_unique
+    }
+
+    dtypes = {
+        key_1: 'float64',
+        key_2: 'float64',
+    }
+
+    df = mega_join_cross_product(parameters, dtypes)
+    df[min_dur_key] = \
+        df.apply(lambda x: min(x[key_1], x[key_2]), axis=1)
+
+    return min_dur_key, df
+
+
+def create_lim_vol_vent(
+    time,
+    event,
+    vol_vent_mult_unique,
+    vol_vent_mult_key,
+    dist_unique,
+    people
+):
+    person_1 = people[0]
+    person_2 = people[1]
+
+    distance_key = f'distance_{index_name(time, event, person_1, person_2)}'
+    lim_mult_key = f'lim_mult_vv_{index_name(time, event, person_1, person_2)}'
+
+    parameters = {
+        distance_key: dist_unique,
+        vol_vent_mult_key: vol_vent_mult_unique
+    }
+
+    dtypes = {
+        distance_key: 'float64',
+        vol_vent_mult_key: 'float64',
+    }
+
+    df = mega_join_cross_product(parameters, dtypes)
+
+    tmp_key = 'tmp_key'
+
+    df[tmp_key] = 1.0
+
+    # check how many meters away from each other
+
+    # TODO: could refactor using pd.cut here
+    df[tmp_key].mask(df[distance_key] >= 2.0, 6.0 / 6)
+
+    for i in range(5, -1, -1):
+        df[tmp_key].mask(
+            (df[distance_key] > 2.0 * i / 6.0) \
+            & (df[distance_key] <= 2.0 * (i + 1) / 6.0),
+            i / 6.0
+        )
+
+    df[lim_mult_key] = df[vol_vent_mult_key] * df[tmp_key]
+
+    return lim_mult_key, df[[vol_vent_mult_key, lim_mult_key, 'value']]
+
+
+def create_dose_from_people(
+    time,
+    friends,
+    event,
+    bayesian_network,
+    storage_folder=None,
+    time_format='%m-%d-%y',
+    rounding=5
+):
+    time_str = time.strftime(time_format)
+
+    time_event_index = index_name(time_str, event)
+    volume_key = f'volume_{time_event_index}'
+    ventilation_key = f'ventilation_{time_event_index}'
+    vol_vent_mult_key = f'vol_vent_mult_{time_event_index}'
+    vol_vent_key = f'vol_vent_{time_event_index}'
+
+    mappings = {
+        'volume': {
+            'mighty squirrel': {
+                10_000: 1.0
+            },
+            "ruberic's living room": {
+                30: 1.0
+            }
+        },
+        'ventilation': {
+            'mighty squirrel': {
+                0.5: 0.5,
+                1.0: 0.5,
+            },
+            "ruberic's living room": {
+                30: 1.0
+            }
+        }
+    }
+
+    key_to_df = {}
+
+    volume_df = create_event_mapping(
+        outcome_name=volume_key,
+        outcome_mappings=mappings['volume'],
+        event_suffix=time_event_index
+    )
+
+    key_to_df[volume_key] = volume_df
+
+    ventilation_df = create_event_mapping(
+        outcome_name=ventilation_key,
+        outcome_mappings=mappings['ventilation'],
+        event_suffix=time_event_index
+    )
+
+    key_to_df[ventilation_key] = ventilation_df
+
+    multiplied_df = multiply_by(
+        factor_1_unique=volume_df[volume_key].unique(),
+        factor_1_name=volume_key,
+        factor_2_unique=ventilation_df[ventilation_key].unique(),
+        factor_2_name=ventilation_key,
+        new_key=vol_vent_mult_key
+    )
+
+    key_to_df[vol_vent_mult_key] = multiplied_df
+
+    vol_vent_df = divide_1_by(
+        divisor_unique=multiplied_df[vol_vent_mult_key],
+        divisor_name=vol_vent_mult_key,
+        new_key=vol_vent_key
+    )
+
+    key_to_df[vol_vent_key] = vol_vent_df
+
+    # Add branch for others.
+    # Loop through friends.Connect them
+    quanta_unique = list(range(0, 90, 10))
+    duration_unique = [
+        0.25, 0.5, 1, 2, 3, 5, 8, 13, 21
+    ]
+
+    dist_unique = np.arange(0.0, 2.0, 1.0 / 6.0).round(2)
+
+    mask_unique = [1, 0.7, 0.4, 0.10, 0.01]
+    giver_dict = {}
+
+    for giver in friends:
+        time_giver_index = index_name(time_str, giver)
+        time_event_giver_index = index_name(time_str, event, giver)
+
+        # Giver
+        quanta_key = f'quanta_{time_giver_index}'
+
+        res = create_activity_exhalation(
+            suffix=time_giver_index,
+            bayesian_network=bayesian_network,
+            storage_folder=storage_folder
+        )
+
+        tmp_0_key = f"tmp_0_{time_event_giver_index}"
+        exhalation_df = multiply_by(
+            factor_1_unique=quanta_unique,
+            factor_1_name=quanta_key,
+            factor_2_unique=res['activity_exhalation_df'][
+                res['exhalation_factor_key']
+            ].unique(),
+            factor_2_name=res['exhalation_factor_key'],
+            new_key=tmp_0_key
+        )
+
+        key_to_df[tmp_0_key] = exhalation_df
+
+        tmp_1_key = f'tmp_1_{time_event_giver_index}'
+        mask_key = f'mask_{time_event_giver_index}'
+
+        tmp_1_df = multiply_by(
+            factor_1_unique=exhalation_df[tmp_0_key].unique(),
+            factor_1_name=tmp_0_key,
+            factor_2_unique=mask_unique,
+            factor_2_name=mask_key,
+            new_key=tmp_1_key
+        )
+
+        giver_dict[giver] = {
+            'key': tmp_0_key,
+            'df': exhalation_df
+        }
+
+        key_to_df[tmp_1_key] = tmp_1_df
+
+    visited_pair = {}
+
+    for giver in friends:
+        for receiver in friends:
+            if giver == receiver:
+                continue
+
+            sorted_key = '-'.join(sorted([giver, receiver]))
+
+            if sorted_key not in visited_pair:
+                min_dur_key, min_dur_df = create_duration_between_two_people(
+                    time=time_str,
+                    event=event,
+                    person_1=giver,
+                    person_2=receiver,
+                    duration_unique=duration_unique
+                )
+
+                key_to_df[min_dur_key] = min_dur_df
+
+                visited_pair[sorted_key] = {
+                    'key': min_dur_key,
+                    'df': min_dur_df
+                }
+
+                vol_vent_mult_df = key_to_df[vol_vent_mult_key]
+                lim_mult_key, lim_df = create_lim_vol_vent(
+                    time_str,
+                    event,
+                    vol_vent_mult_unique=vol_vent_mult_df[vol_vent_mult_key],
+                    vol_vent_mult_key=vol_vent_mult_key,
+                    dist_unique=dist_unique,
+                    people=[giver, receiver]
+                )
+
+                key_to_df[lim_mult_key] = lim_df
+
+    for giver in friends:
+        time_event_giver_index = index_name(time_str, event, giver)
+
+        for receiver in friends:
+            if giver == receiver:
+                continue
+
+            time_event_receiver_index = index_name(
+                time_str,
+                event,
+                receiver
+            )
+
+            time_event_giver_to_receiver = index_name(
+                time_str,
+                event,
+                giver,
+                receiver
+            )
+
+
+            sorted_names = sorted([giver, receiver])
+            sorted_key = '-'.join(sorted_names)
+
+            lim_mult_index = index_name(
+                time_str,
+                event,
+                sorted_names[0],
+                sorted_names[1]
+            )
+
+            lim_mult_key = f'lim_mult_vv_{lim_mult_index}'
+
+            mask_key = f'mask_{time_event_receiver_index}'
+            # Add duration
+            duration_pair = visited_pair[sorted_key]
+            duration_pair_key = duration_pair['key']
+            duration_pair_df = duration_pair['df']
+
+            tmp_1_key = f'tmp_1_{time_event_giver_index}'
+
+            tmp_5_key = f'tmp_5_{time_event_giver_to_receiver}'
+            tmp_5_df = multiply_by(
+                factor_1_unique=duration_pair_df[duration_pair_key].unique(),
+                factor_1_name=duration_pair_key,
+                factor_2_unique=key_to_df[tmp_1_key][tmp_1_key].unique(),
+                factor_2_name=tmp_1_key,
+                new_key=tmp_5_key
+            )
+            key_to_df[tmp_5_key] = tmp_5_df
+
+            # Add inhalation
+            inhalation_rate_key = \
+                f'inhalation_rate_{time_event_receiver_index}'
+
+            activity_specific_df = create_activity_specific_breathing_rate_df(
+                receiver,
+                time_str,
+                event,
+                inhalation_rate_key
+            )
+            key_to_df[inhalation_rate_key] = activity_specific_df
+
+            tmp_6_key = f'tmp_6_{time_event_giver_to_receiver}'
+            tmp_6_df = multiply_by(
+                factor_1_unique=tmp_5_df[tmp_5_key].unique(),
+                factor_1_name=tmp_5_key,
+                factor_2_unique=activity_specific_df[inhalation_rate_key].unique(),
+                factor_2_name=inhalation_rate_key,
+                new_key=tmp_6_key
+            )
+            key_to_df[tmp_6_key] = tmp_6_df
+            # Add effect of masking the inhaler
+            tmp_7_key = f'tmp_7_{time_event_giver_to_receiver}'
+            tmp_7_df = multiply_by(
+                factor_1_unique=mask_unique,
+                factor_1_name=mask_key,
+                factor_2_unique=tmp_6_df[tmp_6_key].unique(),
+                factor_2_name=tmp_6_key,
+                new_key=tmp_7_key
+            )
+            key_to_df[tmp_7_key] = tmp_7_df
+            # TODO: pair limited ventilation / volume with
+
+            giver_data = giver_dict[giver]
+            # receiver_data = receiver_dict[receiver]
+
+            tmp_8_key = f'tmp_8_{time_event_giver_to_receiver}'
+            tmp_8_df = divide_by(
+                factor_1_unique=tmp_7_df[tmp_7_key].unique(),
+                factor_1_name=tmp_7_key,
+                factor_2_unique=key_to_df[lim_mult_key][lim_mult_key].unique(),
+                factor_2_name=lim_mult_key,
+                new_key=tmp_8_key
+            )
+
+            key_to_df[tmp_8_key] = tmp_8_df
+
+            # receive_dose_key = f'dose_{time_event_giver_to_receiver}'
+            # tmp_dose_received = multiply_by(
+                # factor_1_unique=giver_data['df'][giver_data['key']].unique(),
+                # factor_1_name=giver_data['key'],
+                # factor_2_unique=receiver_data['md_df'][
+                    # receiver_data['md_key']
+                # ].unique(),
+                # factor_2_name=receiver_data['md_key'],
+                # new_key=receive_dose_key
+            # )
+#
+            # TODO: hook up mask duration of givers to receivers
+            # TODO: Create a product of mask and duration for each individual
+            # that doesn't listen to vol_vent so that it's more reusable
+            # key_to_df[receive_dose_key] = tmp_dose_received
+
+    add_dfs_to_bn(
+        bayesian_network=bayesian_network,
+        dfs=list(key_to_df.values()),
+        keys=list(key_to_df.keys()),
+        storage_folder=storage_folder
+    )
+
+    # TODO: sum the doses.
 
 
 def create_dose_from_strangers(
@@ -1746,6 +2163,8 @@ def create_dose_from_strangers(
         storage_folder=storage_folder
     )
 
+    return new_key_13
+
 
 def create_infection_from_dose(suffix, dose_key, infected_key):
     """
@@ -1860,14 +2279,14 @@ def create_dose_pair_between(
 
     new_key_7 = f'{prefix}_7_{pair_suffix}'
     tmp_7_df = multiply_by(
-            factor_1_unique=tmp_5_df[new_key_5].unique(),
-            factor_1_name=new_key_5,
-            factor_2_unique=[
-                1, 4.7, 30.3, 1.2, 5.7, 32.6, 2.8, 13.2, 85, 6.8, 31.6, 204
-            ],
-            factor_2_name=f'exhalation_factor_{potential_infector_event_suffix}',
-            new_key=new_key_7
-            )
+        factor_1_unique=tmp_5_df[new_key_5].unique(),
+        factor_1_name=new_key_5,
+        factor_2_unique=[
+            1, 4.7, 30.3, 1.2, 5.7, 32.6, 2.8, 13.2, 85, 6.8, 31.6, 204
+        ],
+        factor_2_name=f'exhalation_factor_{potential_infector_event_suffix}',
+        new_key=new_key_7
+    )
 
     cap(df=tmp_7_df, key=new_key_7, maximum=cap_at)
     tmp_7_df[new_key_7] = tmp_7_df[new_key_7].round(rounding)
@@ -1877,7 +2296,8 @@ def create_dose_pair_between(
             factor_1_unique=tmp_7_df[new_key_7].unique(),
             factor_1_name=new_key_7,
             factor_2_unique=[
-                1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 100, 200],
+                0, 10, 20, 30, 40, 50, 60, 70, 80
+            ],
             factor_2_name=f'quanta_{potential_infector_day_suffix}',
             new_key=new_key_8
             )
@@ -1990,9 +2410,12 @@ def create_doses(
     volume_vent_key,
     volume_vent_df,
     bayesian_network,
+    time_format,
     storage_folder=None,
-    prefix='dose_tmp'
+    prefix='dose_tmp',
 ):
+
+    time_str = time.strftime(time_format)
 
     for p1 in people:
         suffix = index_name(time, event, p1)
@@ -2013,7 +2436,7 @@ def create_doses(
 
             tmp_5a_df = create_activity_specific_breathing_rate_df(
                 p2,
-                time,
+                time_str,
                 event,
                 inhalation_rate_key
             )
@@ -2033,13 +2456,15 @@ def create_doses(
                 prefix=prefix
             )
 
+    # TODO: return the key of the dose so that it can be connected to the
+    # infected key.
     sum_up_doses_of_people(
         people,
-        time,
+        time_str,
         event,
         bayesian_network,
         prefix=f'{prefix}_9',
-        rounding=2,
+        rounding=4,
         storage_folder=storage_folder
     )
 
@@ -2080,8 +2505,8 @@ def sum_up_doses_of_people(
             # Below, we have two keys available
 
             parameters = {
-                key_1: np.arange(0.0, 2.0, 0.01).round(rounding),
-                key_2: np.arange(0.0, 2.0, 0.01).round(rounding),
+                key_1: np.arange(0.0, 10.0, 0.0001).round(rounding),
+                key_2: np.arange(0.0, 10.0, 0.0001).round(rounding),
             }
 
             dtypes = {
@@ -2143,6 +2568,25 @@ def create_dose_pair(
         prefix=prefix
     )
 
+
+def create_bayesian_network(events_with_priors):
+    bn = BN()
+    person_priors = events_with_priors['person_priors']
+
+    gatherings = events_with_priors['gatherings']
+    for date, obj_1 in gatherings.items():
+        import pdb; pdb.set_trace()
+
+
+def create_event_mixed(
+    friends,
+):
+    """
+    Add nodes and edges to Bayesian network such that people who are in the
+    system (friends) can affect each other's doses, but also have other
+    individuals affect the listed friends.
+    """
+    pass
 
 
 def create_virus_levels_tmp_df(suffix):
