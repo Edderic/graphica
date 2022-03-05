@@ -1676,6 +1676,14 @@ def create_lim_vol_vent(
     dist_unique,
     people
 ):
+    """
+    Limit the effect of volume and ventilation depending on the distance
+    between two people. If distance is greater than 2 meters (6 ft), then
+    volume and ventilation have full effect. Otherwise, the effect gets
+    dampened. The closer the person to each other, the less volume and
+    ventilation have an effect in reducing the dose that one person gets from
+    another.
+    """
     person_1 = people[0]
     person_2 = people[1]
 
@@ -1808,7 +1816,7 @@ def create_dose_from_people(
         quanta_key = f'quanta_{time_giver_index}'
 
         res = create_activity_exhalation(
-            suffix=time_giver_index,
+            suffix=time_event_giver_index,
             bayesian_network=bayesian_network,
             storage_folder=storage_folder
         )
