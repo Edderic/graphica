@@ -1160,154 +1160,24 @@ def create_activity_specific_breathing_rate_df(
     # below is in cubic meters per minute
     keys = {
         'Sleep or Nap': {
-            'Birth to <1':
-                np.arange(0.003, 0.0046, 0.0001).round(rounding),
-            '1 to <2':
-                np.arange(0.0045, 0.0064, 0.0001).round(rounding),
-            '2 to <3':
-                np.arange(0.0046, 0.0064, 0.0001).round(rounding),
-            '3 to <6':
-                np.arange(0.0043, 0.0058, 0.0001).round(rounding),
-            '6 to <11':
-                np.arange(0.0045, 0.0063, 0.0001).round(rounding),
-            '11 to <16':
-                np.arange(0.0050, 0.0074, 0.0001).round(rounding),
-            '16 to <21':
-                np.arange(0.0049, 0.0071, 0.0001).round(rounding),
-            '21 to <31':
-                np.arange(0.0043, 0.0065, 0.0001).round(rounding),
             '31 to <41':
                 np.arange(0.0046, 0.0066, 0.0001).round(rounding),
-            '41 to <51':
-                np.arange(0.0050, 0.0071, 0.0001).round(rounding),
-            '51 to <61':
-                np.arange(0.0052, 0.0075, 0.0001).round(rounding),
-            '61 to <71':
-                np.arange(0.0052, 0.0072, 0.0001).round(rounding),
-            '71 to <81':
-                np.arange(0.0053, 0.0072, 0.0001).round(rounding),
-            '>=81':
-                np.arange(0.0052, 0.0070, 0.0001).round(rounding),
         },
         'Sedentary/Passive': {
-            'Birth to <1':
-                np.arange(0.0031, 0.0047, 0.0001).round(rounding),
-            '1 to <2':
-                np.arange(0.0047, 0.0066, 0.0001).round(rounding),
-            '2 to <3':
-                np.arange(0.0048, 0.0065, 0.0001).round(rounding),
-            '3 to <6':
-                np.arange(0.0045, 0.0058, 0.0001).round(rounding),
-            '6 to <11':
-                np.arange(0.0048, 0.0064, 0.0001).round(rounding),
-            '11 to <16':
-                np.arange(0.0054, 0.0075, 0.0001).round(rounding),
-            '16 to <21':
-                np.arange(0.0053, 0.0072, 0.0001).round(rounding),
-            '21 to <31':
-                np.arange(0.0042, 0.0065, 0.0001).round(rounding),
             '31 to <41':
                 np.arange(0.0043, 0.0066, 0.0001).round(rounding),
-            '41 to <51':
-                np.arange(0.0048, 0.0070, 0.0001).round(rounding),
-            '51 to <61':
-                np.arange(0.0050, 0.0073, 0.0001).round(rounding),
-            '61 to <71':
-                np.arange(0.0049, 0.0070, 0.0001).round(rounding),
-            '71 to <81':
-                np.arange(0.0050, 0.0072, 0.0001).round(rounding),
-            '>=81':
-                np.arange(0.0049, 0.0070, 0.0001).round(rounding),
         },
         'Light Intensity': {
-            'Birth to <1':
-                np.arange(0.0076, 0.0011, 0.0001).round(rounding),
-            '1 to <2':
-                np.arange(0.012, 0.016, 0.0001).round(rounding),
-            '2 to <3':
-                np.arange(0.011, 0.014, 0.0001).round(rounding),
-            '3 to <6':
-                np.arange(0.011, 0.015, 0.0001).round(rounding),
-            '6 to <11':
-                np.arange(0.011, 0.015, 0.0001).round(rounding),
-            '11 to <16':
-                np.arange(0.013, 0.017, 0.0001).round(rounding),
-            '16 to <21':
-                np.arange(0.012, 0.016, 0.0001).round(rounding),
-            '21 to <31':
-                np.arange(0.012, 0.016, 0.0001).round(rounding),
             '31 to <41':
                 np.arange(0.012, 0.016, 0.0001).round(rounding),
-            '41 to <51':
-                np.arange(0.012, 0.016, 0.0001).round(rounding),
-            '51 to <61':
-                np.arange(0.013, 0.017, 0.0001).round(rounding),
-            '61 to <71':
-                np.arange(0.012, 0.016, 0.0001).round(rounding),
-            '71 to <81':
-                np.arange(0.012, 0.015, 0.0001).round(rounding),
-            '>=81':
-                np.arange(0.012, 0.015, 0.0001).round(rounding),
         },
         'Moderate Intensity': {
-            'Birth to <1':
-                np.arange(0.014, 0.016, 0.0001).round(rounding),
-            '1 to <2':
-                np.arange(0.021, 0.029, 0.0001).round(rounding),
-            '2 to <3':
-                np.arange(0.021, 0.029, 0.0001).round(rounding),
-            '3 to <6':
-                np.arange(0.021, 0.029, 0.0001).round(rounding),
-            '6 to <11':
-                np.arange(0.022, 0.029, 0.0001).round(rounding),
-            '11 to <16':
-                np.arange(0.025, 0.034, 0.0001).round(rounding),
-            '16 to <21':
-                np.arange(0.026, 0.037, 0.0001).round(rounding),
-            '21 to <31':
-                np.arange(0.026, 0.038, 0.0001).round(rounding),
             '31 to <41':
                 np.arange(0.026, 0.038, 0.0001).round(rounding),
-            '41 to <51':
-                np.arange(0.028, 0.039, 0.0001).round(rounding),
-            '51 to <61':
-                np.arange(0.029, 0.040, 0.0001).round(rounding),
-            '61 to <71':
-                np.arange(0.026, 0.034, 0.0001).round(rounding),
-            '71 to <81':
-                np.arange(0.025, 0.032, 0.0001).round(rounding),
-            '>=81':
-                np.arange(0.025, 0.031, 0.0001).round(rounding),
         },
         'High Intensity': {
-            'Birth to <1':
-                np.arange(0.026, 0.041, 0.0001).round(rounding),
-            '1 to <2':
-                np.arange(0.038, 0.052, 0.0001).round(rounding),
-            '2 to <3':
-                np.arange(0.039, 0.052, 0.0001).round(rounding),
-            '3 to <6':
-                np.arange(0.039, 0.053, 0.0001).round(rounding),
-            '6 to <11':
-                np.arange(0.042, 0.059, 0.0001).round(rounding),
-            '11 to <16':
-                np.arange(0.049, 0.070, 0.0001).round(rounding),
-            '16 to <21':
-                np.arange(0.049, 0.073, 0.0001).round(rounding),
-            '21 to <31':
-                np.arange(0.050, 0.076, 0.0001).round(rounding),
             '31 to <41':
                 np.arange(0.049, 0.072, 0.0001).round(rounding),
-            '41 to <51':
-                np.arange(0.052, 0.076, 0.0001).round(rounding),
-            '51 to <61':
-                np.arange(0.053, 0.078, 0.0001).round(rounding),
-            '61 to <71':
-                np.arange(0.047, 0.066, 0.0001).round(rounding),
-            '71 to <81':
-                np.arange(0.047, 0.065, 0.0001).round(rounding),
-            '>=81':
-                np.arange(0.048, 0.068, 0.0001).round(rounding),
         }
     }
 
@@ -1741,7 +1611,7 @@ def create_lim_vol_vent(
 
     df[lim_mult_key] = df[vol_vent_mult_key] * df[tmp_key]
 
-    return lim_mult_key, df[[vol_vent_mult_key, lim_mult_key, 'value']]
+    return lim_mult_key, df[[distance_key, vol_vent_mult_key, lim_mult_key, 'value']]
 
 
 def create_dose_from_people(
@@ -1751,7 +1621,8 @@ def create_dose_from_people(
     bayesian_network,
     storage_folder=None,
     time_format='%m-%d-%y',
-    rounding=5
+    rounding=5,
+    max_val=1000
 ):
     time_str = time.strftime(time_format)
 
@@ -1776,7 +1647,7 @@ def create_dose_from_people(
                 1.0: 0.5,
             },
             "ruberic's living room": {
-                30: 1.0
+                10: 1.0
             }
         }
     }
@@ -1813,10 +1684,10 @@ def create_dose_from_people(
     # Loop through friends.Connect them
     quanta_unique = list(range(0, 90, 10))
     duration_unique = [
-        0.25, 0.5, 1, 2, 3, 5, 8, 13, 21
+        0.25, 0.5, 1, 2, 3, 5
     ]
 
-    dist_unique = np.arange(0.0, 2.0, 1.0 / 6.0).round(2)
+    dist_unique = np.arange(0.0, 2.0, 1.0 / 6.0).round(rounding)
 
     mask_unique = [1, 0.7, 0.4, 0.10, 0.01]
     giver_dict = {}
@@ -1857,6 +1728,9 @@ def create_dose_from_people(
             factor_2_name=mask_key,
             new_key=tmp_1_key
         )
+
+        round_column(tmp_1_df, tmp_1_key, rounding=rounding)
+        cap(tmp_1_df, tmp_1_key, max_val)
 
         giver_dict[giver] = {
             'key': tmp_0_key,
@@ -1899,6 +1773,8 @@ def create_dose_from_people(
                     dist_unique=dist_unique,
                     people=[giver, receiver]
                 )
+                round_column(lim_df, lim_mult_key, rounding=rounding)
+                cap(lim_df, lim_mult_key, max_val)
 
                 key_to_df[lim_mult_key] = lim_df
 
@@ -1953,7 +1829,8 @@ def create_dose_from_people(
             )
             # TODO: round to preserve memory
             key_to_df[tmp_5_key] = tmp_5_df
-            round_column(tmp_5_df, tmp_5_key, rounding=5)
+            round_column(tmp_5_df, tmp_5_key, rounding=rounding)
+            cap(tmp_5_df, tmp_5_key, max_val)
 
             # Add inhalation
             inhalation_rate_key = \
@@ -1975,9 +1852,11 @@ def create_dose_from_people(
                 factor_2_name=inhalation_rate_key,
                 new_key=tmp_6_key
             )
-            round_column(tmp_6_df, tmp_6_key, rounding=5)
+            round_column(tmp_6_df, tmp_6_key, rounding=rounding)
 
             key_to_df[tmp_6_key] = tmp_6_df
+            cap(tmp_6_df, tmp_6_key, max_val)
+
             # Add effect of masking the inhaler
             tmp_7_key = f'tmp_7_{time_event_giver_to_receiver}'
             tmp_7_df = multiply_by(
@@ -1987,7 +1866,8 @@ def create_dose_from_people(
                 factor_2_name=tmp_6_key,
                 new_key=tmp_7_key
             )
-            round_column(tmp_7_df, tmp_7_key, rounding=5)
+            round_column(tmp_7_df, tmp_7_key, rounding=rounding)
+            cap(tmp_7_df, tmp_7_key, max_val)
             key_to_df[tmp_7_key] = tmp_7_df
             # TODO: pair limited ventilation / volume with
 
@@ -2002,7 +1882,9 @@ def create_dose_from_people(
                 new_key=tmp_8_key
             )
 
-            round_column(tmp_8_df, tmp_8_key, rounding=5)
+            round_column(tmp_8_df, tmp_8_key, rounding=rounding)
+            cap(tmp_8_df, tmp_8_key, 10)
+
             key_to_df[tmp_8_key] = tmp_8_df
 
     add_dfs_to_bn(
@@ -2397,13 +2279,13 @@ def create_activity_exhalation(
             "Light exercise - Loudly speaking",
             "Heavy exercise - Oral breathing",
             "Heavy exercise - Speaking",
-            "Heavy exercise - Loudly speaking"
+            # "Heavy exercise - Loudly speaking"
         ],
         exhalation_factor_key: [
-            1, 4.7, 30.3, 1.2, 5.7, 32.6, 2.8, 13.2, 85, 6.8, 31.6, 204
+            1, 4.7, 30.3, 1.2, 5.7, 32.6, 2.8, 13.2, 85, 6.8, 31.6, #204
         ],
         'value': [
-            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, #1.0
         ]
     })
 
