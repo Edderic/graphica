@@ -1649,6 +1649,11 @@ def create_dose_from_people(
             "ruberic's living room": {
                 10: 1.0
             }
+        },
+        'activity_type': {
+            'mighty squirrel': {
+                'bar': 1.0
+            }
         }
     }
 
@@ -1699,10 +1704,27 @@ def create_dose_from_people(
         # Giver
         quanta_key = f'quanta_{time_giver_index}'
 
+        activity_type_key = f'activity_type_{time_event_giver_index}'
+        activity_type_df = create_event_mapping(
+            outcome_name=activity_type_key,
+            outcome_mappings=mappings['activity_type'],
+            event_suffix=time_event_index
+        )
+
+        key_to_df[activity_type_key] = activity_type_df
+
+        type_activity_df = create_type_activity_exhalation(
+            suffix=time_event_giver_index,
+        )
+
+        key_to_df[
+            f'activity_exhalation_{time_event_giver_index}'
+        ] = type_activity_df
+
         res = create_activity_exhalation(
             suffix=time_event_giver_index,
             bayesian_network=bayesian_network,
-            storage_folder=storage_folder
+            storage_folder=storage_folder,
         )
 
         tmp_0_key = f"tmp_0_{time_event_giver_index}"
@@ -1836,6 +1858,13 @@ def create_dose_from_people(
             inhalation_rate_key = \
                 f'inhalation_rate_{time_event_receiver_index}'
 
+            type_activity_inhalation_df = create_type_activity_inhalation(
+                suffix=time_event_receiver_index
+            )
+
+            key_to_df[f'activity_{time_event_receiver_index}'] = \
+                type_activity_inhalation_df
+
             activity_specific_df = create_activity_specific_breathing_rate_df(
                 receiver,
                 time_str,
@@ -1905,6 +1934,57 @@ def create_dose_from_people(
     # )
 #
     # TODO: sum the doses.
+
+def create_type_activity_inhalation(suffix):
+    return pd.DataFrame(
+        {
+            f'activity_type_{suffix}': [
+                'bar',
+                'bar',
+            ],
+            f'activity_{suffix}': [
+                "Sedentary/Passive",
+                "Light Intensity",
+
+            ],
+            'value': [
+                0.5,
+                0.5,
+            ]
+        }
+    )
+
+
+def create_type_activity_exhalation(suffix):
+    return pd.DataFrame(
+        {
+            f'activity_type_{suffix}': [
+                'bar',
+                'bar',
+                'bar',
+                'bar',
+                'bar',
+                'bar',
+            ],
+            f'activity_exhalation_{suffix}': [
+                "Resting - Oral breathing",
+                "Resting - Speaking",
+                "Resting - Loudly speaking",
+                "Standing - Oral breathing",
+                "Standing - Speaking",
+                "Standing - Loudly speaking"
+
+            ],
+            'value': [
+                0.1,
+                0.1,
+                0.3,
+                0.1,
+                0.1,
+                0.3
+            ]
+        }
+    )
 
 
 def create_dose_from_strangers(
