@@ -1693,8 +1693,8 @@ def create_dose_from_people(
     ]
 
     dist_unique = np.arange(0.0, 2.0, 1.0 / 6.0).round(rounding)
+    mask_unique = [1.0, 0.7, 0.6, 0.15, 0.05]
 
-    mask_unique = [1, 0.7, 0.4, 0.10, 0.01]
     giver_dict = {}
 
     for giver in friends:
@@ -1727,6 +1727,49 @@ def create_dose_from_people(
             storage_folder=storage_folder,
         )
 
+        mask_label_key = f'mask_label_{time_event_giver_index}'
+
+        activity_type_to_mask_label_df = pd.DataFrame({
+            activity_type_key: [
+                'bar',
+                'bar',
+                'bar',
+                'bar',
+                'bar',
+            ],
+            mask_label_key: [
+                'None',
+                'Cloth mask',
+                'Surgical',
+                'N95 (unfitted)',
+                'N95 (fitted)'
+            ],
+            'value': [
+                0.98,
+                0.005,
+                0.005,
+                0.005,
+                0.005,
+            ]
+        })
+        key_to_df[mask_label_key] = activity_type_to_mask_label_df
+
+        mask_key = f'mask_{time_event_giver_index}'
+
+        mask_label_df = pd.DataFrame({
+            mask_label_key: [
+                'None',
+                'Cloth mask',
+                'Surgical',
+                'N95 (unfitted)',
+                'N95 (fitted)'
+            ],
+            mask_key: mask_unique,
+            'value':  [1.0, 1.0, 1.0, 1.0, 1.0]
+        })
+
+        key_to_df[mask_key] = mask_label_df
+
         tmp_0_key = f"tmp_0_{time_event_giver_index}"
         exhalation_df = multiply_by(
             factor_1_unique=quanta_unique,
@@ -1741,12 +1784,11 @@ def create_dose_from_people(
         key_to_df[tmp_0_key] = exhalation_df
 
         tmp_1_key = f'tmp_1_{time_event_giver_index}'
-        mask_key = f'mask_{time_event_giver_index}'
 
         tmp_1_df = multiply_by(
             factor_1_unique=exhalation_df[tmp_0_key].unique(),
             factor_1_name=tmp_0_key,
-            factor_2_unique=mask_unique,
+            factor_2_unique=mask_label_df[mask_key],
             factor_2_name=mask_key,
             new_key=tmp_1_key
         )
