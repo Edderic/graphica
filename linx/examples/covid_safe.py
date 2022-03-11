@@ -8,7 +8,6 @@ import pandas as pd
 from scipy.stats import nbinom
 
 
-
 from ..ds import BayesianNetwork as BN, \
     ConditionalProbabilityTable as CPT
 from ..data import InMemoryData
@@ -1536,10 +1535,10 @@ def create_duration_between_two_people(
     event,
     person_1,
     person_2,
+    key_1,
+    key_2,
     duration_unique
 ):
-    key_1 = f'duration_{index_name(time, event, person_1)}'
-    key_2 = f'duration_{index_name(time, event, person_2)}'
     min_dur_key = f'min_duration_{index_name(time, event, person_1, person_2)}'
 
     parameters = {
@@ -1565,6 +1564,7 @@ def create_lim_vol_vent(
     vol_vent_mult_unique,
     vol_vent_mult_key,
     dist_unique,
+    distance_key,
     people
 ):
     """
@@ -1578,7 +1578,6 @@ def create_lim_vol_vent(
     person_1 = people[0]
     person_2 = people[1]
 
-    distance_key = f'distance_{index_name(time, event, person_1, person_2)}'
     lim_mult_key = f'lim_mult_vv_{index_name(time, event, person_1, person_2)}'
 
     parameters = {
@@ -1602,7 +1601,7 @@ def create_lim_vol_vent(
     # TODO: could refactor using pd.cut here
     df[tmp_key].mask(df[distance_key] >= 2.0, 6.0 / 6)
 
-    for i in range(5, -1, -1):
+    for i in range(5, 0, -1):
         df[tmp_key].mask(
             (df[distance_key] > 2.0 * i / 6.0) \
             & (df[distance_key] <= 2.0 * (i + 1) / 6.0),
@@ -1631,6 +1630,7 @@ def create_dose_from_people(
     ventilation_key = f'ventilation_{time_event_index}'
     vol_vent_mult_key = f'vol_vent_mult_{time_event_index}'
     vol_vent_key = f'vol_vent_{time_event_index}'
+    activity_type_key = f'activity_type_{time_event_index}'
 
     mappings = {
         'volume': {
@@ -1685,11 +1685,20 @@ def create_dose_from_people(
 
     key_to_df[vol_vent_mult_key] = multiplied_df
 
+    activity_type_df = create_event_mapping(
+        outcome_name=activity_type_key,
+        outcome_mappings=mappings['activity_type'],
+        event_suffix=time_event_index
+    )
+
+    key_to_df[activity_type_key] = activity_type_df
+
+
     # Add branch for others.
     # Loop through friends.Connect them
     quanta_unique = list(range(0, 90, 10))
     duration_unique = [
-        0.25, 0.5, 1, 2, 3, 5
+        0.25, 0.5, 1, 2, 3, 5, 8, 12
     ]
 
     dist_unique = np.arange(0.0, 2.0, 1.0 / 6.0).round(rounding)
@@ -1704,21 +1713,16 @@ def create_dose_from_people(
         # Giver
         quanta_key = f'quanta_{time_giver_index}'
 
-        activity_type_key = f'activity_type_{time_event_giver_index}'
-        activity_type_df = create_event_mapping(
-            outcome_name=activity_type_key,
-            outcome_mappings=mappings['activity_type'],
-            event_suffix=time_event_index
-        )
-
-        key_to_df[activity_type_key] = activity_type_df
+        activity_exhalation_key = \
+            f'activity_exhalation_{time_event_giver_index}'
 
         type_activity_df = create_type_activity_exhalation(
-            suffix=time_event_giver_index,
+            activity_type_key=activity_type_key,
+            activity_exhalation_key=activity_exhalation_key
         )
 
         key_to_df[
-            f'activity_exhalation_{time_event_giver_index}'
+            activity_exhalation_key
         ] = type_activity_df
 
         res = create_activity_exhalation(
@@ -1726,6 +1730,33 @@ def create_dose_from_people(
             bayesian_network=bayesian_network,
             storage_folder=storage_folder,
         )
+
+        dur_key = f'duration_{index_name(time_str, event, giver)}'
+        dur_df = pd.DataFrame({
+            dur_key: duration_unique,
+            activity_type_key: [
+                'bar',
+                'bar',
+                'bar',
+                'bar',
+                'bar',
+                'bar',
+                'bar',
+                'bar',
+            ],
+            'value': [
+                0.0,
+                0.1,
+                0.2,
+                0.4,
+                0.3,
+                0.0,
+                0.0,
+                0.0,
+            ]
+        })
+
+        key_to_df[dur_key] = dur_df
 
         mask_label_key = f'mask_label_{time_event_giver_index}'
 
@@ -1811,13 +1842,19 @@ def create_dose_from_people(
                 continue
 
             sorted_key = '-'.join(sorted([giver, receiver]))
+            giver_receiver_key = index_name(time_str, event, giver, receiver)
 
             if sorted_key not in visited_pair:
+                key_1 = f'duration_{index_name(time_str, event, giver)}'
+                key_2 = f'duration_{index_name(time_str, event, receiver)}'
+
                 min_dur_key, min_dur_df = create_duration_between_two_people(
                     time=time_str,
                     event=event,
                     person_1=giver,
                     person_2=receiver,
+                    key_1=key_1,
+                    key_2=key_2,
                     duration_unique=duration_unique
                 )
 
@@ -1829,13 +1866,45 @@ def create_dose_from_people(
                 }
 
                 vol_vent_mult_df = key_to_df[vol_vent_mult_key]
+                distance_key = f'distance_{giver_receiver_key}'
+
+                activity_type_to_distance_pair_df = pd.DataFrame({
+                    distance_key: [
+                        1.0 / 6,
+                        2.0 / 6,
+                        3.0 / 6,
+                        4.0 / 6,
+                        5.0 / 6,
+                        6.0 / 6,
+                    ],
+                    activity_type_key: [
+                        'bar',
+                        'bar',
+                        'bar',
+                        'bar',
+                        'bar',
+                        'bar',
+                    ],
+                    'value': [
+                        1.0 / 6,
+                        1.0 / 6,
+                        1.0 / 6,
+                        1.0 / 6,
+                        1.0 / 6,
+                        1.0 / 6,
+                    ]
+                })
+
+                key_to_df[distance_key] = activity_type_to_distance_pair_df
+
                 lim_mult_key, lim_df = create_lim_vol_vent(
                     time_str,
                     event,
                     vol_vent_mult_unique=vol_vent_mult_df[vol_vent_mult_key],
                     vol_vent_mult_key=vol_vent_mult_key,
                     dist_unique=dist_unique,
-                    people=[giver, receiver]
+                    people=[giver, receiver],
+                    distance_key=distance_key
                 )
                 round_column(lim_df, lim_mult_key, rounding=rounding)
                 cap(lim_df, lim_mult_key, max_val)
@@ -1861,7 +1930,6 @@ def create_dose_from_people(
                 giver,
                 receiver
             )
-
 
             sorted_names = sorted([giver, receiver])
             sorted_key = '-'.join(sorted_names)
@@ -1900,11 +1968,13 @@ def create_dose_from_people(
             inhalation_rate_key = \
                 f'inhalation_rate_{time_event_receiver_index}'
 
+            activity_key = f'activity_{time_event_receiver_index}'
             type_activity_inhalation_df = create_type_activity_inhalation(
-                suffix=time_event_receiver_index
+                activity_type_key=activity_type_key,
+                activity_key=activity_key
             )
 
-            key_to_df[f'activity_{time_event_receiver_index}'] = \
+            key_to_df[activity_key] = \
                 type_activity_inhalation_df
 
             activity_specific_df = create_activity_specific_breathing_rate_df(
@@ -1919,7 +1989,9 @@ def create_dose_from_people(
             tmp_6_df = multiply_by(
                 factor_1_unique=tmp_5_df[tmp_5_key].unique(),
                 factor_1_name=tmp_5_key,
-                factor_2_unique=activity_specific_df[inhalation_rate_key].unique(),
+                factor_2_unique=activity_specific_df[
+                    inhalation_rate_key
+                ].unique(),
                 factor_2_name=inhalation_rate_key,
                 new_key=tmp_6_key
             )
@@ -1941,8 +2013,6 @@ def create_dose_from_people(
             cap(tmp_7_df, tmp_7_key, max_val)
             key_to_df[tmp_7_key] = tmp_7_df
             # TODO: pair limited ventilation / volume with
-
-            giver_data = giver_dict[giver]
 
             tmp_8_key = f'tmp_8_{time_event_giver_to_receiver}'
             tmp_8_df = divide_by(
@@ -1977,14 +2047,14 @@ def create_dose_from_people(
 #
     # TODO: sum the doses.
 
-def create_type_activity_inhalation(suffix):
+def create_type_activity_inhalation(activity_type_key, activity_key):
     return pd.DataFrame(
         {
-            f'activity_type_{suffix}': [
+            activity_type_key: [
                 'bar',
                 'bar',
             ],
-            f'activity_{suffix}': [
+            activity_key: [
                 "Sedentary/Passive",
                 "Light Intensity",
 
@@ -1997,10 +2067,13 @@ def create_type_activity_inhalation(suffix):
     )
 
 
-def create_type_activity_exhalation(suffix):
+def create_type_activity_exhalation(
+    activity_type_key,
+    activity_exhalation_key
+):
     return pd.DataFrame(
         {
-            f'activity_type_{suffix}': [
+            activity_type_key: [
                 'bar',
                 'bar',
                 'bar',
@@ -2008,7 +2081,7 @@ def create_type_activity_exhalation(suffix):
                 'bar',
                 'bar',
             ],
-            f'activity_exhalation_{suffix}': [
+            activity_exhalation_key: [
                 "Resting - Oral breathing",
                 "Resting - Speaking",
                 "Resting - Loudly speaking",
