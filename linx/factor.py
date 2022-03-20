@@ -124,27 +124,20 @@ class Factor:
             )
         )
 
-    def filter(self, query):
+    def filter(self, filters):
         """
         Apply filters of a query to this factor.
 
         Parameters:
-            query: Query
-                Implements get_filters. Each item is a dict.
-                key: string
-                    Name of the variable.
-                value: callable or string or float or integer
-                    We use this for filtering.
+            filters: dict
+                Key is a variable name (string).
+                Value is either a callable or non-callable
 
         Returns: Factor
         """
         df = self.data.read()
-        filters = query.get_filters()
 
-        for f in filters:
-            key = list(f.keys())[0]
-            value = list(f.values())[0]
-
+        for key, value in filters.items():
             if key in self.get_variables():
                 if callable(value):
                     df = df[value(df)]
@@ -154,7 +147,8 @@ class Factor:
 
                 if df.shape[0] == 0:
                     raise ArgumentError(
-                        f"Dataframe is empty after filtering using filter {f}.\n\tColumns: {df.columns}"
+                        "Dataframe is empty after filtering using filter"
+                        + f" {key}.\n\tColumns: {df.columns}"
                     )
 
         return Factor(
