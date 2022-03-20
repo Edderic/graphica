@@ -36,8 +36,8 @@ class DirectedAcyclicGraph:
                 Node to add.
         """
 
-        if node not in self.nodes:
-            self.nodes[node] = 1
+        if node not in self.children:
+            self.children[node] = []
 
     def get_neighbors(self, node):
         """
@@ -76,3 +76,58 @@ class DirectedAcyclicGraph:
             return []
 
         return self.children[node]
+
+    def get_root_nodes(self):
+        """
+        Get the root nodes.
+
+        Returns: list[str]
+        """
+        root_nodes = []
+
+        for node in self.children:
+            node_is_a_child = False
+
+            for _, child_nodes in self.children.items():
+                if node in child_nodes:
+                    node_is_a_child = True
+                    break
+
+            if not node_is_a_child:
+                root_nodes.append(node)
+
+        return root_nodes
+
+    def topological_sort(self):
+        """
+        Get a sorted list of variables.
+        """
+        visited = {}
+        roots = self.get_root_nodes()
+        sorted_vars = []
+
+        for var in roots:
+            visited[var] = 1
+            sorted_vars.append(var)
+
+        while len(set(self.get_nodes()) - set(visited.keys())) > 0:
+            unvisiteds = list(set(self.get_nodes()) - set(visited.keys()))
+
+            for unvisited in unvisiteds:
+                parents = self.get_parents(unvisited)
+                if set(parents) - set(visited.keys()) == set({}):
+                    sorted_vars.append(unvisited)
+                    visited[unvisited] = 1
+
+        return sorted_vars
+
+    def get_nodes(self):
+        """
+        Get all the nodes in the DAG.
+        """
+        nodes = set({})
+
+        for parent, children in self.children.items():
+            nodes = nodes.union(set([parent]).union(children))
+
+        return list(nodes)
