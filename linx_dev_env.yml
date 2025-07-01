@@ -1,28 +1,23 @@
 name: linx_dev_env
 channels:
-  - anaconda
   - conda-forge
-  - numba
   - defaults
   - edderic
 dependencies:
-  - cloudpickle=2.0.0
-  - coiled=0.0.52
-  - conda-build=3.21.4
-  - dask=2021.8.0
+  - conda-build
+  - dask
   - jupyter
   - jupyterlab
   - line_profiler
   - linx
-  - matplotlib=3.4.2
-  - numba=0.54.0rc2
-  - numpy=1.20.3
-  - pandas=1.3.1
+  - matplotlib
+  - numpy
+  - pandas
   - pyarrow
-  - pre-commit=2.15.0
-  - pylint=2.12.1
-  - python=3.9.5
-  - python-graphviz=0.19
-  - pytest=6.2.5
-  - seaborn=0.11.2
-  - tqdm=4.62.3
+  - pre-commit
+  - pylint
+  - python
+  - python-graphviz
+  - pytest
+  - seaborn
+  - tqdm
