@@ -47,6 +47,17 @@ class Factor:
                 f"Dataframe is empty. Columns: {df.columns}"
             )
 
+        cols = list(set(df.columns) - {'value'})
+
+        counts = df.groupby(cols).count()['value']
+
+        if any(counts > 1):
+            too_many = counts[counts > 1]
+            raise ArgumentError(
+                f"Too many counts detected: \n{counts}"
+            )
+
+
     def __merged__(self, other):
         left_vars = set(list(self.get_variables()))
         right_vars = set(list(other.get_variables()))

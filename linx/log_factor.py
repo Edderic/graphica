@@ -216,6 +216,11 @@ class LogFactor:
 
         Returns: Factor
         """
+
+        # P(x) * P(y)  = A
+        # log(P(x) * P(y))
+        # log(P(x)) + log(P(y))
+
         if isinstance(variables, str):
             variables = [variables]
 

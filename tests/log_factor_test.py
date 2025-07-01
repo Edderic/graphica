@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 import pandas as pd
 from ..linx.log_factor import LogFactor
