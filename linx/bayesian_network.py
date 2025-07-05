@@ -207,58 +207,23 @@ class BayesianNetwork(DirectedAcyclicGraph):
                 raise ValueError(f"No CPT found for variable {var}")
             
             cpt = self.cpts[var]
-            sampled_value = self._sample_from_cpt(cpt, particle)
-            particle.set_value(var, sampled_value)
+            
+            # Get the values of parent variables that have already been sampled
+            given_values = {}
+            for parent_var in cpt.get_givens():
+                if not particle.has_variable(parent_var):
+                    raise ValueError(f"Parent variable {parent_var} not yet sampled")
+                given_values[parent_var] = particle.get_value(parent_var)
+            
+            # Sample from the CPT
+            sampled_values = cpt.sample(given_values)
+            
+            # For Bayesian Networks, we expect exactly one outcome variable
+            outcomes = cpt.get_outcomes()
+            if len(outcomes) != 1:
+                raise ValueError(f"Expected exactly one outcome variable, got {len(outcomes)}")
+            
+            outcome_var = outcomes[0]
+            particle.set_value(outcome_var, sampled_values[outcome_var])
         
         return particle
-    
-    def _sample_from_cpt(self, cpt, particle):
-        """
-        Sample a value from a conditional probability table.
-        
-        Parameters:
-            cpt: ConditionalProbabilityTable
-                The CPT to sample from
-            particle: Particle
-                The current particle containing already sampled values
-                
-        Returns:
-            The sampled value for the outcome variable
-        """
-        # Get the data from the CPT
-        df = cpt.get_data().read()
-        
-        # Get the outcome variable (should be only one for Bayesian Networks)
-        outcomes = cpt.get_outcomes()
-        if len(outcomes) != 1:
-            raise ValueError(f"Expected exactly one outcome variable, got {len(outcomes)}")
-        outcome_var = outcomes[0]
-        
-        # Get the given variables (parents)
-        givens = cpt.get_givens()
-        
-        # Filter the dataframe based on the values of the given variables
-        if givens:
-            # Create a filter condition for each given variable
-            for given_var in givens:
-                if not particle.has_variable(given_var):
-                    raise ValueError(f"Parent variable {given_var} not yet sampled")
-                
-                given_value = particle.get_value(given_var)
-                df = df[df[given_var] == given_value]
-            
-            # Check if we have any rows after filtering
-            if df.empty:
-                raise ValueError(f"No matching rows found for given values: {[(var, particle.get_value(var)) for var in givens]}")
-        
-        # Extract the possible values and their probabilities
-        possible_values = df[outcome_var].values
-        probabilities = df['value'].values
-        
-        # Normalize probabilities to ensure they sum to 1
-        probabilities = probabilities / probabilities.sum()
-        
-        # Sample from the categorical distribution
-        sampled_value = np.random.choice(possible_values, p=probabilities)
-        
-        return sampled_value
