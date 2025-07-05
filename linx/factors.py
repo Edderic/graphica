@@ -36,6 +36,17 @@ class Factors():
         """
         self.factors.append(factor)
 
+    def filter(self, filt):
+        """
+        Filter the factors.
+        """
+
+        new_factors = []
+        for f in self.factors:
+            new_factors.append(f.filter(filt))
+
+        return Factors(new_factors)
+
     def prod(self):
         """
         Multiply set of factors

@@ -157,7 +157,7 @@ class Factor:
             # TODO: maybe simpler if get_filters
             # returns a dictionary?
         else:
-            fs = filters.items()
+            fs = filters
 
         df = self.data.read()
 
