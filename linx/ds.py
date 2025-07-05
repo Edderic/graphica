@@ -9,6 +9,7 @@ Classes:
     - Factors
     - BayesianNetwork
     - MarkovNetwork
+    - Particle
 """
 from .query import Query
 from .conditional_probability_table import ConditionalProbabilityTable
@@ -18,3 +19,4 @@ from .log_factor_adapter import LogFactorAdapter
 from .factors import Factors
 from .markov_network import MarkovNetwork
 from .bayesian_network import BayesianNetwork
+from .particles.particle import Particle
