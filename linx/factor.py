@@ -146,9 +146,22 @@ class Factor:
 
         Returns: Factor
         """
+        if 'get_filters' in dir(filters):
+            fs = filters.get_filters()
+            dictionary = {}
+            for d in fs:
+                for k,v in d.items():
+                    dictionary[k] = v
+
+            fs = dictionary
+            # TODO: maybe simpler if get_filters
+            # returns a dictionary?
+        else:
+            fs = filters.items()
+
         df = self.data.read()
 
-        for key, value in filters.items():
+        for key, value in fs.items():
             if key in self.get_variables():
                 if callable(value):
                     df = df[value(df)]

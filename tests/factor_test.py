@@ -228,7 +228,6 @@ def test_factor_sum_2():
         expected_df,
     )
 
-
 def test_factor_filter_string():
     clean_tmp()
 
