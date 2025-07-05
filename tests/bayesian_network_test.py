@@ -1,7 +1,8 @@
 import pandas as pd
+import numpy as np
 
 from ..linx.data import ParquetData
-from ..linx.ds import BayesianNetwork as BN, ConditionalProbabilityTable as CPT
+from ..linx.ds import BayesianNetwork as BN, ConditionalProbabilityTable as CPT, Particle
 from .conftest import clean_tmp, get_tmp_path
 
 
@@ -105,3 +106,202 @@ def test_to_markov_network():
     markov_network = bayesian_network.to_markov_network()
     factors = markov_network.get_factors()
     assert len(factors) == 3
+
+
+def test_sample_simple_network():
+    """Test sampling from a simple Bayesian Network with one variable."""
+    clean_tmp()
+    
+    # Create a simple network with one variable X
+    bayesian_network = BN()
+    df = pd.DataFrame([
+        {'X': 0, 'value': 0.3},
+        {'X': 1, 'value': 0.7}
+    ])
+    
+    cpt = CPT(
+        ParquetData(df, storage_folder=get_tmp_path()),
+        outcomes=['X']
+    )
+    
+    bayesian_network.add_node(cpt)
+    
+    # Sample multiple times and check that we get both values
+    samples = []
+    for _ in range(100):
+        particle = bayesian_network.sample()
+        samples.append(particle.get_value('X'))
+    
+    # Check that we get both values (0 and 1)
+    unique_values = set(samples)
+    assert 0 in unique_values
+    assert 1 in unique_values
+    
+    # Check that the particle has the correct structure
+    particle = bayesian_network.sample()
+    assert isinstance(particle, Particle)
+    assert particle.has_variable('X')
+    assert particle.get_variables() == ['X']
+
+
+def test_sample_chain_network():
+    """Test sampling from a chain network: X -> Y."""
+    clean_tmp()
+    
+    # Create a chain network: X -> Y
+    bayesian_network = BN()
+    
+    # Prior for X
+    df_x = pd.DataFrame([
+        {'X': 0, 'value': 0.4},
+        {'X': 1, 'value': 0.6}
+    ])
+    
+    cpt_x = CPT(
+        ParquetData(df_x, storage_folder=get_tmp_path()),
+        outcomes=['X']
+    )
+    
+    bayesian_network.add_node(cpt_x)
+    
+    # Conditional probability for Y given X
+    df_y = pd.DataFrame([
+        {'X': 0, 'Y': 0, 'value': 0.8},
+        {'X': 0, 'Y': 1, 'value': 0.2},
+        {'X': 1, 'Y': 0, 'value': 0.3},
+        {'X': 1, 'Y': 1, 'value': 0.7}
+    ])
+    
+    cpt_y = CPT(
+        ParquetData(df_y, storage_folder=get_tmp_path()),
+        outcomes=['Y'],
+        givens=['X']
+    )
+    
+    bayesian_network.add_edge(cpt_y)
+    
+    # Sample and verify structure
+    particle = bayesian_network.sample()
+    assert isinstance(particle, Particle)
+    assert particle.has_variable('X')
+    assert particle.has_variable('Y')
+    assert set(particle.get_variables()) == {'X', 'Y'}
+    
+    # Check that values are valid
+    x_val = particle.get_value('X')
+    y_val = particle.get_value('Y')
+    assert x_val in [0, 1]
+    assert y_val in [0, 1]
+
+
+def test_sample_complex_network():
+    """Test sampling from a more complex network with multiple variables."""
+    clean_tmp()
+    
+    # Create a network: A -> B, A -> C, B -> D
+    bayesian_network = BN()
+    
+    # Prior for A
+    df_a = pd.DataFrame([
+        {'A': 0, 'value': 0.5},
+        {'A': 1, 'value': 0.5}
+    ])
+    
+    cpt_a = CPT(
+        ParquetData(df_a, storage_folder=get_tmp_path()),
+        outcomes=['A']
+    )
+    
+    bayesian_network.add_node(cpt_a)
+    
+    # B depends on A
+    df_b = pd.DataFrame([
+        {'A': 0, 'B': 0, 'value': 0.7},
+        {'A': 0, 'B': 1, 'value': 0.3},
+        {'A': 1, 'B': 0, 'value': 0.2},
+        {'A': 1, 'B': 1, 'value': 0.8}
+    ])
+    
+    cpt_b = CPT(
+        ParquetData(df_b, storage_folder=get_tmp_path()),
+        outcomes=['B'],
+        givens=['A']
+    )
+    
+    bayesian_network.add_edge(cpt_b)
+    
+    # C depends on A
+    df_c = pd.DataFrame([
+        {'A': 0, 'C': 0, 'value': 0.6},
+        {'A': 0, 'C': 1, 'value': 0.4},
+        {'A': 1, 'C': 0, 'value': 0.1},
+        {'A': 1, 'C': 1, 'value': 0.9}
+    ])
+    
+    cpt_c = CPT(
+        ParquetData(df_c, storage_folder=get_tmp_path()),
+        outcomes=['C'],
+        givens=['A']
+    )
+    
+    bayesian_network.add_edge(cpt_c)
+    
+    # D depends on B
+    df_d = pd.DataFrame([
+        {'B': 0, 'D': 0, 'value': 0.9},
+        {'B': 0, 'D': 1, 'value': 0.1},
+        {'B': 1, 'D': 0, 'value': 0.4},
+        {'B': 1, 'D': 1, 'value': 0.6}
+    ])
+    
+    cpt_d = CPT(
+        ParquetData(df_d, storage_folder=get_tmp_path()),
+        outcomes=['D'],
+        givens=['B']
+    )
+    
+    bayesian_network.add_edge(cpt_d)
+    
+    # Sample and verify
+    particle = bayesian_network.sample()
+    assert isinstance(particle, Particle)
+    assert set(particle.get_variables()) == {'A', 'B', 'C', 'D'}
+    
+    # Check that all values are valid
+    for var in ['A', 'B', 'C', 'D']:
+        val = particle.get_value(var)
+        assert val in [0, 1]
+
+
+def test_particle_class():
+    """Test the Particle class functionality."""
+    # Test initialization
+    particle = Particle()
+    assert particle.get_all_values() == {}
+    
+    # Test setting and getting values
+    particle.set_value('X', 1)
+    particle.set_value('Y', 0)
+    
+    assert particle.get_value('X') == 1
+    assert particle.get_value('Y') == 0
+    assert particle.has_variable('X')
+    assert particle.has_variable('Y')
+    assert not particle.has_variable('Z')
+    
+    # Test getting all values
+    all_values = particle.get_all_values()
+    assert all_values == {'X': 1, 'Y': 0}
+    
+    # Test getting variables
+    variables = particle.get_variables()
+    assert set(variables) == {'X', 'Y'}
+    
+    # Test initialization with values
+    particle2 = Particle({'A': 1, 'B': 2})
+    assert particle2.get_value('A') == 1
+    assert particle2.get_value('B') == 2
+    
+    # Test string representation
+    assert 'Particle' in str(particle)
+    assert 'X' in str(particle)
