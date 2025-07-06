@@ -113,3 +113,20 @@ class Query:
                 )
 
         return self.given_vars
+    
+    def get_given_values(self):
+        """
+        Get given values as a dictionary.
+        
+        Returns: dict[str, any]
+        """
+        given_values = {}
+        for given in self.givens:
+            if isinstance(given, str):
+                # String given variables don't have values
+                pass
+            elif isinstance(given, dict):
+                var_name = list(given.keys())[0]
+                given_values[var_name] = given[var_name]
+        
+        return given_values
