@@ -84,4 +84,13 @@ class Particle:
         Returns:
             list: List of variable names.
         """
-        return list(self.values.keys()) 
+        return list(self.values.keys())
+    
+    def copy(self):
+        """
+        Create a deep copy of this particle.
+        
+        Returns:
+            Particle: A new particle with the same values.
+        """
+        return Particle(self.values.copy()) 
