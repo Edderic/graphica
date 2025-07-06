@@ -13,6 +13,8 @@ Classes:
     - RandomVariable
     - Normal
     - Gamma
+    - Uniform
+    - MetropolisHastings
 """
 from .query import Query
 from .conditional_probability_table import ConditionalProbabilityTable
@@ -26,3 +28,5 @@ from .particles.particle import Particle
 from .random.random_variable import RandomVariable
 from .random.normal import Normal
 from .random.gamma import Gamma
+from .random.uniform import Uniform
+from .inference.metropolis_hastings import MetropolisHastings
