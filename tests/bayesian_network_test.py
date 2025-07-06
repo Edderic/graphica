@@ -114,13 +114,11 @@ def test_sample_simple_network():
 
     # Create a simple network with one variable X
     bayesian_network = BN()
-    df = pd.DataFrame([
-        {'X': 0, 'value': 0.3},
-        {'X': 1, 'value': 0.7}
-    ])
-
     cpt = CPT(
-        ParquetData(df, storage_folder=get_tmp_path()),
+        table=[
+            {'X': 0, 'value': 0.3},
+            {'X': 1, 'value': 0.7}
+        ],
         outcomes=['X']
     )
 
@@ -156,28 +154,24 @@ def test_sample_chain_network():
     bayesian_network = BN()
 
     # Prior for X
-    df_x = pd.DataFrame([
-        {'X': 0, 'value': 0.4},
-        {'X': 1, 'value': 0.6}
-    ])
-
     cpt_x = CPT(
-        ParquetData(df_x, storage_folder=get_tmp_path()),
+        table=[
+            {'X': 0, 'value': 0.4},
+            {'X': 1, 'value': 0.6}
+        ],
         outcomes=['X']
     )
 
     bayesian_network.add_node(cpt_x)
 
     # Conditional probability for Y given X
-    df_y = pd.DataFrame([
-        {'X': 0, 'Y': 0, 'value': 0.8},
-        {'X': 0, 'Y': 1, 'value': 0.2},
-        {'X': 1, 'Y': 0, 'value': 0.3},
-        {'X': 1, 'Y': 1, 'value': 0.7}
-    ])
-
     cpt_y = CPT(
-        ParquetData(df_y, storage_folder=get_tmp_path()),
+        table=[
+            {'X': 0, 'Y': 0, 'value': 0.8},
+            {'X': 0, 'Y': 1, 'value': 0.2},
+            {'X': 1, 'Y': 0, 'value': 0.3},
+            {'X': 1, 'Y': 1, 'value': 0.7}
+        ],
         outcomes=['Y'],
         givens=['X']
     )
