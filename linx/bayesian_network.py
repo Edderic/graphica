@@ -14,27 +14,31 @@ from .particles.particle import Particle
 
 class BayesianNetwork(DirectedAcyclicGraph):
     """
-    Bayesian Network that stores ConditionalProbabilityTables.
+    Bayesian Network that stores ConditionalProbabilityTables and Random Variables.
 
     Parameters:
         cpts: list[ConditionalProbabilityTable]. Optional.
             Meant for specifying conditional probability tables of variables
-            that are endogenous..
+            that are endogenous.
 
         priors: list[ConditionalProbabilityTable]. Optional.
             Meant for probability tables of Variables that are exogenous.
+
+        random_variables: dict[str, RandomVariable]. Optional.
+            Dictionary mapping variable names to RandomVariable objects.
 
         graphviz_dag: DiGraph
             Could be used to display the graph.
     """
 
-    def __init__(self, cpts=None, priors=None, graphviz_dag=None):
+    def __init__(self, cpts=None, priors=None, random_variables=None, graphviz_dag=None):
         super().__init__()
         if graphviz_dag is None:
             self.graphviz_dag = NullGraphvizDag()
         else:
             self.graphviz_dag = graphviz_dag
 
+        # Initialize CPTs
         if cpts is None:
             self.cpts = {}
         else:
@@ -45,6 +49,55 @@ class BayesianNetwork(DirectedAcyclicGraph):
         if priors:
             for prior_cpt in priors:
                 self.add_node(prior_cpt)
+        
+        # Initialize Random Variables
+        if random_variables is None:
+            self.random_variables = {}
+        else:
+            self.random_variables = random_variables.copy()
+        
+        # Context manager support
+        self._context_vars = {}
+    
+    def __enter__(self):
+        """Context manager entry."""
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit."""
+        # Add all context variables to the network
+        for var_name, rv in self._context_vars.items():
+            self.random_variables[var_name] = rv
+            if rv.name:
+                self.add_node(rv.name)
+    
+    def add_random_variable(self, rv):
+        """
+        Add a random variable to the network.
+        
+        Parameters:
+            rv: RandomVariable
+                The random variable to add.
+        """
+        if rv.name is None:
+            raise ValueError("Random variable must have a name")
+        
+        self.random_variables[rv.name] = rv
+        self.add_node(rv.name)
+        
+        # Add edges for parent relationships
+        for parent in rv.get_parents():
+            if parent.name:
+                self.add_edge(parent.name, rv.name)
+    
+    def get_random_variables(self):
+        """
+        Get all random variables in the network.
+        
+        Returns:
+            dict[str, RandomVariable]: Dictionary of random variables.
+        """
+        return self.random_variables.copy()
 
     def __repr__(self):
         return f"BayesianNetwork(\n\t{self.cpts})"
