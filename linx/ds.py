@@ -10,6 +10,9 @@ Classes:
     - BayesianNetwork
     - MarkovNetwork
     - Particle
+    - RandomVariable
+    - Normal
+    - Gamma
 """
 from .query import Query
 from .conditional_probability_table import ConditionalProbabilityTable
@@ -20,3 +23,6 @@ from .factors import Factors
 from .markov_network import MarkovNetwork
 from .bayesian_network import BayesianNetwork
 from .particles.particle import Particle
+from .random.random_variable import RandomVariable
+from .random.normal import Normal
+from .random.gamma import Gamma
