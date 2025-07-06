@@ -148,8 +148,6 @@ def test_sample_simple_network():
     assert particle.has_variable('X')
     assert particle.get_variables() == ['X']
 
-
-@pytest.mark.f
 def test_sample_chain_network():
     """Test sampling from a chain network: X -> Y."""
     clean_tmp()
@@ -200,7 +198,6 @@ def test_sample_chain_network():
         particle = bayesian_network.sample()
         samples_y.append(particle.get_value('Y'))
         samples_x.append(particle.get_value('X'))
-
 
     # Check that the y mean is within acceptable tolerance
     expected_occurence_y = 0.4 * 0.8 + 0.6 * 0.3
@@ -286,6 +283,26 @@ def test_sample_complex_network():
     )
 
     bayesian_network.add_edge(cpt_d)
+
+    # P(D = 1 | B = 1) * P(B = 1 | A = 1) * P(A=1)
+    # P(D = 1 | B = 0) * P(B = 0 | A = 1) * P(A=1)
+    # P(D = 1 | B = 1) * P(B = 1 | A = 0) * P(A=0)
+    # P(D = 1 | B = 0) * P(B = 0 | A = 0) * P(A=0)
+    probability_of_d_is_1 = 0.6 * 0.8 * 0.5 + \
+        0.1 * 0.2 * 0.5 + \
+        0.6 * 0.3 * 0.5 + \
+        0.1 * 0.7 * 0.5
+
+    # Sample multiple times and check that we get both values
+    samples_d = []
+    for _ in range(1000):
+        particle = bayesian_network.sample()
+        samples_d.append(particle.get_value('D'))
+
+    # Check that the y mean is within acceptable tolerance
+    expected_occurence_d = probability_of_d_is_1
+    d_mean = np.array(samples_d).mean()
+    assert abs(d_mean - expected_occurence_d) < 0.05, f"Expected mean close to {expected_occurence_y}, got {y_mean}"
 
     # Sample and verify
     particle = bayesian_network.sample()
