@@ -14,7 +14,7 @@ class Gamma(RandomVariable):
         scale: float, default=1.0
             Scale parameter (theta), must be > 0.
     """
-    def __init__(self, shape, scale=1.0):
+    def _process_parameters(self, shape, scale=1.0, **kwargs):
         if shape <= 0:
             raise ValueError("Shape parameter must be positive")
         if scale <= 0:
@@ -22,7 +22,7 @@ class Gamma(RandomVariable):
         self.shape = shape
         self.scale = scale
     
-    def pdf(self, x):
+    def pdf(self, x, **kwargs):
         """
         Probability density function of the gamma distribution.
         """
@@ -30,7 +30,7 @@ class Gamma(RandomVariable):
         x = np.asarray(x)
         return gamma.pdf(x, a=self.shape, scale=self.scale)
     
-    def logpdf(self, x):
+    def logpdf(self, x, **kwargs):
         """
         Logarithm of the probability density function.
         """
@@ -38,7 +38,7 @@ class Gamma(RandomVariable):
         x = np.asarray(x)
         return gamma.logpdf(x, a=self.shape, scale=self.scale)
     
-    def sample(self, size=None):
+    def sample(self, size=None, **kwargs):
         """
         Generate random samples from the gamma distribution.
         """
@@ -53,7 +53,10 @@ class Gamma(RandomVariable):
         return gamma.cdf(x, a=self.shape, scale=self.scale)
     
     def __repr__(self):
-        return f"Gamma(shape={self.shape}, scale={self.scale})"
+        if self.name:
+            return f"Gamma(name='{self.name}', shape={self.shape}, scale={self.scale})"
+        else:
+            return f"Gamma(shape={self.shape}, scale={self.scale})"
     
     def __str__(self):
         return self.__repr__() 

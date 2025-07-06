@@ -16,9 +16,9 @@ class Normal(RandomVariable):
             Standard deviation of the normal distribution.
     """
     
-    def __init__(self, mean=0.0, std=1.0):
+    def _process_parameters(self, mean=0.0, std=1.0, **kwargs):
         """
-        Initialize normal distribution.
+        Process parameters for normal distribution.
         
         Parameters:
             mean: float
@@ -33,7 +33,7 @@ class Normal(RandomVariable):
         self.std = std
         self.var = std ** 2  # Variance
     
-    def pdf(self, x):
+    def pdf(self, x, **kwargs):
         """
         Probability density function of the normal distribution.
         
@@ -42,6 +42,8 @@ class Normal(RandomVariable):
         Parameters:
             x: array-like
                 Points at which to evaluate the PDF.
+            **kwargs: dict
+                Additional parameters (e.g., parent values for conditional distributions).
                 
         Returns:
             array-like: PDF values at the given points.
@@ -49,7 +51,7 @@ class Normal(RandomVariable):
         x = np.asarray(x)
         return (1 / (self.std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - self.mean) / self.std) ** 2)
     
-    def logpdf(self, x):
+    def logpdf(self, x, **kwargs):
         """
         Logarithm of the probability density function.
         
@@ -58,6 +60,8 @@ class Normal(RandomVariable):
         Parameters:
             x: array-like
                 Points at which to evaluate the log PDF.
+            **kwargs: dict
+                Additional parameters (e.g., parent values for conditional distributions).
                 
         Returns:
             array-like: Log PDF values at the given points.
@@ -65,7 +69,7 @@ class Normal(RandomVariable):
         x = np.asarray(x)
         return -0.5 * np.log(2 * np.pi) - np.log(self.std) - 0.5 * ((x - self.mean) / self.std) ** 2
     
-    def sample(self, size=None):
+    def sample(self, size=None, **kwargs):
         """
         Generate random samples from the normal distribution.
         
@@ -74,6 +78,8 @@ class Normal(RandomVariable):
                 Output shape. If the given shape is, e.g., (m, n, k), then
                 m * n * k samples are drawn. If size is None (default),
                 a single value is returned.
+            **kwargs: dict
+                Additional parameters (e.g., parent values for conditional distributions).
                 
         Returns:
             array-like: Random samples from the normal distribution.
@@ -98,7 +104,10 @@ class Normal(RandomVariable):
     
     def __repr__(self):
         """String representation of the normal distribution."""
-        return f"Normal(mean={self.mean}, std={self.std})"
+        if self.name:
+            return f"Normal(name='{self.name}', mean={self.mean}, std={self.std})"
+        else:
+            return f"Normal(mean={self.mean}, std={self.std})"
     
     def __str__(self):
         """String representation of the normal distribution."""

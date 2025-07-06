@@ -14,14 +14,57 @@ class RandomVariable(ABC):
     density functions (logpdf), and sampling capabilities.
     """
     
+    def __init__(self, name=None, **kwargs):
+        """
+        Initialize random variable.
+        
+        Parameters:
+            name: str, optional
+                Name of the random variable.
+            **kwargs: dict
+                Additional parameters for the specific distribution.
+        """
+        self.name = name
+        self.parents = []
+        self._process_parameters(**kwargs)
+    
+    def _process_parameters(self, **kwargs):
+        """
+        Process parameters for the random variable.
+        Override in subclasses to handle specific parameters.
+        """
+        pass
+    
+    def set_parents(self, parents):
+        """
+        Set parent random variables.
+        
+        Parameters:
+            parents: list[RandomVariable]
+                List of parent random variables.
+        """
+        self.parents = parents
+    
+    def get_parents(self):
+        """
+        Get parent random variables.
+        
+        Returns:
+            list[RandomVariable]
+                List of parent random variables.
+        """
+        return self.parents
+    
     @abstractmethod
-    def pdf(self, x):
+    def pdf(self, x, **kwargs):
         """
         Probability density function.
         
         Parameters:
             x: array-like
                 Points at which to evaluate the probability density function.
+            **kwargs: dict
+                Additional parameters (e.g., parent values for conditional distributions).
                 
         Returns:
             array-like: Probability density values at the given points.
@@ -29,13 +72,15 @@ class RandomVariable(ABC):
         pass
     
     @abstractmethod
-    def logpdf(self, x):
+    def logpdf(self, x, **kwargs):
         """
         Logarithm of the probability density function.
         
         Parameters:
             x: array-like
                 Points at which to evaluate the log probability density function.
+            **kwargs: dict
+                Additional parameters (e.g., parent values for conditional distributions).
                 
         Returns:
             array-like: Log probability density values at the given points.
@@ -43,7 +88,7 @@ class RandomVariable(ABC):
         pass
     
     @abstractmethod
-    def sample(self, size=None):
+    def sample(self, size=None, **kwargs):
         """
         Generate random samples from the distribution.
         
@@ -52,6 +97,8 @@ class RandomVariable(ABC):
                 Output shape. If the given shape is, e.g., (m, n, k), then
                 m * n * k samples are drawn. If size is None (default),
                 a single value is returned.
+            **kwargs: dict
+                Additional parameters (e.g., parent values for conditional distributions).
                 
         Returns:
             array-like: Random samples from the distribution.
@@ -60,7 +107,10 @@ class RandomVariable(ABC):
     
     def __repr__(self):
         """String representation of the random variable."""
-        return f"{self.__class__.__name__}()"
+        if self.name:
+            return f"{self.__class__.__name__}(name='{self.name}')"
+        else:
+            return f"{self.__class__.__name__}()"
     
     def __str__(self):
         """String representation of the random variable."""
