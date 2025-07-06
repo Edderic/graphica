@@ -2,6 +2,7 @@
 ConditionalProbabilityTable class
 """
 import numpy as np
+import pandas as pd
 from .errors import ArgumentError
 
 
@@ -22,9 +23,25 @@ class ConditionalProbabilityTable:
     """
 
     # pylint:disable=too-few-public-methods
-    def __init__(self, data, outcomes, givens=None):
+    def __init__(self, data=None, table=None, outcomes=None, givens=None):
         if givens is None:
             givens = []
+        
+        if outcomes is None:
+            raise ValueError("outcomes parameter is required")
+        
+        # Handle table parameter
+        if table is not None:
+            if data is not None:
+                raise ValueError("Cannot specify both 'data' and 'table' parameters")
+            
+            # Convert table to DataFrame and create InMemoryData
+            df = pd.DataFrame(table)
+            from .data import InMemoryData
+            data = InMemoryData(df)
+        
+        if data is None:
+            raise ValueError("Either 'data' or 'table' parameter must be provided")
 
         self.givens = givens
         self.outcomes = outcomes
