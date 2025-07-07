@@ -61,15 +61,14 @@ def create_levels_df_simple():
 def test_hiring_sub_2():
     cpts = {}
 
-    priors = [
+    prior_keys = [
         'Narrative',
         'Visualization',
     ]
 
-    priors = {}
-    for prior in priors:
-        priors[prior] = CPT(
-            df=create_prior_df(outcome=prior),
+    for prior in prior_keys:
+        cpts[prior] = CPT(
+            table=create_prior_df(outcome=prior),
             outcomes=[prior],
         )
 
@@ -102,8 +101,7 @@ def test_hiring_sub_2():
     )
 
     bayesian_network = BayesianNetwork(
-        cpts=list(cpts.values()),
-        priors=list(priors.values())
+        random_variables=cpts
     )
 
     logging.basicConfig(level=logging.DEBUG)
@@ -193,10 +191,9 @@ def test_hiring_sub():
         ]
     )
 
-    bayesian_network = BayesianNetwork(
-        cpts=list(cpts.values()),
-        priors=list(priors.values())
-    )
+    bayesian_network = BayesianNetwork()
+    bayesian_network.add_nodes(cpts)
+    bayesian_network.add_nodes(priors)
 
     logging.basicConfig(level=logging.DEBUG)
 
@@ -326,16 +323,16 @@ def test_hiring_simple():
 
     roots = ['Narrative', 'General Engineering Skills']
 
-    priors = [
-        CPT(
-            ParquetData(
-                create_prior_df(outcome=outcome),
-                storage_folder=get_tmp_path()
-            ),
-            outcomes=[outcome]
+    for outcome in roots:
+        cpts.append(
+            CPT(
+                ParquetData(
+                    create_prior_df(outcome=outcome),
+                    storage_folder=get_tmp_path()
+                ),
+                outcomes=[outcome]
+            )
         )
-        for outcome in roots
-    ]
 
     cpts.append(
         CPT(
@@ -348,11 +345,8 @@ def test_hiring_simple():
         )
     )
 
-    bayesian_network = BayesianNetwork(
-        cpts=cpts,
-        priors=priors,
-        graphviz_dag=graphviz.Digraph()
-    )
+    bayesian_network = BayesianNetwork()
+    bayesian_network.add_nodes(cpts)
 
     result = VariableElimination(
         network=bayesian_network,
