@@ -69,7 +69,7 @@ class BayesianNetwork(DirectedAcyclicGraph):
         for var_name, rv in self._context_vars.items():
             self.random_variables[var_name] = rv
             if rv.name:
-                self.add_node(rv.name)
+                super().add_node(rv.name)
     
     def add_random_variable(self, rv):
         """
@@ -83,7 +83,8 @@ class BayesianNetwork(DirectedAcyclicGraph):
             raise ValueError("Random variable must have a name")
         
         self.random_variables[rv.name] = rv
-        self.add_node(rv.name)
+        # Add the node to the DAG (not as a CPT)
+        super().add_node(rv.name)
         
         # Add edges for parent relationships
         for parent in rv.get_parents():

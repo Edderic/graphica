@@ -19,27 +19,27 @@ class ConditionalProbabilityTable:
             In P(X,Y | Z,A), this is the left side (i.e. X, Y).
 
         givens: list[str]
-            In P(X,Y | Z,A), this is the right side (i.e. Z, A).
+            In P(X,Y | Z,A), this is the right side (i.e. Z, A). If None, this is assumd to be an empty list.
     """
 
     # pylint:disable=too-few-public-methods
     def __init__(self, data=None, table=None, outcomes=None, givens=None):
         if givens is None:
             givens = []
-        
+
         if outcomes is None:
             raise ValueError("outcomes parameter is required")
-        
+
         # Handle table parameter
         if table is not None:
             if data is not None:
                 raise ValueError("Cannot specify both 'data' and 'table' parameters")
-            
+
             # Convert table to DataFrame and create InMemoryData
             df = pd.DataFrame(table)
             from .data import InMemoryData
             data = InMemoryData(df)
-        
+
         if data is None:
             raise ValueError("Either 'data' or 'table' parameter must be provided")
 
@@ -101,53 +101,53 @@ class ConditionalProbabilityTable:
     def sample(self, given_values=None):
         """
         Sample a value from this conditional probability table.
-        
+
         Parameters:
             given_values: dict, optional
                 Dictionary mapping given variable names to their values.
                 If None, assumes no given variables (prior distribution).
-                
+
         Returns:
             dict: Dictionary mapping outcome variable names to their sampled values
         """
         # Get the data from the CPT
         df = self.get_data().read()
-        
+
         # Get the outcome variables
         outcomes = self.get_outcomes()
-        
+
         # Get the given variables (parents)
         givens = self.get_givens()
-        
+
         # Filter the dataframe based on the values of the given variables
         if givens:
             if not given_values:
                 raise ValueError(f"Given variables {givens} are required but no given_values provided")
-            
+
             # Create a filter condition for each given variable
             for given_var in givens:
                 if given_var not in given_values:
                     raise ValueError(f"Given variable {given_var} not provided in given_values")
-                
+
                 given_value = given_values[given_var]
                 df = df[df[given_var] == given_value]
-            
+
             # Check if we have any rows after filtering
             if df.empty:
                 raise ValueError(f"No matching rows found for given values: {given_values}")
-        
+
         # Sample from each outcome variable
         sampled_values = {}
         for outcome_var in outcomes:
             # Extract the possible values and their probabilities for this outcome
             possible_values = df[outcome_var].values
             probabilities = df['value'].values
-            
+
             # Normalize probabilities to ensure they sum to 1
             probabilities = probabilities / probabilities.sum()
-            
+
             # Sample from the categorical distribution
             sampled_value = np.random.choice(possible_values, p=probabilities)
             sampled_values[outcome_var] = sampled_value
-        
+
         return sampled_values
