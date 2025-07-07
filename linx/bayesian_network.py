@@ -31,10 +31,16 @@ class BayesianNetwork(DirectedAcyclicGraph):
             raise ValueError("Random variable must have a name")
         self.random_variables[rv.name] = rv
         super().add_node(rv.name)
-        # Add edges for parent relationships
-        for parent in rv.get_parents():
-            if parent.name:
-                self.add_edge(parent.name, rv.name)
+        
+        # For CPTs, add edges based on givens
+        if hasattr(rv, 'get_givens'):
+            for parent_name in rv.get_givens():
+                self.add_edge(parent_name, rv.name)
+        else:
+            # Add edges for parent relationships
+            for parent in rv.get_parents():
+                if parent.name:
+                    self.add_edge(parent.name, rv.name)
 
     def add_edge(self, parent_name, child_name):
         """
@@ -67,14 +73,37 @@ class BayesianNetwork(DirectedAcyclicGraph):
         particle = Particle()
         for var in sorted_vars:
             rv = self.random_variables[var]
+            
             # Gather parent values
             parent_values = {}
-            for parent in rv.get_parents():
-                if not particle.has_variable(parent.name):
-                    raise ValueError(f"Parent variable {parent.name} not yet sampled")
-                parent_values[parent.name] = particle.get_value(parent.name)
+            
+            # For CPTs, get parent values from givens
+            if hasattr(rv, 'get_givens'):
+                for parent_name in rv.get_givens():
+                    if not particle.has_variable(parent_name):
+                        raise ValueError(f"Parent variable {parent_name} not yet sampled")
+                    parent_val = particle.get_value(parent_name)
+                    # Discretize parent values for CPTs
+                    if parent_name in self.random_variables:
+                        parent_rv = self.random_variables[parent_name]
+                        if parent_rv.__class__.__name__ == 'Uniform':
+                            parent_values[parent_name] = int(parent_val > 0.5)
+                        elif parent_rv.__class__.__name__ == 'Normal':
+                            parent_values[parent_name] = int(parent_val > 0)
+                        else:
+                            parent_values[parent_name] = parent_val
+                    else:
+                        parent_values[parent_name] = parent_val
+            else:
+                # For other random variables, get parent values from parent objects
+                for parent in rv.get_parents():
+                    if not particle.has_variable(parent.name):
+                        raise ValueError(f"Parent variable {parent.name} not yet sampled")
+                    parent_values[parent.name] = particle.get_value(parent.name)
+            
             # Sample from the random variable
             sampled_value = rv.sample(**parent_values)
+            
             # If sample returns a dict (CPT), extract the value for this variable
             if isinstance(sampled_value, dict) and var in sampled_value:
                 particle.set_value(var, sampled_value[var])
