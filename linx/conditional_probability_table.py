@@ -27,7 +27,9 @@ class ConditionalProbabilityTable(RandomVariable):
     def __init__(self, data=None, table=None, outcomes=None, givens=None, name=None, **kwargs):
         # Call parent constructor first
         super().__init__(name=name, **kwargs)
-        
+
+        if name is None and len(outcomes) == 1:
+            self.name = outcomes[0]
         # Process CPT-specific parameters
         if givens is None:
             givens = []
@@ -160,13 +162,13 @@ class ConditionalProbabilityTable(RandomVariable):
     def pdf(self, x, **kwargs):
         """
         Probability mass function for discrete variables.
-        
+
         Parameters:
             x: dict or array-like
                 Values for the outcome variables.
             **kwargs: dict
                 Values for the given variables (parents).
-                
+
         Returns:
             float: Probability mass at the given point.
         """
@@ -176,33 +178,33 @@ class ConditionalProbabilityTable(RandomVariable):
         else:
             # Assume x is array-like and corresponds to outcomes in order
             outcome_values = dict(zip(self.outcomes, x))
-        
+
         # Get given values from kwargs
         given_values = {var: kwargs[var] for var in self.givens if var in kwargs}
-        
+
         # Get the data from the CPT
         df = self.get_data().read()
-        
+
         # Filter the dataframe based on the values
         for var, value in list(outcome_values.items()) + list(given_values.items()):
             df = df[df[var] == value]
-        
+
         if df.empty:
             return 0.0
-        
+
         # Return the probability value
         return df['value'].iloc[0]
 
     def logpdf(self, x, **kwargs):
         """
         Logarithm of the probability mass function.
-        
+
         Parameters:
             x: dict or array-like
                 Values for the outcome variables.
             **kwargs: dict
                 Values for the given variables (parents).
-                
+
         Returns:
             float: Log probability mass at the given point.
         """
@@ -214,13 +216,13 @@ class ConditionalProbabilityTable(RandomVariable):
     def sample(self, size=None, **kwargs):
         """
         Sample from the conditional probability table.
-        
+
         Parameters:
             size: int or tuple of ints, optional
                 Output shape. If None, returns a single sample.
             **kwargs: dict
                 Values for the given variables (parents).
-                
+
         Returns:
             dict or list[dict]: Sampled values for outcome variables.
         """
@@ -235,15 +237,15 @@ class ConditionalProbabilityTable(RandomVariable):
                 total_samples = np.prod(size)
                 samples = [self._sample_single(**kwargs) for _ in range(total_samples)]
                 return np.array(samples).reshape(size)
-    
+
     def _sample_single(self, **kwargs):
         """
         Sample a single value from the conditional probability table.
-        
+
         Parameters:
             **kwargs: dict
                 Values for the given variables (parents).
-                
+
         Returns:
             dict: Sampled values for outcome variables.
         """

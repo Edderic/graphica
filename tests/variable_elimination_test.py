@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 import pandas as pd
 
@@ -177,10 +178,11 @@ def test_tree_binary():
         givens=['A', 'D']
     )
 
-    bayesian_network = BayesianNetwork(
-        cpts=list(cpts.values()),
-        priors=list(priors.values())
-    )
+    bayesian_network = BayesianNetwork()
+
+    bayesian_network.add_node(cpts['B'])
+    bayesian_network.add_node(cpts['C'])
+    bayesian_network.add_node(cpts['E'])
 
     query = Query(
         givens=[
