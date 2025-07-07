@@ -71,8 +71,6 @@ def run_random_variable_example():
     print("Sampling 100 particles...")
     particles = sampler.sample(n=100, burn_in=10)
 
-    import pdb; pdb.set_trace()
-
     print(f"Generated {len(particles)} particles")
     if particles:
         first_particle = particles[0]
