@@ -270,7 +270,7 @@ class BayesianNetwork(DirectedAcyclicGraph):
                 given_values[parent_var] = particle.get_value(parent_var)
             
             # Sample from the CPT
-            sampled_values = cpt.sample(given_values)
+            sampled_values = cpt.sample_with_given_values(given_values)
             
             # For Bayesian Networks, we expect exactly one outcome variable
             outcomes = cpt.get_outcomes()

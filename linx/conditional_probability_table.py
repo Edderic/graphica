@@ -4,9 +4,10 @@ ConditionalProbabilityTable class
 import numpy as np
 import pandas as pd
 from .errors import ArgumentError
+from .random.random_variable import RandomVariable
 
 
-class ConditionalProbabilityTable:
+class ConditionalProbabilityTable(RandomVariable):
     """
     Conditional Probability Table class. Meant to be used to represent
     conditional probabilities for Bayesian Networks.
@@ -23,7 +24,11 @@ class ConditionalProbabilityTable:
     """
 
     # pylint:disable=too-few-public-methods
-    def __init__(self, data=None, table=None, outcomes=None, givens=None):
+    def __init__(self, data=None, table=None, outcomes=None, givens=None, name=None, **kwargs):
+        # Call parent constructor first
+        super().__init__(name=name, **kwargs)
+        
+        # Process CPT-specific parameters
         if givens is None:
             givens = []
 
@@ -98,7 +103,7 @@ class ConditionalProbabilityTable:
         """
         return self.outcomes
 
-    def sample(self, given_values=None):
+    def sample_with_given_values(self, given_values=None):
         """
         Sample a value from this conditional probability table.
 
@@ -151,3 +156,95 @@ class ConditionalProbabilityTable:
             sampled_values[outcome_var] = sampled_value
 
         return sampled_values
+
+    def pdf(self, x, **kwargs):
+        """
+        Probability mass function for discrete variables.
+        
+        Parameters:
+            x: dict or array-like
+                Values for the outcome variables.
+            **kwargs: dict
+                Values for the given variables (parents).
+                
+        Returns:
+            float: Probability mass at the given point.
+        """
+        # Handle different input formats
+        if isinstance(x, dict):
+            outcome_values = x
+        else:
+            # Assume x is array-like and corresponds to outcomes in order
+            outcome_values = dict(zip(self.outcomes, x))
+        
+        # Get given values from kwargs
+        given_values = {var: kwargs[var] for var in self.givens if var in kwargs}
+        
+        # Get the data from the CPT
+        df = self.get_data().read()
+        
+        # Filter the dataframe based on the values
+        for var, value in list(outcome_values.items()) + list(given_values.items()):
+            df = df[df[var] == value]
+        
+        if df.empty:
+            return 0.0
+        
+        # Return the probability value
+        return df['value'].iloc[0]
+
+    def logpdf(self, x, **kwargs):
+        """
+        Logarithm of the probability mass function.
+        
+        Parameters:
+            x: dict or array-like
+                Values for the outcome variables.
+            **kwargs: dict
+                Values for the given variables (parents).
+                
+        Returns:
+            float: Log probability mass at the given point.
+        """
+        prob = self.pdf(x, **kwargs)
+        if prob <= 0:
+            return -np.inf
+        return np.log(prob)
+
+    def sample(self, size=None, **kwargs):
+        """
+        Sample from the conditional probability table.
+        
+        Parameters:
+            size: int or tuple of ints, optional
+                Output shape. If None, returns a single sample.
+            **kwargs: dict
+                Values for the given variables (parents).
+                
+        Returns:
+            dict or list[dict]: Sampled values for outcome variables.
+        """
+        if size is None:
+            return self._sample_single(**kwargs)
+        else:
+            # Handle multiple samples
+            if isinstance(size, int):
+                return [self._sample_single(**kwargs) for _ in range(size)]
+            else:
+                # Handle tuple sizes
+                total_samples = np.prod(size)
+                samples = [self._sample_single(**kwargs) for _ in range(total_samples)]
+                return np.array(samples).reshape(size)
+    
+    def _sample_single(self, **kwargs):
+        """
+        Sample a single value from the conditional probability table.
+        
+        Parameters:
+            **kwargs: dict
+                Values for the given variables (parents).
+                
+        Returns:
+            dict: Sampled values for outcome variables.
+        """
+        return self.sample_with_given_values(given_values=kwargs)

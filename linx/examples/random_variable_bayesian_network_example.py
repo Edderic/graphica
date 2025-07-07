@@ -56,6 +56,7 @@ def run_random_variable_example():
 
     bn.add_random_variable(mu)
     bn.add_random_variable(sigma)
+    bn.add_random_variable(X)
 
     # Create a query conditioning on some observation
     query = Query(outcomes=[], givens=[{'X': 1.5}])  # Observe X = 1.5
