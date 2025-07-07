@@ -123,7 +123,6 @@ def test_collider_1(collider_and_descendant):
 
     clean_tmp()
 
-
 def test_tree_binary():
     r"""
        A     D
@@ -326,10 +325,9 @@ def test_tree():
         givens=['A', 'D']
     )
 
-    bayesian_network = BayesianNetwork(
-        cpts=list(cpts.values()),
-        priors=list(priors.values())
-    )
+    bn = BayesianNetwork()
+    bn.add_nodes(cpts)
+    bn.add_nodes(priors)
 
     query = Query(
         givens=[
@@ -341,7 +339,7 @@ def test_tree():
     pd.options.display.max_rows = 999
 
     variable_elimination = VariableElimination(
-        network=bayesian_network,
+        network=bn,
         query=query
     )
 
@@ -447,21 +445,21 @@ def test_nothing_to_eliminate():
 
     anemometer_reading_df = create_anemometer_cpt_df(10000)
 
-    bn = BayesianNetwork(
-        cpts=generate_cpts_for_anemometer_readings(
-            number_of_readings=3,
-            anemometer_reading_df=anemometer_reading_df
-        ),
-        priors=[
-            CPT(
-                ParquetData(
-                    generate_flat_priors(0, 5, 0.1, 'actual_fps'),
-                    storage_folder=get_tmp_path()
-                ),
-                outcomes=['actual_fps']
-            )
-        ]
+    cpts = generate_cpts_for_anemometer_readings(
+        number_of_readings=3,
+        anemometer_reading_df=anemometer_reading_df
     )
+    prior = CPT(
+            ParquetData(
+                generate_flat_priors(0, 5, 0.1, 'actual_fps'),
+                storage_folder=get_tmp_path()
+                ),
+            outcomes=['actual_fps']
+            )
+
+    bn = BayesianNetwork()
+    bn.add_nodes(cpts)
+    bn.add_node(prior)
 
     layer_0_fps = VariableElimination(
         network=bn,

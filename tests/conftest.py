@@ -257,10 +257,9 @@ def collider_and_descendant():
         givens=['Z']
     )
 
-    for cpt in [cpt_1, cpt_2, cpt_3, cpt_4]:
-        bayesian_network.add_edge(
-            cpt=cpt
-        )
+    bayesian_network.add_nodes(
+        rvs=[cpt_1, cpt_2, cpt_3, cpt_4]
+    )
 
     return bayesian_network
 
@@ -316,16 +315,16 @@ def two_vars_unconnected_bn():
     ])
 
     bayesian_network = BayesianNetwork(
-        priors=[
-            CPT(
+        random_variables={
+            'X': CPT(
                 ParquetData(df1, storage_folder=get_tmp_path()),
                 outcomes=['X'],
             ),
-            CPT(
+            'Y': CPT(
                 ParquetData(df2, storage_folder=get_tmp_path()),
                 outcomes=['Y'],
             )
-        ]
+        }
     )
 
     return bayesian_network
