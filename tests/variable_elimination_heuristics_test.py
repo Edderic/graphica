@@ -67,10 +67,7 @@ def test_min_fill_edges():
         givens=['Z']
     )
 
-    for cpt in [cpt_1, cpt_2, cpt_3, cpt_4]:
-        bayesian_network.add_edge(
-            cpt=cpt
-        )
+    bayesian_network.add_nodes([cpt_1, cpt_2, cpt_3, cpt_4])
 
     best_choice, min_number_of_vars = min_fill_edges(
         eliminateables=['X', 'Y', 'Z', 'A'],
