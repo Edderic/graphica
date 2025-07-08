@@ -3,6 +3,7 @@ Metropolis-Hastings sampler for Bayesian Networks with Random Variables.
 """
 import numpy as np
 from ..particles.particle import Particle
+from tqdm import tqdm
 
 
 class MetropolisHastings:
@@ -48,12 +49,12 @@ class MetropolisHastings:
         samples = []
         accepted = 0
 
-        # Burn-in phase
-        for _ in range(burn_in):
+        # Burn-in phase with progress bar
+        for _ in tqdm(range(burn_in), desc="Burn-in", leave=False):
             current_particle = self._step(current_particle)
 
-        # Sampling phase
-        for _ in range(n):
+        # Sampling phase with progress bar
+        for _ in tqdm(range(n), desc="Sampling"):
             current_particle = self._step(current_particle)
             samples.append(current_particle.copy())
             if current_particle.is_accepted():
@@ -94,7 +95,8 @@ class MetropolisHastings:
 
         # Accept or reject
         alpha = np.exp(log_alpha)
-        print(f"Alpha: {alpha}")
+        import pdb; pdb.set_trace()
+
 
         if alpha >= 1:
             proposed_particle.accept()
@@ -118,14 +120,18 @@ class MetropolisHastings:
                 # For conditional random variables, we need parent values
                 if hasattr(rv, 'get_parents') and rv.get_parents():
                     parent_values = {}
-                    for parent in rv.get_parents():
-                        if particle.has_variable(parent):
-                            parent_values[parent] = particle.get_value(parent)
+                    for parent_name, parent in rv.get_parents().items():
+                        if particle.has_variable(parent_name):
+                            parent_values[parent_name] = particle.get_value(parent_name)
                         else:
                             # If parent not available, skip this variable
                             continue
+                    import pdb; pdb.set_trace()
+
                     log_prob += rv.logpdf(value, **parent_values)
                 else:
+                    import pdb; pdb.set_trace()
+
                     log_prob += rv.logpdf(value)
 
         return log_prob

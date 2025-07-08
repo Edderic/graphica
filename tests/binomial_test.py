@@ -187,7 +187,7 @@ def test_binomial_parent_relationships():
     # Test parent relationships
     parent_rv = Binomial(name='Y', n=5, p=0.5)
     rv.set_parents([parent_rv])
-    assert rv.get_parents() == [parent_rv]
+    assert rv.get_parents() == {'Y': parent_rv}
 
 
 def test_binomial_consistency():

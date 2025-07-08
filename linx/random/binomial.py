@@ -9,7 +9,7 @@ from .random_variable import RandomVariable
 class Binomial(RandomVariable):
     """
     Binomial random variable.
-    
+
     Parameters:
         name: str, optional
             Name of the random variable.
@@ -18,11 +18,11 @@ class Binomial(RandomVariable):
         p: float
             Probability of success on each trial (0 <= p <= 1).
     """
-    
+
     def __init__(self, name=None, n=1, p=0.5, **kwargs):
         """
         Initialize Binomial random variable.
-        
+
         Parameters:
             name: str, optional
                 Name of the random variable.
@@ -36,85 +36,85 @@ class Binomial(RandomVariable):
         super().__init__(name=name, **kwargs)
         self.n = n
         self.p = p
-        
+
         # Validate parameters
-        if not isinstance(n, int) or n < 0:
+        if not isinstance(n, RandomVariable) and (not isinstance(n, int) or n < 0):
             raise ValueError("n must be a non-negative integer")
-        if not 0 <= p <= 1:
+        if not isinstance(p, RandomVariable) and not 0 <= p <= 1:
             raise ValueError("p must be between 0 and 1")
-    
+
     def _process_parameters(self, **kwargs):
         """Process parameters for the binomial distribution."""
         # Parameters are handled in __init__
         pass
-    
+
     def pdf(self, x, **kwargs):
         """
         Probability mass function for binomial distribution.
-        
+
         Parameters:
             x: int or array-like
                 Number of successes.
             **kwargs: dict
                 Additional parameters (ignored for binomial).
-                
+
         Returns:
             float or array-like: Probability mass at the given point(s).
         """
         return binom.pmf(x, self.n, self.p)
-    
+
     def logpdf(self, x, **kwargs):
         """
         Logarithm of the probability mass function.
-        
+
         Parameters:
             x: int or array-like
                 Number of successes.
             **kwargs: dict
                 Additional parameters (ignored for binomial).
-                
+
         Returns:
             float or array-like: Log probability mass at the given point(s).
         """
         return binom.logpmf(x, self.n, self.p)
-    
+
     def sample(self, size=None, **kwargs):
         """
         Generate random samples from the binomial distribution.
-        
+
         Parameters:
             size: int or tuple of ints, optional
                 Output shape. If None, returns a single sample.
             **kwargs: dict
                 Additional parameters (ignored for binomial).
-                
+
         Returns:
             int or array-like: Random samples from the distribution.
         """
         return binom.rvs(self.n, self.p, size=size)
-    
+
     def cdf(self, x, **kwargs):
         """
         Cumulative distribution function.
-        
+
         Parameters:
             x: int or array-like
                 Number of successes.
             **kwargs: dict
                 Additional parameters (ignored for binomial).
-                
+
         Returns:
             float or array-like: Cumulative probability at the given point(s).
         """
         return binom.cdf(x, self.n, self.p)
-    
+
     def __repr__(self):
         """String representation of the binomial random variable."""
         if self.name:
             return f"Binomial(name='{self.name}', n={self.n}, p={self.p})"
         else:
             return f"Binomial(n={self.n}, p={self.p})"
-    
+
     def __str__(self):
         """String representation of the binomial random variable."""
-        return self.__repr__() 
+        return self.__repr__()

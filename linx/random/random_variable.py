@@ -25,7 +25,7 @@ class RandomVariable(ABC):
                 Additional parameters for the specific distribution.
         """
         self.name = name
-        self.parents = []
+        self.parents = {}
         self._process_parameters(**kwargs)
     
     def _process_parameters(self, **kwargs):
@@ -40,18 +40,25 @@ class RandomVariable(ABC):
         Set parent random variables.
         
         Parameters:
-            parents: list[RandomVariable]
-                List of parent random variables.
+            parents: dict[str, RandomVariable] or list[RandomVariable]
+                Dictionary mapping parent names to RandomVariable objects,
+                or list of RandomVariable objects (will use their names as keys).
         """
-        self.parents = parents
+        if isinstance(parents, dict):
+            self.parents = parents
+        elif isinstance(parents, list):
+            # Convert list to dict using parent names as keys
+            self.parents = {parent.name: parent for parent in parents if parent.name}
+        else:
+            raise TypeError("parents must be a dict or list")
     
     def get_parents(self):
         """
         Get parent random variables.
         
         Returns:
-            list[RandomVariable]
-                List of parent random variables.
+            dict[str, RandomVariable]
+                Dictionary mapping parent names to RandomVariable objects.
         """
         return self.parents
     

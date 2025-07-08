@@ -180,7 +180,7 @@ def test_beta_parent_relationships():
     # Test parent relationships
     parent_rv = Beta(name='Y', alpha=1.0, beta_param=1.0)
     rv.set_parents([parent_rv])
-    assert rv.get_parents() == [parent_rv]
+    assert rv.get_parents() == {'Y': parent_rv}
 
 
 def test_beta_consistency():

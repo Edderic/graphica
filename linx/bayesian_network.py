@@ -49,9 +49,9 @@ class BayesianNetwork(DirectedAcyclicGraph):
                 self.add_edge(parent_name, rv.name)
         else:
             # Add edges for parent relationships
-            for parent in rv.get_parents():
-                if parent.name:
-                    self.add_edge(parent.name, rv.name)
+            for parent_name, parent in rv.get_parents().items():
+                if parent_name:
+                    self.add_edge(parent_name, rv.name)
 
     def add_edge(self, parent_name, child_name):
         """

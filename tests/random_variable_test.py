@@ -119,4 +119,28 @@ def test_abstract_methods_are_abstract():
     # Check that they are marked as abstract
     assert RandomVariable.pdf.__isabstractmethod__
     assert RandomVariable.logpdf.__isabstractmethod__
-    assert RandomVariable.sample.__isabstractmethod__ 
+    assert RandomVariable.sample.__isabstractmethod__
+
+
+def test_parent_relationships():
+    """Test parent relationship functionality."""
+    rv = ConcreteRandomVariable(mean=0, std=1)
+    
+    # Test that it has the required methods
+    assert hasattr(rv, 'get_parents')
+    assert hasattr(rv, 'set_parents')
+    
+    # Test parent relationships with list
+    parent_rv = ConcreteRandomVariable(mean=5, std=2)
+    parent_rv.name = 'parent'
+    rv.set_parents([parent_rv])
+    assert rv.get_parents() == {'parent': parent_rv}
+    
+    # Test parent relationships with dict
+    rv2 = ConcreteRandomVariable(mean=0, std=1)
+    rv2.set_parents({'parent': parent_rv})
+    assert rv2.get_parents() == {'parent': parent_rv}
+    
+    # Test invalid input
+    with pytest.raises(TypeError):
+        rv.set_parents("invalid") 
