@@ -10,28 +10,51 @@ class Normal(RandomVariable):
     Normal (Gaussian) distribution.
 
     Parameters:
-        mean: float, default=0.0
+        name: str, optional
+            Name of the random variable.
+        mean: float or RandomVariable, default=0.0
             Mean of the normal distribution.
-        std: float, default=1.0
+        std: float or RandomVariable, default=1.0
             Standard deviation of the normal distribution.
     """
 
-    def _process_parameters(self, mean=0.0, std=1.0, **kwargs):
+    def __init__(self, name=None, mean=0.0, std=1.0, **kwargs):
         """
-        Process parameters for normal distribution.
+        Initialize Normal random variable.
 
         Parameters:
-            mean: float
+            name: str, optional
+                Name of the random variable.
+            mean: float or RandomVariable
                 Mean of the distribution.
-            std: float
+            std: float or RandomVariable
                 Standard deviation of the distribution.
+            **kwargs: dict
+                Additional parameters passed to parent class.
         """
-        if std <= 0:
-            raise ValueError("Standard deviation must be positive")
-
+        super().__init__(name=name, **kwargs)
         self.mean = mean
         self.std = std
-        self.var = std ** 2  # Variance
+
+        # Validate parameters and set parents
+        if isinstance(mean, RandomVariable):
+            self.parents['mean'] = mean
+        elif not isinstance(std, RandomVariable) and std <= 0:
+            raise ValueError("Standard deviation must be positive")
+
+        if isinstance(std, RandomVariable):
+            self.parents['std'] = std
+        elif not isinstance(mean, RandomVariable) and std <= 0:
+            raise ValueError("Standard deviation must be positive")
+
+        # Set variance for non-RandomVariable std
+        if not isinstance(std, RandomVariable):
+            self.var = std ** 2
+
+    def _process_parameters(self, **kwargs):
+        """Process parameters for normal distribution."""
+        # Parameters are handled in __init__
+        pass
 
     def pdf(self, x, **kwargs):
         """
@@ -43,13 +66,22 @@ class Normal(RandomVariable):
             x: array-like
                 Points at which to evaluate the PDF.
             **kwargs: dict
-                Additional parameters (e.g., parent values for conditional distributions).
+                Will override parameters mean and std.
 
         Returns:
             array-like: PDF values at the given points.
         """
+        new_kwargs = {
+            'mean': self.mean,
+            'std': self.std
+        }
+        new_kwargs.update(kwargs)
+
+        mean = new_kwargs['mean']
+        std = new_kwargs['std']
+
         x = np.asarray(x)
-        return (1 / (self.std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - self.mean) / self.std) ** 2)
+        return (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - mean) / std) ** 2)
 
     def logpdf(self, x, **kwargs):
         """
@@ -61,18 +93,22 @@ class Normal(RandomVariable):
             x: array-like
                 Points at which to evaluate the log PDF.
             **kwargs: dict
-                Additional parameters (e.g., parent values for conditional distributions).
+                Will override parameters mean and std.
 
         Returns:
             array-like: Log PDF values at the given points.
         """
+        new_kwargs = {
+            'mean': self.mean,
+            'std': self.std
+        }
+        new_kwargs.update(kwargs)
+
+        mean = new_kwargs['mean']
+        std = new_kwargs['std']
+
         x = np.asarray(x)
-        try :
-
-            return -0.5 * np.log(2 * np.pi) - np.log(self.std) - 0.5 * ((x - self.mean) / self.std) ** 2
-        except Exception as e:
-            import pdb; pdb.set_trace()
-
+        return -0.5 * np.log(2 * np.pi) - np.log(std) - 0.5 * ((x - mean) / std) ** 2
 
     def sample(self, size=None, **kwargs):
         """
@@ -84,28 +120,48 @@ class Normal(RandomVariable):
                 m * n * k samples are drawn. If size is None (default),
                 a single value is returned.
             **kwargs: dict
-                Additional parameters (e.g., parent values for conditional distributions).
+                Will override parameters mean and std.
 
         Returns:
             array-like: Random samples from the normal distribution.
         """
-        return np.random.normal(self.mean, self.std, size=size)
+        new_kwargs = {
+            'mean': self.mean,
+            'std': self.std
+        }
+        new_kwargs.update(kwargs)
 
-    def cdf(self, x):
+        mean = new_kwargs['mean']
+        std = new_kwargs['std']
+
+        return np.random.normal(mean, std, size=size)
+
+    def cdf(self, x, **kwargs):
         """
         Cumulative distribution function.
 
         Parameters:
             x: array-like
                 Points at which to evaluate the CDF.
+            **kwargs: dict
+                Will override parameters mean and std.
 
         Returns:
             array-like: CDF values at the given points.
         """
+        new_kwargs = {
+            'mean': self.mean,
+            'std': self.std
+        }
+        new_kwargs.update(kwargs)
+
+        mean = new_kwargs['mean']
+        std = new_kwargs['std']
+
         x = np.asarray(x)
         # Use scipy's normal CDF for accuracy
         from scipy import stats
-        return stats.norm.cdf(x, loc=self.mean, scale=self.std)
+        return stats.norm.cdf(x, loc=mean, scale=std)
 
     def __repr__(self):
         """String representation of the normal distribution."""

@@ -160,13 +160,13 @@ def test_beta_string_representation():
     """Test string representation of Beta random variable."""
     # Without name
     rv = Beta(a=2.0, b=3.0)
-    assert str(rv) == "Beta(a=2.0, beta=3.0)"
-    assert repr(rv) == "Beta(a=2.0, beta=3.0)"
+    assert str(rv) == "Beta(a=2.0, b=3.0)"
+    assert repr(rv) == "Beta(a=2.0, b=3.0)"
 
     # With name
     rv = Beta(name='X', a=1.5, b=2.5)
-    assert str(rv) == "Beta(name='X', a=1.5, beta=2.5)"
-    assert repr(rv) == "Beta(name='X', a=1.5, beta=2.5)"
+    assert str(rv) == "Beta(name='X', a=1.5, b=2.5)"
+    assert repr(rv) == "Beta(name='X', a=1.5, b=2.5)"
 
 
 def test_beta_parent_relationships():

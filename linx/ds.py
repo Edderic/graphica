@@ -14,6 +14,8 @@ Classes:
     - Normal
     - Gamma
     - Uniform
+    - Beta
+    - Binomial
     - MetropolisHastings
 """
 from .query import Query
@@ -29,4 +31,6 @@ from .random.random_variable import RandomVariable
 from .random.normal import Normal
 from .random.gamma import Gamma
 from .random.uniform import Uniform
+from .random.beta import Beta
+from .random.binomial import Binomial
 from .inference.metropolis_hastings import MetropolisHastings

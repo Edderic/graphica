@@ -13,9 +13,9 @@ class Binomial(RandomVariable):
     Parameters:
         name: str, optional
             Name of the random variable.
-        n: int
+        n: int or RandomVariable
             Number of trials.
-        p: float
+        p: float or RandomVariable
             Probability of success on each trial (0 <= p <= 1).
     """
 
@@ -26,9 +26,9 @@ class Binomial(RandomVariable):
         Parameters:
             name: str, optional
                 Name of the random variable.
-            n: int
+            n: int or RandomVariable
                 Number of trials.
-            p: float
+            p: float or RandomVariable
                 Probability of success on each trial (0 <= p <= 1).
             **kwargs: dict
                 Additional parameters passed to parent class.
@@ -37,16 +37,16 @@ class Binomial(RandomVariable):
         self.n = n
         self.p = p
 
-        # Validate parameters
-        if not isinstance(n, RandomVariable) and (not isinstance(n, int) or n < 0):
+        # Validate parameters and set parents
+        if isinstance(n, RandomVariable):
+            self.parents['n'] = n
+        elif not isinstance(p, RandomVariable) and (not isinstance(n, int) or n < 0):
             raise ValueError("n must be a non-negative integer")
-        if not isinstance(p, RandomVariable) and not 0 <= p <= 1:
-            raise ValueError("p must be between 0 and 1")
 
         if isinstance(p, RandomVariable):
             self.parents['p'] = p
-        if isinstance(n, RandomVariable):
-            self.parents['n'] = n
+        elif not isinstance(n, RandomVariable) and not 0 <= p <= 1:
+            raise ValueError("p must be between 0 and 1")
 
     def _process_parameters(self, **kwargs):
         """Process parameters for the binomial distribution."""
@@ -61,7 +61,7 @@ class Binomial(RandomVariable):
             x: int or array-like
                 Number of successes.
             **kwargs: dict
-                Additional parameters (ignored for binomial).
+                Will override parameters n and p.
 
         Returns:
             float or array-like: Probability mass at the given point(s).
@@ -70,10 +70,12 @@ class Binomial(RandomVariable):
             'n': self.n,
             'p': self.p
         }
-
         new_kwargs.update(kwargs)
 
-        return binom.pmf(x, **new_kwargs)
+        n = new_kwargs['n']
+        p = new_kwargs['p']
+
+        return binom.pmf(x, n=n, p=p)
 
     def logpdf(self, x, **kwargs):
         """
@@ -92,10 +94,12 @@ class Binomial(RandomVariable):
             'n': self.n,
             'p': self.p
         }
-
         new_kwargs.update(kwargs)
 
-        return binom.logpmf(x, **new_kwargs)
+        n = new_kwargs['n']
+        p = new_kwargs['p']
+
+        return binom.logpmf(x, n=n, p=p)
 
     def sample(self, size=None, **kwargs):
         """
@@ -105,7 +109,7 @@ class Binomial(RandomVariable):
             size: int or tuple of ints, optional
                 Output shape. If None, returns a single sample.
             **kwargs: dict
-                Additional parameters (ignored for binomial).
+                Will override parameters n and p.
 
         Returns:
             int or array-like: Random samples from the distribution.
@@ -114,10 +118,12 @@ class Binomial(RandomVariable):
             'n': self.n,
             'p': self.p
         }
-
         new_kwargs.update(kwargs)
 
-        return binom.rvs(size=size, **new_kwargs)
+        n = new_kwargs['n']
+        p = new_kwargs['p']
+
+        return binom.rvs(n=n, p=p, size=size)
 
     def cdf(self, x, **kwargs):
         """
@@ -127,7 +133,7 @@ class Binomial(RandomVariable):
             x: int or array-like
                 Number of successes.
             **kwargs: dict
-                Additional parameters (ignored for binomial).
+                Will override parameters n and p.
 
         Returns:
             float or array-like: Cumulative probability at the given point(s).
@@ -136,10 +142,12 @@ class Binomial(RandomVariable):
             'n': self.n,
             'p': self.p
         }
-
         new_kwargs.update(kwargs)
 
-        return binom.cdf(x, **new_kwargs)
+        n = new_kwargs['n']
+        p = new_kwargs['p']
+
+        return binom.cdf(x, n=n, p=p)
 
     def __repr__(self):
         """String representation of the binomial random variable."""
