@@ -61,7 +61,15 @@ class Beta(RandomVariable):
         Returns:
             float or array-like: Probability density at the given point(s).
         """
-        return beta.pdf(x, self.a, self.b)
+        new_kwargs = {
+            'a': self.a,
+            'b': self.b
+        }
+
+        new_kwargs.update(kwargs)
+
+        return beta.pdf(x, **new_kwargs)
+
 
     def logpdf(self, x, **kwargs):
         """
@@ -81,6 +89,7 @@ class Beta(RandomVariable):
             'a': self.a,
             'b': self.b
         }
+
 
         new_kwargs.update(kwargs)
 
