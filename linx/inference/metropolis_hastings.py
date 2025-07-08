@@ -95,8 +95,6 @@ class MetropolisHastings:
 
         # Accept or reject
         alpha = np.exp(log_alpha)
-        import pdb; pdb.set_trace()
-
 
         if alpha >= 1:
             proposed_particle.accept()
@@ -114,25 +112,13 @@ class MetropolisHastings:
 
         # Add log probabilities from all random variables
         for var_name, rv in self.network.random_variables.items():
-            if particle.has_variable(var_name):
-                value = particle.get_value(var_name)
+            value = particle.get_value(var_name)
 
-                # For conditional random variables, we need parent values
-                if hasattr(rv, 'get_parents') and rv.get_parents():
-                    parent_values = {}
-                    for parent_name, parent in rv.get_parents().items():
-                        if particle.has_variable(parent_name):
-                            parent_values[parent_name] = particle.get_value(parent_name)
-                        else:
-                            # If parent not available, skip this variable
-                            continue
-                    import pdb; pdb.set_trace()
+            parent_values = {}
+            for parent_name, parent in rv.get_parents().items():
+                parent_values[parent_name] = particle.get_value(parent.name)
 
-                    log_prob += rv.logpdf(value, **parent_values)
-                else:
-                    import pdb; pdb.set_trace()
-
-                    log_prob += rv.logpdf(value)
+            log_prob += rv.logpdf(value, **parent_values)
 
         return log_prob
 
