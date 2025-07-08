@@ -37,6 +37,12 @@ class Binomial(RandomVariable):
         self.n = n
         self.p = p
 
+        # Validate parameters
+        if not isinstance(n, RandomVariable) and (not isinstance(n, int) or n < 0):
+            raise ValueError("n must be a non-negative integer")
+        if not isinstance(p, RandomVariable) and not 0 <= p <= 1:
+            raise ValueError("p must be between 0 and 1")
+
         if isinstance(p, RandomVariable):
             self.parents['p'] = p
         if isinstance(n, RandomVariable):
@@ -82,12 +88,6 @@ class Binomial(RandomVariable):
         Returns:
             float or array-like: Log probability mass at the given point(s).
         """
-        # Validate parameters
-        if (not isinstance(n, int) or n < 0):
-            raise ValueError("n must be a non-negative integer")
-        if not 0 <= p <= 1:
-            raise ValueError("p must be between 0 and 1")
-
         new_kwargs = {
             'n': self.n,
             'p': self.p
