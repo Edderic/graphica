@@ -1,18 +1,20 @@
 """
-Constant random variable implementation.
+Deterministic random variable implementation.
 """
 import numpy as np
 import uuid
 from .random_variable import RandomVariable
 
 
-class Constant(RandomVariable):
+class Deterministic(RandomVariable):
     """
-    Constant random variable that represents a deterministic transformation.
+    Deterministic random variable that represents a deterministic transformation.
 
     Parameters:
         callable_func: callable
             A function that takes keyword arguments and returns a value.
+        name: str, optional
+            Name of the random variable. If None, a UUID will be generated.
         **kwargs: dict
             Keyword arguments to pass to the callable function.
             RandomVariable instances will be set as parents.
@@ -20,7 +22,7 @@ class Constant(RandomVariable):
 
     def __init__(self, callable_func, name=None, **kwargs):
         """
-        Initialize Constant random variable.
+        Initialize Deterministic random variable.
 
         Parameters:
             callable_func: callable
@@ -48,7 +50,7 @@ class Constant(RandomVariable):
                 self.fixed_params[key] = value
 
     def _process_parameters(self, **kwargs):
-        """Process parameters for constant distribution."""
+        """Process parameters for deterministic distribution."""
         # Parameters are handled in __init__
         pass
 
@@ -60,7 +62,7 @@ class Constant(RandomVariable):
             x: array-like
                 Points at which to evaluate the PDF.
             **kwargs: dict
-                Additional parameters (unused for constant).
+                Additional parameters (unused for deterministic).
 
         Returns:
             array-like: PDF values (always 1).
@@ -76,7 +78,7 @@ class Constant(RandomVariable):
             x: array-like
                 Points at which to evaluate the log PDF.
             **kwargs: dict
-                Additional parameters (unused for constant).
+                Additional parameters (unused for deterministic).
 
         Returns:
             array-like: Log PDF values (always 0).
@@ -143,12 +145,12 @@ class Constant(RandomVariable):
         return self.parents
 
     def __repr__(self):
-        """String representation of the constant random variable."""
+        """String representation of the deterministic random variable."""
         if self.name:
-            return f"Constant(name='{self.name}', callable={self.callable_func.__name__})"
+            return f"Deterministic(name='{self.name}', callable={self.callable_func.__name__})"
         else:
-            return f"Constant(callable={self.callable_func.__name__})"
+            return f"Deterministic(callable={self.callable_func.__name__})"
 
     def __str__(self):
-        """String representation of the constant random variable."""
+        """String representation of the deterministic random variable."""
         return self.__repr__() 

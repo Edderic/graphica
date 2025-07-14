@@ -2,10 +2,10 @@
 Logistic random variable implementation.
 """
 import numpy as np
-from .constant import Constant
+from .deterministic import Deterministic
 
 
-class Logistic(Constant):
+class Logistic(Deterministic):
     """
     Logistic random variable that applies the logistic function to a deterministic transformation.
 
@@ -17,18 +17,20 @@ class Logistic(Constant):
             RandomVariable instances will be set as parents.
     """
 
-    def __init__(self, callable_func, **kwargs):
+    def __init__(self, callable_func, name=None, **kwargs):
         """
         Initialize Logistic random variable.
 
         Parameters:
             callable_func: callable
                 A function that takes keyword arguments and returns a value.
+            name: str, optional
+                Name of the random variable. If None, a UUID will be generated.
             **kwargs: dict
                 Keyword arguments to pass to the callable function.
                 RandomVariable instances will be set as parents.
         """
-        super().__init__(callable_func, **kwargs)
+        super().__init__(callable_func, name=name, **kwargs)
 
     def _logistic_function(self, x):
         """
