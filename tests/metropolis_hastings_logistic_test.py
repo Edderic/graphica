@@ -18,7 +18,7 @@ def test_metropolis_hastings_logistic_regression():
     and compare results with sklearn logistic regression.
     """
     np.random.seed(42)
-    
+
     # Sample data for facial measurements with fit tests
     facial_measurements_with_fit_tests = [
         {
@@ -186,53 +186,53 @@ def test_metropolis_hastings_logistic_regression():
             "nose_breadth_z_score": None
         }
     ]
-    
+
     # Extract unique mask_ids
     mask_ids = list(set(row['mask_id'] for row in facial_measurements_with_fit_tests))
-    
+
     # Build Bayesian Network
     bn = BN()
-    
+
     # Add mask-specific parameters
     mask_params = {}
     for mask_id in mask_ids:
         a = Normal(name=f'a_mask_{mask_id}', mean=0, std=10)
         b = Normal(name=f'b_mask_{mask_id}', mean=0, std=10)
         c = Normal(name=f'c_mask_{mask_id}', mean=0, std=10)
-        
+
         bn.add_node(a)
         bn.add_node(b)
         bn.add_node(c)
         mask_params[mask_id] = {'a': a, 'b': b, 'c': c}
-    
+
     # Add beta parameters (Gamma distributed for positive values)
     beta_face_width = Gamma(name='beta_face_width', shape=2, rate=1)
     beta_face_length = Gamma(name='beta_face_length', shape=2, rate=1)
     beta_bitragion_subnasale_arc = Gamma(name='beta_bitragion_subnasale_arc', shape=2, rate=1)
     beta_nose_protrusion = Gamma(name='beta_nose_protrusion', shape=2, rate=1)
     beta_nasal_root_breadth = Gamma(name='beta_nasal_root_breadth', shape=2, rate=1)
-    
+
     bn.add_node(beta_face_width)
     bn.add_node(beta_face_length)
     bn.add_node(beta_bitragion_subnasale_arc)
     bn.add_node(beta_nose_protrusion)
     bn.add_node(beta_nasal_root_breadth)
-    
+
     # Process each row
     for row in facial_measurements_with_fit_tests:
         fit_test_uuid = f"{row['id']}_{row['source']}"
         mask_id = row['mask_id']
-        
+
         # Distance calculation
         distance = Deterministic(
             callable_func=lambda face_width, beta_face_width, face_length, beta_face_length,
                                   nose_protrusion, beta_nose_protrusion, bitragion_subnasale_arc,
                                   beta_bitragion_subnasale_arc, nasal_root_breadth, beta_nasal_root_breadth,
-                                  mask_perimeter: (face_width * beta_face_width + 
-                                                  face_length * beta_face_length + 
-                                                  nose_protrusion * beta_nose_protrusion + 
-                                                  bitragion_subnasale_arc * beta_bitragion_subnasale_arc + 
-                                                  nasal_root_breadth * beta_nasal_root_breadth - 
+                                  mask_perimeter: (face_width * beta_face_width +
+                                                  face_length * beta_face_length +
+                                                  nose_protrusion * beta_nose_protrusion +
+                                                  bitragion_subnasale_arc * beta_bitragion_subnasale_arc +
+                                                  nasal_root_breadth * beta_nasal_root_breadth -
                                                   mask_perimeter),
             face_width=row['face_width'],
             face_length=row['face_length'],
@@ -246,34 +246,34 @@ def test_metropolis_hastings_logistic_regression():
             beta_bitragion_subnasale_arc=beta_bitragion_subnasale_arc,
             beta_nasal_root_breadth=beta_nasal_root_breadth
         )
-        
+
         # Get mask parameters
         a, b, c = mask_params[mask_id]['a'], mask_params[mask_id]['b'], mask_params[mask_id]['c']
-        
+
         # Logistic function (quadratic passed to logistic)
         logistic = Logistic(
-            callable_func=lambda distance_sq, a, b, x, c: a * x**2 + b * x + c,
+            callable_func=lambda a, b, z, c: a * z**2 + b * z + c,
             a=a,
             b=b,
             c=c,
-            x=distance
+            z=distance
         )
-        
+
         # Observed data (convert boolean to int)
         obs = 1 if row['qlft_pass'] else 0
-        
+
         # Binomial likelihood
         binomial = Binomial(name=f'fit_test_result_{fit_test_uuid}', n=1, p=logistic)
         binomial.obs = obs
-        
+
         bn.add_node(distance)
         bn.add_node(logistic)
         bn.add_node(binomial)
-    
+
     # Prepare data for sklearn comparison
     X = []
     y = []
-    
+
     for row in facial_measurements_with_fit_tests:
         features = [
             row['face_width'],
@@ -285,22 +285,22 @@ def test_metropolis_hastings_logistic_regression():
         ]
         X.append(features)
         y.append(1 if row['qlft_pass'] else 0)
-    
+
     X = np.array(X)
     y = np.array(y)
-    
+
     # Fit sklearn logistic regression
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
-    
+
     sklearn_lr = LogisticRegression(random_state=42, max_iter=1000)
     sklearn_lr.fit(X_scaled, y)
-    
+
     # Define transition function for Metropolis-Hastings
     def transition(particle):
         # Propose new values for all parameters
         new_particle = particle.copy()
-        
+
         # Update beta parameters (Gamma distributed)
         for param_name in ['beta_face_width', 'beta_face_length', 'beta_bitragion_subnasale_arc',
                           'beta_nose_protrusion', 'beta_nasal_root_breadth']:
@@ -308,7 +308,7 @@ def test_metropolis_hastings_logistic_regression():
             # Propose from log-normal to ensure positivity
             proposal = current_val * np.exp(np.random.normal(0, 0.1))
             new_particle.set_value(param_name, proposal)
-        
+
         # Update mask parameters (Normal distributed)
         for mask_id in mask_ids:
             for param in ['a', 'b', 'c']:
@@ -316,29 +316,29 @@ def test_metropolis_hastings_logistic_regression():
                 current_val = particle.get_value(param_name)
                 proposal = current_val + np.random.normal(0, 0.5)
                 new_particle.set_value(param_name, proposal)
-        
+
         return new_particle
-    
+
     # Query: condition on all fit test results
     fit_test_nodes = [node for node in bn.nodes if node.name.startswith('fit_test_result_')]
     givens = [{node.name: node.obs} for node in fit_test_nodes]
-    
+
     query = Query(
         outcomes=['beta_face_width', 'beta_face_length', 'beta_bitragion_subnasale_arc',
                  'beta_nose_protrusion', 'beta_nasal_root_breadth'],
         givens=givens
     )
-    
+
     # Metropolis-Hastings sampler
     sampler = MetropolisHastings(
         network=bn,
         query=query,
         transition_function=transition
     )
-    
+
     # Run sampler
     samples = sampler.sample(n=1000, burn_in=200)
-    
+
     # Extract beta values from samples
     beta_samples = {
         'beta_face_width': [particle.get_value('beta_face_width') for particle in samples],
@@ -347,28 +347,28 @@ def test_metropolis_hastings_logistic_regression():
         'beta_nose_protrusion': [particle.get_value('beta_nose_protrusion') for particle in samples],
         'beta_nasal_root_breadth': [particle.get_value('beta_nasal_root_breadth') for particle in samples]
     }
-    
+
     # Calculate means and standard deviations
     beta_means = {name: np.mean(values) for name, values in beta_samples.items()}
     beta_stds = {name: np.std(values) for name, values in beta_samples.items()}
-    
+
     print("Metropolis-Hastings Results:")
     for name, mean in beta_means.items():
         print(f"{name}: {mean:.4f} ± {beta_stds[name]:.4f}")
-    
+
     print("\nSklearn Logistic Regression Coefficients:")
     feature_names = ['face_width', 'face_length', 'nose_protrusion', 'bitragion_subnasale_arc', 'nasal_root_breadth', 'perimeter_mm']
     for i, (name, coef) in enumerate(zip(feature_names, sklearn_lr.coef_[0])):
         print(f"{name}: {coef:.4f}")
-    
+
     # Basic assertions to ensure the inference worked
     # Check that we got reasonable beta values (positive for Gamma priors)
     for name, mean in beta_means.items():
         assert mean > 0, f"Beta {name} should be positive, got {mean}"
         assert beta_stds[name] > 0, f"Beta {name} should have non-zero std, got {beta_stds[name]}"
-    
+
     # Check that the model converged (reasonable standard deviations)
     for name, std in beta_stds.items():
         assert std < 10, f"Beta {name} std too large: {std}"
-    
-    print("\nTest passed: Metropolis-Hastings inference completed successfully!") 
+
+    print("\nTest passed: Metropolis-Hastings inference completed successfully!")

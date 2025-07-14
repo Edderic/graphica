@@ -104,22 +104,22 @@ class Deterministic(RandomVariable):
         # Merge fixed parameters with provided kwargs (kwargs take precedence)
         params = self.fixed_params.copy()
         params.update(kwargs)
-        
+
         # Check if all required parameters are available
         import inspect
         sig = inspect.signature(self.callable_func)
-        required_params = [name for name, param in sig.parameters.items() 
+        required_params = [name for name, param in sig.parameters.items()
                           if param.default == inspect.Parameter.empty]
-        
+
         missing_params = [param for param in required_params if param not in params]
         if missing_params:
             raise ValueError(f"Missing required parameters: {missing_params}")
-        
+
         try:
             result = self.callable_func(**params)
         except Exception as e:
             raise ValueError(f"Error calling function with parameters {params}: {e}")
-        
+
         # Handle size parameter
         if size is not None:
             if np.isscalar(result):

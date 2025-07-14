@@ -67,15 +67,10 @@ class MetropolisHastings:
 
     def _initialize_particle(self):
         """Initialize a particle by sampling from all random variables."""
-        particle = Particle()
+        # Use BayesianNetwork.sample() which handles topological sorting and parent values
+        particle = self.network.sample()
 
-        # Sample from all random variables in the network
-        for var_name, rv in self.network.random_variables.items():
-            if not self._is_conditioned(var_name):
-                value = rv.sample()
-                particle.set_value(var_name, value)
-
-        # Set conditioned values
+        # Set conditioned values (override sampled values)
         for var_name, value in self.query.get_given_values().items():
             particle.set_value(var_name, value)
 
