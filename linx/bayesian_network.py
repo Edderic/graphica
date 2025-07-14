@@ -50,8 +50,8 @@ class BayesianNetwork(DirectedAcyclicGraph):
         else:
             # Add edges for parent relationships
             for parent_name, parent in rv.get_parents().items():
-                if parent_name:
-                    self.add_edge(parent_name, rv.name)
+                if parent is not None and hasattr(parent, 'name'):
+                    self.add_edge(parent.name, rv.name)
 
     def add_edge(self, parent_name, child_name):
         """
@@ -108,10 +108,8 @@ class BayesianNetwork(DirectedAcyclicGraph):
                         parent_values[parent_name] = parent_val
             else:
                 # For other random variables, get parent values from parent objects
-                for parent in rv.get_parents():
-                    if not particle.has_variable(parent.name):
-                        raise ValueError(f"Parent variable {parent.name} not yet sampled")
-                    parent_values[parent.name] = particle.get_value(parent.name)
+                for parent_name_from_child, parent in rv.get_parents().items():
+                    parent_values[parent_name_from_child] = particle.get_value(parent.name)
 
             # Sample from the random variable
             sampled_value = rv.sample(**parent_values)
