@@ -2,6 +2,7 @@
 Constant random variable implementation.
 """
 import numpy as np
+import uuid
 from .random_variable import RandomVariable
 
 
@@ -17,18 +18,24 @@ class Constant(RandomVariable):
             RandomVariable instances will be set as parents.
     """
 
-    def __init__(self, callable_func, **kwargs):
+    def __init__(self, callable_func, name=None, **kwargs):
         """
         Initialize Constant random variable.
 
         Parameters:
             callable_func: callable
                 A function that takes keyword arguments and returns a value.
+            name: str, optional
+                Name of the random variable. If None, a UUID will be generated.
             **kwargs: dict
                 Keyword arguments to pass to the callable function.
                 RandomVariable instances will be set as parents.
         """
-        super().__init__()
+        # Generate UUID if no name provided
+        if name is None:
+            name = str(uuid.uuid4())
+        
+        super().__init__(name=name)
         self.callable_func = callable_func
         self.fixed_params = {}
         self.parents = {}
