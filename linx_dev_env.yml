@@ -20,4 +20,5 @@ dependencies:
   - python-graphviz
   - pytest
   - seaborn
+  - scikit-learn
   - tqdm

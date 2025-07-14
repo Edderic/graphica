@@ -94,6 +94,7 @@ class BayesianNetwork(DirectedAcyclicGraph):
                     if not particle.has_variable(parent_name):
                         raise ValueError(f"Parent variable {parent_name} not yet sampled")
                     parent_val = particle.get_value(parent_name)
+                    # TODO: this is a code smell
                     # Discretize parent values for CPTs
                     if parent_name in self.random_variables:
                         parent_rv = self.random_variables[parent_name]

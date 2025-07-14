@@ -36,12 +36,12 @@ class Deterministic(RandomVariable):
         # Generate UUID if no name provided
         if name is None:
             name = str(uuid.uuid4())
-        
+
         super().__init__(name=name)
         self.callable_func = callable_func
         self.fixed_params = {}
         self.parents = {}
-        
+
         # Separate RandomVariable instances from fixed parameters
         for key, value in kwargs.items():
             if isinstance(value, RandomVariable):
@@ -131,7 +131,7 @@ class Deterministic(RandomVariable):
                     return np.tile(result_array, (size,) + (1,) * result_array.ndim)
                 else:
                     return np.tile(result_array, size)
-        
+
         return result
 
     def get_parents(self):
@@ -153,4 +153,4 @@ class Deterministic(RandomVariable):
 
     def __str__(self):
         """String representation of the deterministic random variable."""
-        return self.__repr__() 
+        return self.__repr__()
