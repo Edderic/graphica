@@ -1,11 +1,11 @@
 import numpy as np
 import pytest
-from ..linx.random.normal import Normal
-from ..linx.random.gamma import Gamma
-from ..linx.random.beta import Beta
-from ..linx.random.uniform import Uniform
-from ..linx.random.binomial import Binomial
-from ..linx.random.deterministic import Deterministic
+from ..graphica.random.normal import Normal
+from ..graphica.random.gamma import Gamma
+from ..graphica.random.beta import Beta
+from ..graphica.random.uniform import Uniform
+from ..graphica.random.binomial import Binomial
+from ..graphica.random.deterministic import Deterministic
 
 
 def test_normal_perturb():

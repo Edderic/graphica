@@ -1,8 +1,8 @@
 import pytest
 import numpy as np
 import pandas as pd
-from ..linx.log_factor import LogFactor
-from ..linx.data import ParquetData
+from ..graphica.log_factor import LogFactor
+from ..graphica.data import ParquetData
 
 from .conftest import (assert_approx_value_df, get_tmp_path, clean_tmp)
 

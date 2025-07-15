@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 import uuid
-from ..linx.random.normal import Normal
-from ..linx.random.deterministic import Deterministic
-from ..linx.random.logistic import Logistic
+from ..graphica.random.normal import Normal
+from ..graphica.random.deterministic import Deterministic
+from ..graphica.random.logistic import Logistic
 
 
 def test_deterministic_basic_functionality():

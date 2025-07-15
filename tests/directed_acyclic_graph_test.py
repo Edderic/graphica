@@ -1,4 +1,4 @@
-from ..linx.directed_acyclic_graph import DirectedAcyclicGraph
+from ..graphica.directed_acyclic_graph import DirectedAcyclicGraph
 
 
 def test_add_edge():

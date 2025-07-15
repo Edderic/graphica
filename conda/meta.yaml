@@ -1,5 +1,5 @@
-{% set name = "linx" %}
-{% set version = "0.0.9" %}
+{% set name = "graphica" %}
+{% set version = "0.1.0" %}
 
 package:
   name: "{{ name|lower }}"
@@ -25,24 +25,24 @@ requirements:
     - tqdm
 
 about:
-  home: "https://github.com/edderic/linx"
+  home: "https://github.com/edderic/graphica"
   license: MIT
   license_family: MIT
   summary: "Tools for Probabilistic Graphical Modeling"
-  dev_url: "https://github.com/edderic/linx"
+  dev_url: "https://github.com/edderic/graphica"
 
 extra:
   recipe-maintainers:
     - edderic
 test:
   imports:
-    - linx
-    - linx.ds
-    - linx.query
-    - linx.bayesian_network
-    - linx.markov_network
-    - linx.infer
-    - linx.conditional_probability_table
-    - linx.factor
-    - linx.variable_elimination
+    - graphica
+    - graphica.ds
+    - graphica.query
+    - graphica.bayesian_network
+    - graphica.markov_network
+    - graphica.infer
+    - graphica.conditional_probability_table
+    - graphica.factor
+    - graphica.variable_elimination
 

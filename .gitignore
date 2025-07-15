@@ -1,2 +1,5 @@
 *.cpython*
 *.un~
+.DS_Store
+tags
+todo.markdown

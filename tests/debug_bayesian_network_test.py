@@ -1,9 +1,9 @@
 import numpy as np
-from ..linx.ds import BayesianNetwork as BN
-from ..linx.random.beta import Beta
-from ..linx.random.binomial import Binomial
-from ..linx.random.deterministic import Deterministic
-from ..linx.random.logistic import Logistic
+from ..graphica.ds import BayesianNetwork as BN
+from ..graphica.random.beta import Beta
+from ..graphica.random.binomial import Binomial
+from ..graphica.random.deterministic import Deterministic
+from ..graphica.random.logistic import Logistic
 
 
 def test_debug_bayesian_network_sampling():

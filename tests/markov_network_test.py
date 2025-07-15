@@ -1,7 +1,7 @@
 import pandas as pd
 
-from ..linx.data import ParquetData
-from ..linx.ds import MarkovNetwork, ConditionalProbabilityTable as CPT, \
+from ..graphica.data import ParquetData
+from ..graphica.ds import MarkovNetwork, ConditionalProbabilityTable as CPT, \
     Factor, Query
 from .conftest import (assert_approx_value_df, clean_tmp, get_tmp_path)
 

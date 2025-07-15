@@ -1,5 +1,7 @@
 import pytest
-from ..linx.ds import Particle
+from ..graphica.ds import Particle
+from ..graphica.ds import BayesianNetwork, Normal, Query, MetropolisHastings
+import numpy as np
 
 
 def test_particle_acceptance_rejection():
@@ -50,9 +52,6 @@ def test_particle_copy_resets_status():
 
 def test_particle_acceptance_in_metropolis_hastings():
     """Test that Metropolis-Hastings properly tracks acceptance."""
-    from ..linx.ds import BayesianNetwork, Normal, Query, MetropolisHastings
-    import numpy as np
-
     # Create a simple network
     bn = BayesianNetwork()
     mu = Normal(name='mu', mean=0.0, std=1.0)

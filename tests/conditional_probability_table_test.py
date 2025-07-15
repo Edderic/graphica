@@ -2,9 +2,9 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from ..linx.data import ParquetData
-from ..linx.ds import ConditionalProbabilityTable as CPT
-from ..linx.random.random_variable import RandomVariable
+from ..graphica.data import ParquetData
+from ..graphica.ds import ConditionalProbabilityTable as CPT
+from ..graphica.random.random_variable import RandomVariable
 from .conftest import clean_tmp, get_tmp_path
 
 

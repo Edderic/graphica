@@ -5,7 +5,7 @@ import pytest
 import numpy as np
 from scipy.stats import beta
 
-from ..linx.random.beta import Beta
+from ..graphica.random.beta import Beta
 
 
 def test_beta_initialization():

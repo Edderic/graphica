@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from scipy import stats
 
-from ..linx.ds import Gamma
+from ..graphica.ds import Gamma
 
 
 def test_gamma_initialization():

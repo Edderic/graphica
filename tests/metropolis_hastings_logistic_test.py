@@ -2,14 +2,14 @@ import numpy as np
 import pytest
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
-from ..linx.ds import BayesianNetwork as BN
-from ..linx.random.normal import Normal
-from ..linx.random.gamma import Gamma
-from ..linx.random.binomial import Binomial
-from ..linx.random.deterministic import Deterministic
-from ..linx.random.logistic import Logistic
-from ..linx.inference.metropolis_hastings import MetropolisHastings
-from ..linx.query import Query
+from ..graphica.ds import BayesianNetwork as BN
+from ..graphica.random.normal import Normal
+from ..graphica.random.gamma import Gamma
+from ..graphica.random.binomial import Binomial
+from ..graphica.random.deterministic import Deterministic
+from ..graphica.random.logistic import Logistic
+from ..graphica.inference.metropolis_hastings import MetropolisHastings
+from ..graphica.query import Query
 
 
 def test_metropolis_hastings_logistic_regression():
@@ -206,11 +206,11 @@ def test_metropolis_hastings_logistic_regression():
         mask_params[mask_id] = {'a': a, 'b': b, 'c': c}
 
     # Add beta parameters (Gamma distributed for positive values)
-    beta_face_width = Gamma(name='beta_face_width', shape=2, rate=1)
-    beta_face_length = Gamma(name='beta_face_length', shape=2, rate=1)
-    beta_bitragion_subnasale_arc = Gamma(name='beta_bitragion_subnasale_arc', shape=2, rate=1)
-    beta_nose_protrusion = Gamma(name='beta_nose_protrusion', shape=2, rate=1)
-    beta_nasal_root_breadth = Gamma(name='beta_nasal_root_breadth', shape=2, rate=1)
+    beta_face_width = Gamma(name='beta_face_width', shape=2, rate=2)
+    beta_face_length = Gamma(name='beta_face_length', shape=2, rate=2)
+    beta_bitragion_subnasale_arc = Gamma(name='beta_bitragion_subnasale_arc', shape=2, rate=2)
+    beta_nose_protrusion = Gamma(name='beta_nose_protrusion', shape=2, rate=2)
+    beta_nasal_root_breadth = Gamma(name='beta_nasal_root_breadth', shape=2, rate=2)
 
     bn.add_node(beta_face_width)
     bn.add_node(beta_face_length)

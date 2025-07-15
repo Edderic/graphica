@@ -2,10 +2,10 @@ import pytest
 import pandas as pd
 import numpy as np
 
-from ..linx.data import ParquetData
-from ..linx.ds import BayesianNetwork as BN, ConditionalProbabilityTable as CPT, Particle
-from ..linx.random.normal import Normal
-from ..linx.random.uniform import Uniform
+from ..graphica.data import ParquetData
+from ..graphica.ds import BayesianNetwork as BN, ConditionalProbabilityTable as CPT, Particle
+from ..graphica.random.normal import Normal
+from ..graphica.random.uniform import Uniform
 from .conftest import clean_tmp, get_tmp_path
 
 
@@ -157,8 +157,8 @@ def test_network_with_mixed_random_variables():
     """Test a network with both CPTs and other RandomVariables."""
     clean_tmp()
 
-    from ..linx.random.normal import Normal
-    from ..linx.random.uniform import Uniform
+    from ..graphica.random.normal import Normal
+    from ..graphica.random.uniform import Uniform
 
     bayesian_network = BN()
 

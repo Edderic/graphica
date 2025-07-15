@@ -2,10 +2,10 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from ..linx.data import ParquetData
-from ..linx.ds import Query, ConditionalProbabilityTable as CPT, \
+from ..graphica.data import ParquetData
+from ..graphica.ds import Query, ConditionalProbabilityTable as CPT, \
     BayesianNetwork
-from ..linx.infer import VariableElimination
+from ..graphica.infer import VariableElimination
 from .conftest import assert_approx_value_df, \
     create_binary_prior_cpt, create_binary_CPT, \
     create_prior_df, clean_tmp, get_tmp_path, \

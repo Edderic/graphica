@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from ..linx.ds import RandomVariable
+from ..graphica.ds import RandomVariable
 
 
 class ConcreteRandomVariable(RandomVariable):

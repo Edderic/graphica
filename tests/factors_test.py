@@ -2,9 +2,9 @@ import pytest
 
 import pandas as pd
 
-from ..linx.ds import Factors, Factor
+from ..graphica.ds import Factors, Factor
 from .conftest import clean_tmp, get_tmp_path
-from ..linx.data import ParquetData
+from ..graphica.data import ParquetData
 
 
 def test_subscriptable(two_factors):

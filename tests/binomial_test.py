@@ -5,7 +5,7 @@ import pytest
 import numpy as np
 from scipy.stats import binom
 
-from ..linx.random.binomial import Binomial
+from ..graphica.random.binomial import Binomial
 
 
 def test_binomial_initialization():

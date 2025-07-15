@@ -1,9 +1,9 @@
 import numpy as np
-from ..linx.ds import BayesianNetwork as BN
-from ..linx.random.beta import Beta
-from ..linx.random.binomial import Binomial
-from ..linx.inference.metropolis_hastings import MetropolisHastings
-from ..linx.query import Query
+from ..graphica.ds import BayesianNetwork as BN
+from ..graphica.random.beta import Beta
+from ..graphica.random.binomial import Binomial
+from ..graphica.inference.metropolis_hastings import MetropolisHastings
+from ..graphica.query import Query
 
 
 def test_metropolis_hastings_beta_binomial_posterior():

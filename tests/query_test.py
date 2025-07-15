@@ -1,4 +1,4 @@
-from ..linx.ds import Query
+from ..graphica.ds import Query
 
 
 def test_query_get_outcome_variables():

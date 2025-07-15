@@ -1,9 +1,9 @@
 import pandas as pd
 import pytest
-from ..linx.data import ParquetData
-from ..linx.ds import ConditionalProbabilityTable as CPT, Factor
-from ..linx.errors import ArgumentError
-from ..linx.query import Query
+from ..graphica.data import ParquetData
+from ..graphica.ds import ConditionalProbabilityTable as CPT, Factor
+from ..graphica.errors import ArgumentError
+from ..graphica.query import Query
 
 from .conftest import assert_approx_value_df, get_tmp_path, clean_tmp
 

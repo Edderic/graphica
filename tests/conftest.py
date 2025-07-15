@@ -1,10 +1,10 @@
 import pandas as pd
 import pytest
 
-from ..linx.data import ParquetData
-from ..linx.ds import BayesianNetwork, Factors, Factor,\
+from ..graphica.data import ParquetData
+from ..graphica.ds import BayesianNetwork, Factors, Factor,\
     ConditionalProbabilityTable as CPT
-from ..linx.misc import get_tmp_path, clean_tmp
+from ..graphica.misc import get_tmp_path, clean_tmp
 
 
 def assert_approx_value_df(

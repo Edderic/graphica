@@ -1,13 +1,14 @@
 import numpy as np
 import pytest
-from ..linx.ds import BayesianNetwork as BN
-from ..linx.random.normal import Normal
-from ..linx.random.gamma import Gamma
-from ..linx.random.deterministic import Deterministic
-from ..linx.random.logistic import Logistic
-from ..linx.random.binomial import Binomial
-from ..linx.query import Query
-from ..linx.inference.default_transition import DefaultTransition
+from ..graphica.ds import BayesianNetwork as BN
+from ..graphica.random.normal import Normal
+from ..graphica.random.gamma import Gamma
+from ..graphica.random.deterministic import Deterministic
+from ..graphica.random.logistic import Logistic
+from ..graphica.random.binomial import Binomial
+from ..graphica.query import Query
+from ..graphica.inference.default_transition import DefaultTransition
+from ..graphica.particles.particle import Particle
 
 
 def test_default_transition_basic():
@@ -50,7 +51,6 @@ def test_default_transition_basic():
     transition = DefaultTransition(bayesian_network=bn, query=query)
     
     # Create initial particle
-    from ..linx.particles.particle import Particle
     initial_particle = Particle({
         'normal_param': 0.5,
         'gamma_param': 1.5,
@@ -109,7 +109,6 @@ def test_default_transition_with_fixed_givens():
     transition = DefaultTransition(bayesian_network=bn, query=query)
     
     # Create initial particle
-    from ..linx.particles.particle import Particle
     initial_particle = Particle({
         'normal_param': 0.5,
         'gamma_param': 1.5
@@ -146,7 +145,6 @@ def test_default_transition_with_filters():
     transition = DefaultTransition(bayesian_network=bn, query=query)
     
     # Create initial particle with negative value
-    from ..linx.particles.particle import Particle
     initial_particle = Particle({'normal_param': -1.0})
     
     # Test transition - should return original particle if filter not satisfied

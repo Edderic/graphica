@@ -1,9 +1,9 @@
 import pandas as pd
 
 from .conftest import clean_tmp, get_tmp_path
-from ..linx.data import ParquetData
-from ..linx.variable_elimination import min_fill_edges
-from ..linx.ds import BayesianNetwork, ConditionalProbabilityTable as CPT
+from ..graphica.data import ParquetData
+from ..graphica.variable_elimination import min_fill_edges
+from ..graphica.ds import BayesianNetwork, ConditionalProbabilityTable as CPT
 
 
 def test_min_fill_edges():

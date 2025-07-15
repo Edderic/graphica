@@ -1,4 +1,4 @@
-from ..linx.ds import DirectedAcyclicGraph as DAG
+from ..graphica.ds import DirectedAcyclicGraph as DAG
 
 
 def test_get_neighbors():

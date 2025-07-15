@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from scipy import stats
 
-from ..linx.ds import Normal
+from ..graphica.ds import Normal
 
 
 def test_normal_initialization():

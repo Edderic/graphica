@@ -3,10 +3,10 @@ import logging
 import graphviz
 import pandas as pd
 
-from ..linx.data import ParquetData
-from ..linx.ds import BayesianNetwork, \
+from ..graphica.data import ParquetData
+from ..graphica.ds import BayesianNetwork, \
     ConditionalProbabilityTable as CPT, Query
-from ..linx.infer import VariableElimination
+from ..graphica.infer import VariableElimination
 from .conftest import (assert_approx_value_df, clean_tmp, create_df_medium,
                        create_prior_df, get_tmp_path)
 
