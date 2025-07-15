@@ -9,7 +9,6 @@ dependencies:
   - jupyter
   - jupyterlab
   - line_profiler
-  - graphica
   - matplotlib
   - numpy
   - pandas
