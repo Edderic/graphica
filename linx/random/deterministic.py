@@ -151,6 +151,24 @@ class Deterministic(RandomVariable):
         else:
             return f"Deterministic(callable={self.callable_func.__name__})"
 
+    def perturb(self, current_value, **kwargs):
+        """
+        Perturb the current value by adding small uniform noise.
+        For Deterministic nodes, we add a small perturbation to allow for exploration.
+        
+        Parameters:
+            current_value: float
+                The current value to perturb.
+            **kwargs: dict
+                Additional parameters (ignored).
+                
+        Returns:
+            float: The perturbed value.
+        """
+        # Add small uniform noise for exploration
+        noise = np.random.uniform(-0.01, 0.01)
+        return current_value + noise
+
     def __str__(self):
         """String representation of the deterministic random variable."""
         return self.__repr__()

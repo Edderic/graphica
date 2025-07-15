@@ -156,6 +156,26 @@ class Beta(RandomVariable):
         else:
             return f"Beta(a={self.a}, b={self.b})"
 
+    def perturb(self, current_value, low=-0.1, high=0.1, **kwargs):
+        """
+        Perturb the current value by adding uniform noise and clipping to [0, 1].
+        
+        Parameters:
+            current_value: float
+                The current value to perturb.
+            low: float, default=-0.1
+                Lower bound of uniform noise.
+            high: float, default=0.1
+                Upper bound of uniform noise.
+            **kwargs: dict
+                Additional parameters (ignored).
+                
+        Returns:
+            float: The perturbed value, clipped to [0, 1].
+        """
+        noise = np.random.uniform(low, high)
+        return np.clip(current_value + noise, 0, 1)
+
     def __str__(self):
         """String representation of the beta random variable."""
         return self.__repr__()

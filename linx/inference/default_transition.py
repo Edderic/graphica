@@ -109,38 +109,25 @@ class DefaultTransition:
         return list(chain)
     
     def _perturb_value(self, var_name, current_value):
-        """Perturb a value based on the distribution type."""
+        """Perturb a value using the distribution's perturb method."""
         rv = self.bayesian_network.random_variables[var_name]
         
+        # Get perturbation parameters based on distribution type
         if isinstance(rv, Normal):
-            # Add normal noise
-            noise = np.random.normal(self.normal_args['mean'], self.normal_args['std'])
-            return current_value + noise
-            
+            return rv.perturb(current_value, **self.normal_args)
         elif isinstance(rv, Gamma):
-            # Multiply by exp of normal (ensures positivity)
-            noise = np.random.normal(0, self.gamma_args['exp'])
-            return current_value * np.exp(noise)
-            
+            return rv.perturb(current_value, **self.gamma_args)
         elif isinstance(rv, Beta):
-            # Add uniform noise and clip to [0, 1]
-            noise = np.random.uniform(self.uniform_args['low'], self.uniform_args['high'])
-            return np.clip(current_value + noise, 0, 1)
-            
+            return rv.perturb(current_value, **self.beta_args)
         elif isinstance(rv, Uniform):
-            # Add uniform noise
-            noise = np.random.uniform(self.uniform_args['low'], self.uniform_args['high'])
-            return current_value + noise
-            
+            return rv.perturb(current_value, **self.uniform_args)
         elif isinstance(rv, Binomial):
-            # For Binomial, perturb the probability parameter
-            # This is a bit tricky since Binomial doesn't have a natural perturbation
-            # We'll use a small uniform perturbation
-            noise = np.random.uniform(self.uniform_args['low'], self.uniform_args['high'])
-            return np.clip(current_value + noise, 0, 1)
-            
+            return rv.perturb(current_value, **self.uniform_args)
+        elif isinstance(rv, Deterministic):
+            return rv.perturb(current_value)
         else:
-            raise ValueError(f"No perturbation strategy defined for {type(rv).__name__} distribution")
+            # Use the distribution's perturb method with default parameters
+            return rv.perturb(current_value)
     
     def _update_deterministic_chain(self, particle, chain_vars):
         """Update all Deterministic nodes in the chain."""

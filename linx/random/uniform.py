@@ -175,6 +175,26 @@ class Uniform(RandomVariable):
         else:
             return f"Uniform(low={self.low}, high={self.high})"
     
+    def perturb(self, current_value, low=-0.1, high=0.1, **kwargs):
+        """
+        Perturb the current value by adding uniform noise.
+        
+        Parameters:
+            current_value: float
+                The current value to perturb.
+            low: float, default=-0.1
+                Lower bound of uniform noise.
+            high: float, default=0.1
+                Upper bound of uniform noise.
+            **kwargs: dict
+                Additional parameters (ignored).
+                
+        Returns:
+            float: The perturbed value.
+        """
+        noise = np.random.uniform(low, high)
+        return current_value + noise
+
     def __str__(self):
         """String representation of the uniform distribution."""
         return self.__repr__() 

@@ -112,6 +112,21 @@ class RandomVariable(ABC):
         """
         pass
     
+    def perturb(self, current_value, **kwargs):
+        """
+        Perturb the current value according to the distribution's characteristics.
+        
+        Parameters:
+            current_value: float
+                The current value to perturb.
+            **kwargs: dict
+                Perturbation parameters specific to the distribution.
+                
+        Returns:
+            float: The perturbed value.
+        """
+        raise NotImplementedError(f"perturb method not implemented for {self.__class__.__name__}")
+    
     def __repr__(self):
         """String representation of the random variable."""
         if self.name:

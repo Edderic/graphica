@@ -170,6 +170,26 @@ class Normal(RandomVariable):
         else:
             return f"Normal(mean={self.mean}, std={self.std})"
 
+    def perturb(self, current_value, mean=0, std=1, **kwargs):
+        """
+        Perturb the current value by adding normal noise.
+        
+        Parameters:
+            current_value: float
+                The current value to perturb.
+            mean: float, default=0
+                Mean of the normal perturbation.
+            std: float, default=1
+                Standard deviation of the normal perturbation.
+            **kwargs: dict
+                Additional parameters (ignored).
+                
+        Returns:
+            float: The perturbed value.
+        """
+        noise = np.random.normal(mean, std)
+        return current_value + noise
+
     def __str__(self):
         """String representation of the normal distribution."""
         return self.__repr__()

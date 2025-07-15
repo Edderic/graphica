@@ -159,5 +159,23 @@ class Gamma(RandomVariable):
         else:
             return f"Gamma(shape={self.shape}, scale={self.scale})"
     
+    def perturb(self, current_value, exp=0.1, **kwargs):
+        """
+        Perturb the current value by multiplying by exp of normal noise (ensures positivity).
+        
+        Parameters:
+            current_value: float
+                The current value to perturb.
+            exp: float, default=0.1
+                Standard deviation of the normal noise in the exponential.
+            **kwargs: dict
+                Additional parameters (ignored).
+                
+        Returns:
+            float: The perturbed value.
+        """
+        noise = np.random.normal(0, exp)
+        return current_value * np.exp(noise)
+
     def __str__(self):
         return self.__repr__() 
