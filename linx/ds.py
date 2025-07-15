@@ -17,6 +17,7 @@ Classes:
     - Beta
     - Binomial
     - MetropolisHastings
+    - DefaultTransition
 """
 from .query import Query
 from .conditional_probability_table import ConditionalProbabilityTable
@@ -34,3 +35,4 @@ from .random.uniform import Uniform
 from .random.beta import Beta
 from .random.binomial import Binomial
 from .inference.metropolis_hastings import MetropolisHastings
+from .inference.default_transition import DefaultTransition
