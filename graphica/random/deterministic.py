@@ -153,8 +153,7 @@ class Deterministic(RandomVariable):
 
     def perturb(self, current_value, **kwargs):
         """
-        Perturb the current value by adding small uniform noise.
-        For Deterministic nodes, we add a small perturbation to allow for exploration.
+        For Deterministic nodes, we actually just want to sample.
 
         Parameters:
             current_value: float
@@ -165,9 +164,8 @@ class Deterministic(RandomVariable):
         Returns:
             float: The perturbed value.
         """
-        # Add small uniform noise for exploration
-        noise = np.random.uniform(-0.01, 0.01)
-        return current_value + noise
+
+        return self.sample(**kwargs)
 
     def __str__(self):
         """String representation of the deterministic random variable."""

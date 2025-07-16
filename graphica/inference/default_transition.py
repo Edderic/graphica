@@ -38,6 +38,9 @@ class DefaultTransition:
         # Cache dependency graph for Deterministic nodes
         self._cache_deterministic_dependencies()
 
+        # Cache topological sort of variables
+        self.sorted_vars = self.bayesian_network.topological_sort()
+
     def _validate_query(self):
         """Validate that all variables in the query exist in the network."""
         network_vars = set(self.bayesian_network.random_variables.keys())
@@ -120,45 +123,6 @@ class DefaultTransition:
         # Call the distribution's perturb method with parent values
         return rv.perturb(current_value, **parent_values)
 
-    def _update_deterministic_chain(self, particle, chain_vars):
-        """Update all Deterministic nodes in the chain."""
-        for var_name in chain_vars:
-            if var_name in self.deterministic_nodes:
-                rv = self.deterministic_nodes[var_name]
-
-                # Gather required parameters for the Deterministic node
-                sig = inspect.signature(rv.callable_func)
-                required_params = [
-                    name
-                    for name, param in sig.parameters.items()
-                    if param.default == inspect.Parameter.empty
-                ]
-
-                # Get parameter values from particle
-                params = {}
-                for param_name in required_params:
-                    if param_name in rv.fixed_params:
-                        # Use fixed parameter
-                        params[param_name] = rv.fixed_params[param_name]
-                        continue
-
-                    # Get from particle
-                    if not particle.has_variable(param_name):
-                        msg = f"Missing param '{param_name}' for Deterministic node '{var_name}'"
-                        raise ValueError(
-                            msg
-                        )
-                        params[param_name] = particle.get_value(param_name)
-
-                # Sample new value
-                try:
-                    new_value = rv.sample(**params)
-                    particle.set_value(var_name, new_value)
-                except Exception as e:
-                    raise ValueError(
-                        f"Error sampling Deterministic node '{var_name}': {e}"
-                    )
-
     def _check_filters(self, particle):
         """Check if particle satisfies all filters in the query."""
         for given in self.query.givens:
@@ -177,12 +141,12 @@ class DefaultTransition:
 
         return True
 
-    def _transition_non_deterministic(self, particle, new_particle):
+    def _transition(self, particle, new_particle):
         # Get given values that should be fixed
         given_values = self.query.get_given_values()
-        
+
         # Transition all variables except those fixed in givens
-        for var_name, rv in self.bayesian_network.random_variables.items():
+        for var_name in self.sorted_vars:
             if var_name in given_values:
                 # Skip variables that are fixed in givens
                 continue
@@ -191,58 +155,25 @@ class DefaultTransition:
                 # Skip variables not in current particle
                 continue
 
-            # Skip Deterministic nodes - they will be updated through their parents
-            if isinstance(rv, Deterministic):
-                continue
-
             current_value = particle.get_value(var_name)
 
             # Perturb the value
-            new_value = self._perturb_value(var_name, current_value, particle)
+            new_value = self._perturb_value(var_name, current_value, new_particle)
             new_particle.set_value(var_name, new_value)
 
-    def _transition_deterministic_nodes(self, new_particle):
-        """
-        After all transitions, update all Deterministic nodes in topological order
-        (to ensure all values are consistent with the current particle state)
-        Use the BayesianNetwork's topological sort
+    def _setup_new_particle(self, particle):
+        # Create new particle
+        new_particle = particle.copy()
 
-        TODO: probably a good idea for this class to be a super class of
-        specialized transition functions
-        """
-        if hasattr(self.bayesian_network, "topological_sort"):
-            topo_order = self.bayesian_network.topological_sort()
-        else:
-            topo_order = self.bayesian_network.get_nodes()  # fallback
-        for var_name in topo_order:
-            if var_name in self.deterministic_nodes:
-                rv = self.deterministic_nodes[var_name]
+        # Get given values that should be fixed
+        given_values = self.query.get_given_values()
 
-                sig = inspect.signature(rv.callable_func)
-                required_params = [
-                    name
-                    for name, param in sig.parameters.items()
-                    if param.default == inspect.Parameter.empty
-                ]
-                params = {}
-                for param_name in required_params:
-                    if param_name in rv.fixed_params:
-                        params[param_name] = rv.fixed_params[param_name]
-                        continue
+        # Set fixed values from givens (only if not callable)
+        for var_name, value in given_values.items():
+            if not callable(value):
+                new_particle.set_value(var_name, value)
 
-                    if not new_particle.has_variable(param_name):
-                        msg = f"Missing param '{param_name}' for Deterministic node '{var_name}'"
-                        raise ValueError(
-                            msg
-                        )
-                    params[param_name] = new_particle.get_value(param_name)
-                try:
-                    new_value = rv.sample(**params)
-                    new_particle.set_value(var_name, new_value)
-                except Exception as e:
-                    raise ValueError(
-                        f"Error sampling Deterministic node '{var_name}': {e}"
-                    )
+        return new_particle
 
     def transition(self, particle):
         """
@@ -255,19 +186,9 @@ class DefaultTransition:
         Returns:
             Particle: New particle after transition.
         """
-        # Create new particle
-        new_particle = particle.copy()
+        new_particle = self._setup_new_particle(particle)
 
-        # Get given values that should be fixed
-        given_values = self.query.get_given_values()
-
-        # Set fixed values from givens (only if not callable)
-        for var_name, value in given_values.items():
-            if not callable(value):
-                new_particle.set_value(var_name, value)
-
-        self._transition_non_deterministic(particle, new_particle)
-        self._transition_deterministic_nodes(new_particle)
+        self._transition(particle, new_particle)
 
         # Check if new particle satisfies filters
         if not self._check_filters(new_particle):
