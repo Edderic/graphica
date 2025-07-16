@@ -23,7 +23,7 @@ def test_default_transition_basic():
     bn.add_node(normal_prior)
 
     # Add a Gamma prior
-    gamma_prior = Gamma(name='gamma_param', shape=2, rate=1)
+    gamma_prior = Gamma(name='gamma_param', shape=2, scale=1)
     bn.add_node(gamma_prior)
 
     # Add a Deterministic node
@@ -47,7 +47,7 @@ def test_default_transition_basic():
         outcomes=['normal_param', 'gamma_param', 'deterministic_node', 'logistic_node']
     )
 
-    # Create DefaultTransition
+    # Create DefaultTransition (no distribution-specific arguments)
     transition = DefaultTransition(bayesian_network=bn, query=query)
 
     # Create initial particle
@@ -96,7 +96,7 @@ def test_default_transition_with_fixed_givens():
     bn.add_node(normal_prior)
 
     # Add a Gamma prior
-    gamma_prior = Gamma(name='gamma_param', shape=2, rate=1)
+    gamma_prior = Gamma(name='gamma_param', shape=2, scale=1)
     bn.add_node(gamma_prior)
 
     # Create a query with fixed gamma_param
@@ -105,7 +105,7 @@ def test_default_transition_with_fixed_givens():
         givens=[{'gamma_param': 2.0}]
     )
 
-    # Create DefaultTransition
+    # Create DefaultTransition (no distribution-specific arguments)
     transition = DefaultTransition(bayesian_network=bn, query=query)
 
     # Create initial particle
@@ -141,7 +141,7 @@ def test_default_transition_with_filters():
         givens=[{'normal_param': lambda particle: particle.get_value('normal_param') > 0}]
     )
 
-    # Create DefaultTransition
+    # Create DefaultTransition (no distribution-specific arguments)
     transition = DefaultTransition(bayesian_network=bn, query=query)
 
     # Create initial particle with negative value
@@ -173,9 +173,48 @@ def test_default_transition_validation():
         DefaultTransition(bayesian_network=bn, query=query)
 
 
+def test_default_transition_with_parent_values():
+    """Test that DefaultTransition passes parent values to perturb methods."""
+    np.random.seed(42)
+
+    # Create a Bayesian network with parent-child relationship
+    bn = BN()
+
+    # Add a parent variable
+    parent_var = Normal(name='parent', mean=0, std=1)
+    bn.add_node(parent_var)
+
+    # Add a child variable that depends on parent
+    child_var = Normal(name='child', mean=parent_var, std=1)
+    bn.add_node(child_var)
+
+    # Create a query
+    query = Query(outcomes=['parent', 'child'])
+
+    # Create DefaultTransition
+    transition = DefaultTransition(bayesian_network=bn, query=query)
+
+    # Create initial particle
+    initial_particle = Particle({
+        'parent': 0.5,
+        'child': 1.0
+    })
+
+    # Test transition
+    new_particle = transition.transition(initial_particle)
+
+    # Check that both variables were perturbed
+    assert new_particle.get_value('parent') != initial_particle.get_value('parent')
+    assert new_particle.get_value('child') != initial_particle.get_value('child')
+
+    # The child's perturbation should have used the parent's value
+    # (we can't easily test the exact perturbation, but we can verify it happened)
+
+
 if __name__ == "__main__":
     test_default_transition_basic()
     test_default_transition_with_fixed_givens()
     test_default_transition_with_filters()
     test_default_transition_validation()
+    test_default_transition_with_parent_values()
     print("All tests passed!")

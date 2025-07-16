@@ -142,22 +142,27 @@ class Gamma(RandomVariable):
             return f"Gamma(name='{self.name}', shape={self.shape}, scale={self.scale})"
         return f"Gamma(shape={self.shape}, scale={self.scale})"
 
-    def perturb(self, current_value, exp=0.1, **kwargs):
+    def perturb(self, current_value, **kwargs):
         """
         Perturb the current value by multiplying by exp of normal noise (ensures positivity).
 
         Parameters:
             current_value: float
                 The current value to perturb.
-            exp: float, default=0.1
-                Standard deviation of the normal noise in the exponential.
             **kwargs: dict
-                Additional parameters (ignored).
+                Additional parameters including shape and scale for the gamma distribution.
 
         Returns:
             float: The perturbed value.
         """
-        noise = np.random.normal(0, exp)
+        # Get distribution parameters
+        shape = kwargs.get('shape', self.shape)
+        scale = kwargs.get('scale', self.scale)
+        
+        # Use a perturbation scale based on the distribution parameters
+        # For gamma distribution, use a smaller perturbation for more concentrated distributions
+        exp_scale = min(0.1, 1.0 / np.sqrt(shape))
+        noise = np.random.normal(0, exp_scale)
         return current_value * np.exp(noise)
 
     def __str__(self):

@@ -140,24 +140,27 @@ class Beta(RandomVariable):
 
         return f"Beta(a={self.a}, b={self.b})"
 
-    def perturb(self, current_value, low=-0.1, high=0.1, **kwargs):
+    def perturb(self, current_value, **kwargs):
         """
         Perturb the current value by adding uniform noise and clipping to [0, 1].
 
         Parameters:
             current_value: float
                 The current value to perturb.
-            low: float, default=-0.1
-                Lower bound of uniform noise.
-            high: float, default=0.1
-                Upper bound of uniform noise.
             **kwargs: dict
-                Additional parameters (ignored).
+                Additional parameters including a and b for the beta distribution.
 
         Returns:
             float: The perturbed value, clipped to [0, 1].
         """
-        noise = np.random.uniform(low, high)
+        # Get distribution parameters
+        a = kwargs.get('a', self.a)
+        b = kwargs.get('b', self.b)
+        
+        # Use a perturbation scale based on the distribution parameters
+        # For beta distribution, use a smaller perturbation for more concentrated distributions
+        scale = min(0.1, 1.0 / (a + b))
+        noise = np.random.uniform(-scale, scale)
         return np.clip(current_value + noise, 0, 1)
 
     def __str__(self):

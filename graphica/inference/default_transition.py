@@ -26,33 +26,11 @@ class DefaultTransition:
             The Bayesian network to transition.
         query: Query
             Query object specifying outcomes and givens.
-        gamma_args: dict, optional
-            Arguments for Gamma perturbation (default: {'exp': 0.1}).
-        normal_args: dict, optional
-            Arguments for Normal perturbation (default: {'mean': 0, 'std': 1}).
-        beta_args: dict, optional
-            Arguments for Beta perturbation (default: {'alpha': 1, 'beta': 1}).
-        uniform_args: dict, optional
-            Arguments for Uniform perturbation (default: {'low': -0.1, 'high': 0.1}).
     """
 
-    def __init__(
-        self,
-        bayesian_network,
-        query,
-        gamma_args=None,
-        normal_args=None,
-        beta_args=None,
-        uniform_args=None,
-    ):
+    def __init__(self, bayesian_network, query):
         self.bayesian_network = bayesian_network
         self.query = query
-
-        # Set default perturbation arguments
-        self.gamma_args = gamma_args or {"exp": 0.1}
-        self.normal_args = normal_args or {"mean": 0, "std": 1}
-        self.beta_args = beta_args or {"alpha": 1, "beta": 1}
-        self.uniform_args = uniform_args or {"low": -0.1, "high": 0.1}
 
         # Validate query variables exist in network
         self._validate_query()
@@ -126,26 +104,21 @@ class DefaultTransition:
 
         return list(chain)
 
-    def _perturb_value(self, var_name, current_value):
-        """Perturb a value using the distribution's perturb method."""
+    def _perturb_value(self, var_name, current_value, particle):
+        """Perturb a value using the distribution's perturb method with parent values."""
         rv = self.bayesian_network.random_variables[var_name]
 
-        # Get perturbation parameters based on distribution type
-        if isinstance(rv, Normal):
-            return rv.perturb(current_value, **self.normal_args)
-        elif isinstance(rv, Gamma):
-            return rv.perturb(current_value, **self.gamma_args)
-        elif isinstance(rv, Beta):
-            return rv.perturb(current_value, **self.beta_args)
-        elif isinstance(rv, Uniform):
-            return rv.perturb(current_value, **self.uniform_args)
-        elif isinstance(rv, Binomial):
-            return rv.perturb(current_value, **self.uniform_args)
-        elif isinstance(rv, Deterministic):
-            return rv.perturb(current_value)
-        else:
-            # Use the distribution's perturb method with default parameters
-            return rv.perturb(current_value)
+        # Gather parent values for the random variable
+        parent_values = {}
+        for parent_name, parent in rv.get_parents().items():
+            if hasattr(parent, "name"):
+                parent_values[parent_name] = particle.get_value(parent.name)
+            else:
+                # Handle case where parent might be a fixed parameter
+                parent_values[parent_name] = parent
+
+        # Call the distribution's perturb method with parent values
+        return rv.perturb(current_value, **parent_values)
 
     def _update_deterministic_chain(self, particle, chain_vars):
         """Update all Deterministic nodes in the chain."""
@@ -205,6 +178,9 @@ class DefaultTransition:
         return True
 
     def _transition_non_deterministic(self, particle, new_particle):
+        # Get given values that should be fixed
+        given_values = self.query.get_given_values()
+        
         # Transition all variables except those fixed in givens
         for var_name, rv in self.bayesian_network.random_variables.items():
             if var_name in given_values:
@@ -222,7 +198,7 @@ class DefaultTransition:
             current_value = particle.get_value(var_name)
 
             # Perturb the value
-            new_value = self._perturb_value(var_name, current_value)
+            new_value = self._perturb_value(var_name, current_value, particle)
             new_particle.set_value(var_name, new_value)
 
     def _transition_deterministic_nodes(self, new_particle):
