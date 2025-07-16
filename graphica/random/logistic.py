@@ -48,7 +48,8 @@ class Logistic(Deterministic):
 
     def sample(self, size=None, **kwargs):
         """
-        Generate samples by evaluating the callable function and applying the logistic transformation.
+        Generate samples by evaluating the callable function and applying the
+        logistic transformation.
 
         Parameters:
             size: int or tuple of ints, optional
@@ -71,10 +72,10 @@ class Logistic(Deterministic):
         if size is not None:
             if np.isscalar(logistic_result):
                 return np.full(size, logistic_result)
-            else:
-                # For non-scalar results, repeat the result
-                result_array = np.asarray(logistic_result)
-                return np.tile(result_array, size)
+
+            # For non-scalar results, repeat the result
+            result_array = np.asarray(logistic_result)
+            return np.tile(result_array, size)
 
         return logistic_result
 
@@ -84,8 +85,8 @@ class Logistic(Deterministic):
             return (
                 f"Logistic(name='{self.name}', callable={self.callable_func.__name__})"
             )
-        else:
-            return f"Logistic(callable={self.callable_func.__name__})"
+
+        return f"Logistic(callable={self.callable_func.__name__})"
 
     def __str__(self):
         """String representation of the logistic random variable."""

@@ -49,11 +49,6 @@ class Binomial(RandomVariable):
         elif not isinstance(n, RandomVariable) and not 0 <= p <= 1:
             raise ValueError("p must be between 0 and 1")
 
-    def _process_parameters(self, **kwargs):
-        """Process parameters for the binomial distribution."""
-        # Parameters are handled in __init__
-        pass
-
     def pdf(self, x, **kwargs):
         """
         Probability mass function for binomial distribution.
@@ -142,8 +137,8 @@ class Binomial(RandomVariable):
         """String representation of the binomial random variable."""
         if self.name:
             return f"Binomial(name='{self.name}', n={self.n}, p={self.p})"
-        else:
-            return f"Binomial(n={self.n}, p={self.p})"
+
+        return f"Binomial(n={self.n}, p={self.p})"
 
     def perturb(self, current_value, low=-0.1, high=0.1, **kwargs):
         """

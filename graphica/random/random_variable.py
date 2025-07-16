@@ -3,7 +3,6 @@ RandomVariable abstract class for probability distributions.
 """
 
 from abc import ABC, abstractmethod
-import numpy as np
 
 
 class RandomVariable(ABC):
@@ -27,14 +26,6 @@ class RandomVariable(ABC):
         """
         self.name = name
         self.parents = {}
-        self._process_parameters(**kwargs)
-
-    def _process_parameters(self, **kwargs):
-        """
-        Process parameters for the random variable.
-        Override in subclasses to handle specific parameters.
-        """
-        pass
 
     def set_parents(self, parents):
         """
@@ -77,7 +68,6 @@ class RandomVariable(ABC):
         Returns:
             array-like: Probability density values at the given points.
         """
-        pass
 
     @abstractmethod
     def logpdf(self, x, **kwargs):
@@ -93,7 +83,6 @@ class RandomVariable(ABC):
         Returns:
             array-like: Log probability density values at the given points.
         """
-        pass
 
     @abstractmethod
     def sample(self, size=None, **kwargs):
@@ -111,7 +100,6 @@ class RandomVariable(ABC):
         Returns:
             array-like: Random samples from the distribution.
         """
-        pass
 
     def perturb(self, current_value, **kwargs):
         """
@@ -134,8 +122,8 @@ class RandomVariable(ABC):
         """String representation of the random variable."""
         if self.name:
             return f"{self.__class__.__name__}(name='{self.name}')"
-        else:
-            return f"{self.__class__.__name__}()"
+
+        return f"{self.__class__.__name__}()"
 
     def __str__(self):
         """String representation of the random variable."""

@@ -48,11 +48,6 @@ class Uniform(RandomVariable):
         elif not isinstance(low, RandomVariable) and low >= high:
             raise ValueError("Lower bound must be less than upper bound")
 
-    def _process_parameters(self, **kwargs):
-        """Process parameters for uniform distribution."""
-        # Parameters are handled in __init__
-        pass
-
     def pdf(self, x, **kwargs):
         """
         Probability density function of the uniform distribution.
@@ -161,8 +156,8 @@ class Uniform(RandomVariable):
         """String representation of the uniform distribution."""
         if self.name:
             return f"Uniform(name='{self.name}', low={self.low}, high={self.high})"
-        else:
-            return f"Uniform(low={self.low}, high={self.high})"
+
+        return f"Uniform(low={self.low}, high={self.high})"
 
     def perturb(self, current_value, low=-0.1, high=0.1, **kwargs):
         """

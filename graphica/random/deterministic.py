@@ -2,8 +2,10 @@
 Deterministic random variable implementation.
 """
 
-import numpy as np
+import inspect
 import uuid
+
+import numpy as np
 from .random_variable import RandomVariable
 
 
@@ -49,11 +51,6 @@ class Deterministic(RandomVariable):
                 self.parents[key] = value
             else:
                 self.fixed_params[key] = value
-
-    def _process_parameters(self, **kwargs):
-        """Process parameters for deterministic distribution."""
-        # Parameters are handled in __init__
-        pass
 
     def pdf(self, x, **kwargs):
         """
@@ -107,8 +104,6 @@ class Deterministic(RandomVariable):
         params.update(kwargs)
 
         # Check if all required parameters are available
-        import inspect
-
         sig = inspect.signature(self.callable_func)
         required_params = [
             name
@@ -129,13 +124,13 @@ class Deterministic(RandomVariable):
         if size is not None:
             if np.isscalar(result):
                 return np.full(size, result)
-            else:
-                # For non-scalar results, repeat the result
-                result_array = np.asarray(result)
-                if isinstance(size, int):
-                    return np.tile(result_array, (size,) + (1,) * result_array.ndim)
-                else:
-                    return np.tile(result_array, size)
+
+            # For non-scalar results, repeat the result
+            result_array = np.asarray(result)
+            if isinstance(size, int):
+                return np.tile(result_array, (size,) + (1,) * result_array.ndim)
+
+            return np.tile(result_array, size)
 
         return result
 
@@ -153,8 +148,8 @@ class Deterministic(RandomVariable):
         """String representation of the deterministic random variable."""
         if self.name:
             return f"Deterministic(name='{self.name}', callable={self.callable_func.__name__})"
-        else:
-            return f"Deterministic(callable={self.callable_func.__name__})"
+
+        return f"Deterministic(callable={self.callable_func.__name__})"
 
     def perturb(self, current_value, **kwargs):
         """

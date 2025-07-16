@@ -3,6 +3,8 @@ Gamma distribution implementation.
 """
 
 import numpy as np
+from scipy.stats import gamma
+
 from .random_variable import RandomVariable
 
 
@@ -48,11 +50,6 @@ class Gamma(RandomVariable):
         elif not isinstance(shape, RandomVariable) and scale <= 0:
             raise ValueError("Scale parameter must be positive")
 
-    def _process_parameters(self, **kwargs):
-        """Process parameters for gamma distribution."""
-        # Parameters are handled in __init__
-        pass
-
     def pdf(self, x, **kwargs):
         """
         Probability density function of the gamma distribution.
@@ -71,8 +68,6 @@ class Gamma(RandomVariable):
 
         shape = new_kwargs["shape"]
         scale = new_kwargs["scale"]
-
-        from scipy.stats import gamma
 
         x = np.asarray(x)
         return gamma.pdf(x, a=shape, scale=scale)
@@ -95,8 +90,6 @@ class Gamma(RandomVariable):
 
         shape = new_kwargs["shape"]
         scale = new_kwargs["scale"]
-
-        from scipy.stats import gamma
 
         x = np.asarray(x)
         return gamma.logpdf(x, a=shape, scale=scale)
@@ -141,16 +134,13 @@ class Gamma(RandomVariable):
         shape = new_kwargs["shape"]
         scale = new_kwargs["scale"]
 
-        from scipy.stats import gamma
-
         x = np.asarray(x)
         return gamma.cdf(x, a=shape, scale=scale)
 
     def __repr__(self):
         if self.name:
             return f"Gamma(name='{self.name}', shape={self.shape}, scale={self.scale})"
-        else:
-            return f"Gamma(shape={self.shape}, scale={self.scale})"
+        return f"Gamma(shape={self.shape}, scale={self.scale})"
 
     def perturb(self, current_value, exp=0.1, **kwargs):
         """

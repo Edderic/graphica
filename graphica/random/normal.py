@@ -3,6 +3,8 @@ Normal distribution implementation.
 """
 
 import numpy as np
+from scipy import stats
+
 from .random_variable import RandomVariable
 
 
@@ -51,11 +53,6 @@ class Normal(RandomVariable):
         # Set variance for non-RandomVariable std
         if not isinstance(std, RandomVariable):
             self.var = std**2
-
-    def _process_parameters(self, **kwargs):
-        """Process parameters for normal distribution."""
-        # Parameters are handled in __init__
-        pass
 
     def pdf(self, x, **kwargs):
         """
@@ -149,16 +146,14 @@ class Normal(RandomVariable):
 
         x = np.asarray(x)
         # Use scipy's normal CDF for accuracy
-        from scipy import stats
-
         return stats.norm.cdf(x, loc=mean, scale=std)
 
     def __repr__(self):
         """String representation of the normal distribution."""
         if self.name:
             return f"Normal(name='{self.name}', mean={self.mean}, std={self.std})"
-        else:
-            return f"Normal(mean={self.mean}, std={self.std})"
+
+        return f"Normal(mean={self.mean}, std={self.std})"
 
     def perturb(self, current_value, mean=0, std=1, **kwargs):
         """

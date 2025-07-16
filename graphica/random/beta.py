@@ -49,11 +49,6 @@ class Beta(RandomVariable):
         elif not isinstance(a, RandomVariable) and b <= 0:
             raise ValueError("beta must be positive")
 
-    def _process_parameters(self, **kwargs):
-        """Process parameters for the beta distribution."""
-        # Parameters are handled in __init__
-        pass
-
     def pdf(self, x, **kwargs):
         """
         Probability density function for beta distribution.
@@ -142,8 +137,8 @@ class Beta(RandomVariable):
         """String representation of the beta random variable."""
         if self.name:
             return f"Beta(name='{self.name}', a={self.a}, b={self.b})"
-        else:
-            return f"Beta(a={self.a}, b={self.b})"
+
+        return f"Beta(a={self.a}, b={self.b})"
 
     def perturb(self, current_value, low=-0.1, high=0.1, **kwargs):
         """
