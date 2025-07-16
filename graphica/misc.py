@@ -1,6 +1,7 @@
 """
 Miscellaneous functions
 """
+
 import os
 from pathlib import Path
 
@@ -40,9 +41,7 @@ def clean_tmp(
             match.unlink()
 
     descending_matches = sorted(
-        matches,
-        key=lambda path: len(path.parents),
-        reverse=True
+        matches, key=lambda path: len(path.parents), reverse=True
     )
 
     # Delete more nested folders first.

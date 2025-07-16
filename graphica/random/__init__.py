@@ -12,12 +12,12 @@ from .deterministic import Deterministic
 from .logistic import Logistic
 
 __all__ = [
-    'RandomVariable',
-    'Normal',
-    'Beta', 
-    'Binomial',
-    'Gamma',
-    'Uniform',
-    'Deterministic',
-    'Logistic'
-] 
+    "RandomVariable",
+    "Normal",
+    "Beta",
+    "Binomial",
+    "Gamma",
+    "Uniform",
+    "Deterministic",
+    "Logistic",
+]

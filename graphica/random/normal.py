@@ -1,6 +1,7 @@
 """
 Normal distribution implementation.
 """
+
 import numpy as np
 from .random_variable import RandomVariable
 
@@ -38,18 +39,18 @@ class Normal(RandomVariable):
 
         # Validate parameters and set parents
         if isinstance(mean, RandomVariable):
-            self.parents['mean'] = mean
+            self.parents["mean"] = mean
         elif not isinstance(std, RandomVariable) and std <= 0:
             raise ValueError("Standard deviation must be positive")
 
         if isinstance(std, RandomVariable):
-            self.parents['std'] = std
+            self.parents["std"] = std
         elif not isinstance(mean, RandomVariable) and std <= 0:
             raise ValueError("Standard deviation must be positive")
 
         # Set variance for non-RandomVariable std
         if not isinstance(std, RandomVariable):
-            self.var = std ** 2
+            self.var = std**2
 
     def _process_parameters(self, **kwargs):
         """Process parameters for normal distribution."""
@@ -71,14 +72,11 @@ class Normal(RandomVariable):
         Returns:
             array-like: PDF values at the given points.
         """
-        new_kwargs = {
-            'mean': self.mean,
-            'std': self.std
-        }
+        new_kwargs = {"mean": self.mean, "std": self.std}
         new_kwargs.update(kwargs)
 
-        mean = new_kwargs['mean']
-        std = new_kwargs['std']
+        mean = new_kwargs["mean"]
+        std = new_kwargs["std"]
 
         x = np.asarray(x)
         return (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - mean) / std) ** 2)
@@ -98,14 +96,11 @@ class Normal(RandomVariable):
         Returns:
             array-like: Log PDF values at the given points.
         """
-        new_kwargs = {
-            'mean': self.mean,
-            'std': self.std
-        }
+        new_kwargs = {"mean": self.mean, "std": self.std}
         new_kwargs.update(kwargs)
 
-        mean = new_kwargs['mean']
-        std = new_kwargs['std']
+        mean = new_kwargs["mean"]
+        std = new_kwargs["std"]
 
         x = np.asarray(x)
         return -0.5 * np.log(2 * np.pi) - np.log(std) - 0.5 * ((x - mean) / std) ** 2
@@ -125,14 +120,11 @@ class Normal(RandomVariable):
         Returns:
             array-like: Random samples from the normal distribution.
         """
-        new_kwargs = {
-            'mean': self.mean,
-            'std': self.std
-        }
+        new_kwargs = {"mean": self.mean, "std": self.std}
         new_kwargs.update(kwargs)
 
-        mean = new_kwargs['mean']
-        std = new_kwargs['std']
+        mean = new_kwargs["mean"]
+        std = new_kwargs["std"]
 
         return np.random.normal(mean, std, size=size)
 
@@ -149,18 +141,16 @@ class Normal(RandomVariable):
         Returns:
             array-like: CDF values at the given points.
         """
-        new_kwargs = {
-            'mean': self.mean,
-            'std': self.std
-        }
+        new_kwargs = {"mean": self.mean, "std": self.std}
         new_kwargs.update(kwargs)
 
-        mean = new_kwargs['mean']
-        std = new_kwargs['std']
+        mean = new_kwargs["mean"]
+        std = new_kwargs["std"]
 
         x = np.asarray(x)
         # Use scipy's normal CDF for accuracy
         from scipy import stats
+
         return stats.norm.cdf(x, loc=mean, scale=std)
 
     def __repr__(self):
@@ -173,7 +163,7 @@ class Normal(RandomVariable):
     def perturb(self, current_value, mean=0, std=1, **kwargs):
         """
         Perturb the current value by adding normal noise.
-        
+
         Parameters:
             current_value: float
                 The current value to perturb.
@@ -183,7 +173,7 @@ class Normal(RandomVariable):
                 Standard deviation of the normal perturbation.
             **kwargs: dict
                 Additional parameters (ignored).
-                
+
         Returns:
             float: The perturbed value.
         """

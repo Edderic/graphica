@@ -1,6 +1,7 @@
 """
 Deterministic random variable implementation.
 """
+
 import numpy as np
 import uuid
 from .random_variable import RandomVariable
@@ -107,9 +108,13 @@ class Deterministic(RandomVariable):
 
         # Check if all required parameters are available
         import inspect
+
         sig = inspect.signature(self.callable_func)
-        required_params = [name for name, param in sig.parameters.items()
-                          if param.default == inspect.Parameter.empty]
+        required_params = [
+            name
+            for name, param in sig.parameters.items()
+            if param.default == inspect.Parameter.empty
+        ]
 
         missing_params = [param for param in required_params if param not in params]
         if missing_params:
@@ -155,13 +160,13 @@ class Deterministic(RandomVariable):
         """
         Perturb the current value by adding small uniform noise.
         For Deterministic nodes, we add a small perturbation to allow for exploration.
-        
+
         Parameters:
             current_value: float
                 The current value to perturb.
             **kwargs: dict
                 Additional parameters (ignored).
-                
+
         Returns:
             float: The perturbed value.
         """

@@ -7,6 +7,7 @@ class DirectedAcyclicGraph:
     """
     Directed Acyclic Graph. Useful for representing Bayesian Networks.
     """
+
     def __init__(self):
         self.children = {}
         self.nodes = {}

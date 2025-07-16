@@ -37,11 +37,8 @@ class Query:
                         ) & (x['some_var'] < 30)
                     }
     """
-    def __init__(
-        self,
-        outcomes,
-        givens=None
-    ):
+
+    def __init__(self, outcomes, givens=None):
 
         if givens is None:
             self.givens = []
@@ -87,9 +84,7 @@ class Query:
             elif isinstance(outcome, dict):
                 self.outcome_vars.append(list(outcome.keys())[0])
             else:
-                raise TypeError(
-                    f'Unrecognized type of object {outcome} for query'
-                )
+                raise TypeError(f"Unrecognized type of object {outcome} for query")
 
         return self.outcome_vars
 
@@ -108,16 +103,14 @@ class Query:
             elif isinstance(given, dict):
                 self.given_vars.append(list(given.keys())[0])
             else:
-                raise TypeError(
-                    f'Unrecognized type of object {given} for query'
-                )
+                raise TypeError(f"Unrecognized type of object {given} for query")
 
         return self.given_vars
-    
+
     def get_given_values(self):
         """
         Get given values as a dictionary.
-        
+
         Returns: dict[str, any]
         """
         given_values = {}
@@ -128,5 +121,5 @@ class Query:
             elif isinstance(given, dict):
                 var_name = list(given.keys())[0]
                 given_values[var_name] = given[var_name]
-        
+
         return given_values

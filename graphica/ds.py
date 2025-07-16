@@ -19,6 +19,7 @@ Classes:
     - MetropolisHastings
     - DefaultTransition
 """
+
 from .query import Query
 from .conditional_probability_table import ConditionalProbabilityTable
 from .directed_acyclic_graph import DirectedAcyclicGraph

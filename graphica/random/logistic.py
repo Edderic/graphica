@@ -1,6 +1,7 @@
 """
 Logistic random variable implementation.
 """
+
 import numpy as np
 from .deterministic import Deterministic
 
@@ -35,11 +36,11 @@ class Logistic(Deterministic):
     def _logistic_function(self, x):
         """
         Apply the logistic function: 1 / (1 + exp(-x))
-        
+
         Parameters:
             x: array-like
                 Input values.
-                
+
         Returns:
             array-like: Logistic transformation of the input.
         """
@@ -62,10 +63,10 @@ class Logistic(Deterministic):
         """
         # Get the result from the parent class (Constant)
         result = super().sample(size=None, **kwargs)
-        
+
         # Apply logistic transformation
         logistic_result = self._logistic_function(result)
-        
+
         # Handle size parameter
         if size is not None:
             if np.isscalar(logistic_result):
@@ -74,16 +75,18 @@ class Logistic(Deterministic):
                 # For non-scalar results, repeat the result
                 result_array = np.asarray(logistic_result)
                 return np.tile(result_array, size)
-        
+
         return logistic_result
 
     def __repr__(self):
         """String representation of the logistic random variable."""
         if self.name:
-            return f"Logistic(name='{self.name}', callable={self.callable_func.__name__})"
+            return (
+                f"Logistic(name='{self.name}', callable={self.callable_func.__name__})"
+            )
         else:
             return f"Logistic(callable={self.callable_func.__name__})"
 
     def __str__(self):
         """String representation of the logistic random variable."""
-        return self.__repr__() 
+        return self.__repr__()

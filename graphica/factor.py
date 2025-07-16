@@ -1,6 +1,7 @@
 """
 Factor module
 """
+
 import numpy as np
 
 from .errors import ArgumentError
@@ -13,6 +14,7 @@ class Factor:
 
     A factor is something that can be multiplied with another factor.
     """
+
     def __init__(self, data=None, cpt=None, log_factor=None):
         if log_factor is not None and data is not None:
             raise ArgumentError(
@@ -32,7 +34,7 @@ class Factor:
         else:
             log_data = log_factor.get_data()
             df = log_data.read()
-            df.loc[:, 'value'] = np.exp(df['value'])
+            df.loc[:, "value"] = np.exp(df["value"])
             self.data = log_data.__class__(df, log_data.get_storage_folder())
 
         self.data_class = self.data.__class__
@@ -43,27 +45,22 @@ class Factor:
         df = self.data.read()
 
         if df.shape[0] == 0:
-            raise ArgumentError(
-                f"Dataframe is empty. Columns: {df.columns}"
-            )
+            raise ArgumentError(f"Dataframe is empty. Columns: {df.columns}")
 
-        cols = list(set(df.columns) - {'value'})
+        cols = list(set(df.columns) - {"value"})
 
-        counts = df.groupby(cols).count()['value']
+        counts = df.groupby(cols).count()["value"]
 
         if any(counts > 1):
             too_many = counts[counts > 1]
-            raise ArgumentError(
-                f"Too many counts detected: \n{counts}"
-            )
-
+            raise ArgumentError(f"Too many counts detected: \n{counts}")
 
     def __merged__(self, other):
         left_vars = set(list(self.get_variables()))
         right_vars = set(list(other.get_variables()))
         common = list(left_vars.intersection(right_vars))
 
-        variables = list(left_vars.union(right_vars.union({'value'})))
+        variables = list(left_vars.union(right_vars.union({"value"})))
 
         left_df = self.data.read()
         right_df = other.data.read()
@@ -71,9 +68,9 @@ class Factor:
         if common:
             merged = left_df.merge(right_df, on=common)
         else:
-            left_df['cross-join'] = 1
-            right_df['cross-join'] = 1
-            merged = left_df.merge(right_df, on='cross-join')
+            left_df["cross-join"] = 1
+            right_df["cross-join"] = 1
+            merged = left_df.merge(right_df, on="cross-join")
 
         if merged.shape[0] == 0:
             raise ArgumentError(
@@ -85,14 +82,16 @@ class Factor:
         return merged, variables
 
     def __repr__(self):
-        return f"\nFactor(\nvariables: {self.get_variables()}" \
+        return (
+            f"\nFactor(\nvariables: {self.get_variables()}"
             + f", \ndf: \n{self.get_df()}\n)"
+        )
 
     def get_variables(self):
         """
         Return variables
         """
-        return list(set(self.data.get_columns()) - {'value'})
+        return list(set(self.data.get_columns()) - {"value"})
 
     def prod(self, other):
         """
@@ -106,16 +105,13 @@ class Factor:
         """
 
         merged, variables = self.__merged__(other)
-        merged['value'] = merged.value_x * merged.value_y
+        merged["value"] = merged.value_x * merged.value_y
 
         data = self.data.__class__(
-            merged[variables],
-            storage_folder=self.data.get_storage_folder()
+            merged[variables], storage_folder=self.data.get_storage_folder()
         )
 
-        return Factor(
-            data
-        )
+        return Factor(data)
 
     def div(self, other):
         """
@@ -126,12 +122,11 @@ class Factor:
         """
 
         merged, variables = self.__merged__(other)
-        merged['value'] = merged.value_x / merged.value_y
+        merged["value"] = merged.value_x / merged.value_y
 
         return Factor(
             self.data.__class__(
-                merged[variables],
-                storage_folder=self.data.get_storage_folder()
+                merged[variables], storage_folder=self.data.get_storage_folder()
             )
         )
 
@@ -146,11 +141,11 @@ class Factor:
 
         Returns: Factor
         """
-        if 'get_filters' in dir(filters):
+        if "get_filters" in dir(filters):
             fs = filters.get_filters()
             dictionary = {}
             for d in fs:
-                for k,v in d.items():
+                for k, v in d.items():
                     dictionary[k] = v
 
             fs = dictionary
@@ -176,9 +171,7 @@ class Factor:
                     )
 
         return Factor(
-            self.data.__class__(
-                df, storage_folder=self.data.get_storage_folder()
-            )
+            self.data.__class__(df, storage_folder=self.data.get_storage_folder())
         )
 
     def sum(self, var):
@@ -198,19 +191,16 @@ class Factor:
 
         df = self.get_df()
 
-        other_vars = list(
-            set(self.get_variables()) - set(variables)
-        )
+        other_vars = list(set(self.get_variables()) - set(variables))
 
         if not other_vars:
             return FactorOne()
 
-        return_df = df.groupby(other_vars).sum()[['value']].reset_index()
+        return_df = df.groupby(other_vars).sum()[["value"]].reset_index()
 
         return Factor(
             data=self.data_class(
-                return_df,
-                storage_folder=self.get_data().get_storage_folder()
+                return_df, storage_folder=self.get_data().get_storage_folder()
             )
         )
 
@@ -228,24 +218,22 @@ class Factor:
         df = self.get_df()
 
         if not variables:
-            df['value'] = df['value'] / df['value'].sum()
+            df["value"] = df["value"] / df["value"].sum()
 
             return Factor(
                 data=self.data_class(
-                    df,
-                    storage_folder=self
-                    .get_data().get_storage_folder()
+                    df, storage_folder=self.get_data().get_storage_folder()
                 )
             )
 
-        sum_df = df.groupby(variables)[['value']].sum()
+        sum_df = df.groupby(variables)[["value"]].sum()
         merged = df.merge(sum_df, on=variables)
-        merged['value'] = merged['value_x'] / merged['value_y']
+        merged["value"] = merged["value_x"] / merged["value_y"]
 
         return Factor(
             data=self.data_class(
-                merged.drop(columns=['value_x', 'value_y']),
-                storage_folder=self.get_data().get_storage_folder()
+                merged.drop(columns=["value_x", "value_y"]),
+                storage_folder=self.get_data().get_storage_folder(),
             )
         )
 

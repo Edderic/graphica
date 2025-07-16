@@ -1,6 +1,7 @@
 """
 Binomial random variable class
 """
+
 import numpy as np
 from scipy.stats import binom
 from .random_variable import RandomVariable
@@ -39,12 +40,12 @@ class Binomial(RandomVariable):
 
         # Validate parameters and set parents
         if isinstance(n, RandomVariable):
-            self.parents['n'] = n
+            self.parents["n"] = n
         elif not isinstance(p, RandomVariable) and (not isinstance(n, int) or n < 0):
             raise ValueError("n must be a non-negative integer")
 
         if isinstance(p, RandomVariable):
-            self.parents['p'] = p
+            self.parents["p"] = p
         elif not isinstance(n, RandomVariable) and not 0 <= p <= 1:
             raise ValueError("p must be between 0 and 1")
 
@@ -66,14 +67,11 @@ class Binomial(RandomVariable):
         Returns:
             float or array-like: Probability mass at the given point(s).
         """
-        new_kwargs = {
-            'n': self.n,
-            'p': self.p
-        }
+        new_kwargs = {"n": self.n, "p": self.p}
         new_kwargs.update(kwargs)
 
-        n = new_kwargs['n']
-        p = new_kwargs['p']
+        n = new_kwargs["n"]
+        p = new_kwargs["p"]
 
         return binom.pmf(x, n=n, p=p)
 
@@ -90,14 +88,11 @@ class Binomial(RandomVariable):
         Returns:
             float or array-like: Log probability mass at the given point(s).
         """
-        new_kwargs = {
-            'n': self.n,
-            'p': self.p
-        }
+        new_kwargs = {"n": self.n, "p": self.p}
         new_kwargs.update(kwargs)
 
-        n = new_kwargs['n']
-        p = new_kwargs['p']
+        n = new_kwargs["n"]
+        p = new_kwargs["p"]
 
         return binom.logpmf(x, n=n, p=p)
 
@@ -114,14 +109,11 @@ class Binomial(RandomVariable):
         Returns:
             int or array-like: Random samples from the distribution.
         """
-        new_kwargs = {
-            'n': self.n,
-            'p': self.p
-        }
+        new_kwargs = {"n": self.n, "p": self.p}
         new_kwargs.update(kwargs)
 
-        n = new_kwargs['n']
-        p = new_kwargs['p']
+        n = new_kwargs["n"]
+        p = new_kwargs["p"]
 
         return binom.rvs(n=n, p=p, size=size)
 
@@ -138,14 +130,11 @@ class Binomial(RandomVariable):
         Returns:
             float or array-like: Cumulative probability at the given point(s).
         """
-        new_kwargs = {
-            'n': self.n,
-            'p': self.p
-        }
+        new_kwargs = {"n": self.n, "p": self.p}
         new_kwargs.update(kwargs)
 
-        n = new_kwargs['n']
-        p = new_kwargs['p']
+        n = new_kwargs["n"]
+        p = new_kwargs["p"]
 
         return binom.cdf(x, n=n, p=p)
 
@@ -160,7 +149,7 @@ class Binomial(RandomVariable):
         """
         Perturb the current value by adding uniform noise and clipping to [0, 1].
         For Binomial, we perturb the probability parameter.
-        
+
         Parameters:
             current_value: float
                 The current value to perturb (should be a probability).
@@ -170,7 +159,7 @@ class Binomial(RandomVariable):
                 Upper bound of uniform noise.
             **kwargs: dict
                 Additional parameters (ignored).
-                
+
         Returns:
             float: The perturbed value, clipped to [0, 1].
         """

@@ -1,6 +1,7 @@
 """
 Metropolis-Hastings sampler for Bayesian Networks with Random Variables.
 """
+
 import numpy as np
 from ..particles.particle import Particle
 from tqdm import tqdm

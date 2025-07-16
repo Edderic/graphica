@@ -1,6 +1,7 @@
 """
 Beta random variable class
 """
+
 import numpy as np
 from scipy.stats import beta
 from .random_variable import RandomVariable
@@ -39,12 +40,12 @@ class Beta(RandomVariable):
 
         # Validate parameters and set parents
         if isinstance(a, RandomVariable):
-            self.parents['a'] = a
+            self.parents["a"] = a
         elif not isinstance(b, RandomVariable) and a <= 0:
             raise ValueError("a must be positive")
 
         if isinstance(b, RandomVariable):
-            self.parents['b'] = b
+            self.parents["b"] = b
         elif not isinstance(a, RandomVariable) and b <= 0:
             raise ValueError("beta must be positive")
 
@@ -66,14 +67,11 @@ class Beta(RandomVariable):
         Returns:
             float or array-like: Probability density at the given point(s).
         """
-        new_kwargs = {
-            'a': self.a,
-            'b': self.b
-        }
+        new_kwargs = {"a": self.a, "b": self.b}
         new_kwargs.update(kwargs)
 
-        a = new_kwargs['a']
-        b = new_kwargs['b']
+        a = new_kwargs["a"]
+        b = new_kwargs["b"]
 
         return beta.pdf(x, a=a, b=b)
 
@@ -90,14 +88,11 @@ class Beta(RandomVariable):
         Returns:
             float or array-like: Log probability density at the given point(s).
         """
-        new_kwargs = {
-            'a': self.a,
-            'b': self.b
-        }
+        new_kwargs = {"a": self.a, "b": self.b}
         new_kwargs.update(kwargs)
 
-        a = new_kwargs['a']
-        b = new_kwargs['b']
+        a = new_kwargs["a"]
+        b = new_kwargs["b"]
 
         return beta.logpdf(x, a=a, b=b)
 
@@ -114,14 +109,11 @@ class Beta(RandomVariable):
         Returns:
             float or array-like: Random samples from the distribution.
         """
-        new_kwargs = {
-            'a': self.a,
-            'b': self.b
-        }
+        new_kwargs = {"a": self.a, "b": self.b}
         new_kwargs.update(kwargs)
 
-        a = new_kwargs['a']
-        b = new_kwargs['b']
+        a = new_kwargs["a"]
+        b = new_kwargs["b"]
 
         return beta.rvs(a, b, size=size)
 
@@ -138,14 +130,11 @@ class Beta(RandomVariable):
         Returns:
             float or array-like: Cumulative probability at the given point(s).
         """
-        new_kwargs = {
-            'a': self.a,
-            'b': self.b
-        }
+        new_kwargs = {"a": self.a, "b": self.b}
         new_kwargs.update(kwargs)
 
-        a = new_kwargs['a']
-        b = new_kwargs['b']
+        a = new_kwargs["a"]
+        b = new_kwargs["b"]
 
         return beta.cdf(x, a=a, b=b)
 
@@ -159,7 +148,7 @@ class Beta(RandomVariable):
     def perturb(self, current_value, low=-0.1, high=0.1, **kwargs):
         """
         Perturb the current value by adding uniform noise and clipping to [0, 1].
-        
+
         Parameters:
             current_value: float
                 The current value to perturb.
@@ -169,7 +158,7 @@ class Beta(RandomVariable):
                 Upper bound of uniform noise.
             **kwargs: dict
                 Additional parameters (ignored).
-                
+
         Returns:
             float: The perturbed value, clipped to [0, 1].
         """

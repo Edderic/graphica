@@ -3,10 +3,11 @@ NullGraphvizDag
 """
 
 
-class NullGraphvizDag():
+class NullGraphvizDag:
     """
     Meant to reduce conditional statements for readability.
     """
+
     def __init__(self):
         pass
 

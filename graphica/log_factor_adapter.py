@@ -1,6 +1,7 @@
 """
 LogFactorAdapter module
 """
+
 import numpy as np
 
 from .errors import ArgumentError
@@ -12,6 +13,7 @@ class LogFactorAdapter:
     """
     Acts like a Factor object, but is using a LogFactor underneath.
     """
+
     def __init__(self, data=None, cpt=None, log_factor=None):
         if log_factor is not None and data is not None:
             raise ArgumentError(
@@ -26,7 +28,7 @@ class LogFactorAdapter:
 
         if data is not None:
             df = data.read()
-            df['value'] = np.log(df['value'])
+            df["value"] = np.log(df["value"])
 
             self.log_factor = LogFactor(
                 data=data.__class__(df, data.get_storage_folder())
@@ -37,7 +39,7 @@ class LogFactorAdapter:
             data = cpt.data
 
             df = data.read()
-            df['value'] = np.log(df['value'])
+            df["value"] = np.log(df["value"])
 
             self.log_factor = LogFactor(
                 data=data.__class__(df, data.get_storage_folder())
@@ -49,8 +51,10 @@ class LogFactorAdapter:
             self.data_class = self.log_factor.get_data().__class__
 
     def __repr__(self):
-        return f"\nLogFactorAdapter(\nvariables: {self.get_variables()}" \
+        return (
+            f"\nLogFactorAdapter(\nvariables: {self.get_variables()}"
             + f", \nlog_factor: \n{self.log_factor}\n)"
+        )
 
     def get_variables(self):
         """
@@ -95,9 +99,7 @@ class LogFactorAdapter:
         """
 
         summation = self.log_factor.add(other.log_factor)
-        factor = LogFactorAdapter(
-            log_factor=summation
-        )
+        factor = LogFactorAdapter(log_factor=summation)
         return factor
 
     def sum(self, var):
@@ -117,19 +119,17 @@ class LogFactorAdapter:
 
         df = self.get_df()
 
-        other_vars = list(
-            set(self.get_variables()) - set(variables)
-        )
+        other_vars = list(set(self.get_variables()) - set(variables))
 
         if not other_vars:
             return FactorOne()
 
-        return_df = df.groupby(other_vars).sum()[['value']].reset_index()
+        return_df = df.groupby(other_vars).sum()[["value"]].reset_index()
 
         return LogFactorAdapter(
             data=self.data_class(
                 return_df,
-                storage_folder=self.log_factor.get_data().get_storage_folder()
+                storage_folder=self.log_factor.get_data().get_storage_folder(),
             )
         )
 
@@ -147,24 +147,22 @@ class LogFactorAdapter:
         df = self.get_df()
 
         if not variables:
-            df['value'] = df['value'] / df['value'].sum()
+            df["value"] = df["value"] / df["value"].sum()
 
             return Factor(
                 data=self.data_class(
-                    df,
-                    storage_folder=self
-                    .get_data().get_storage_folder()
+                    df, storage_folder=self.get_data().get_storage_folder()
                 )
             )
 
-        sum_df = df.groupby(variables)[['value']].sum()
+        sum_df = df.groupby(variables)[["value"]].sum()
         merged = df.merge(sum_df, on=variables)
-        merged['value'] = merged['value_x'] / merged['value_y']
+        merged["value"] = merged["value_x"] / merged["value_y"]
 
         return Factor(
             data=self.data_class(
-                merged.drop(columns=['value_x', 'value_y']),
-                storage_folder=self.log_factor.get_data().get_storage_folder()
+                merged.drop(columns=["value_x", "value_y"]),
+                storage_folder=self.log_factor.get_data().get_storage_folder(),
             )
         )
 
@@ -176,7 +174,7 @@ class LogFactorAdapter:
         """
 
         df = self.data.read()
-        df['value'] = np.exp(df['value'])
+        df["value"] = np.exp(df["value"])
         return df
 
     def get_data(self):

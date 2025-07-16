@@ -3,7 +3,7 @@ Factors class.
 """
 
 
-class Factors():
+class Factors:
     """
     Helper for doing a bunch of operations on Factors.
 

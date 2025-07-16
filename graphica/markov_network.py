@@ -1,6 +1,7 @@
 """
 MarkovNetwork class.
 """
+
 from .factors import Factors
 
 
@@ -9,6 +10,7 @@ class MarkovNetwork:
     Markov network. A data structure that has undirected edges. Each clique
     represents a factor.
     """
+
     def __init__(self):
         self.factors = {}
 
@@ -46,7 +48,7 @@ class MarkovNetwork:
 
         for _, fs in self.factors.items():
             for factor in fs:
-                variables_key = '-'.join(sorted(factor.get_variables()))
+                variables_key = "-".join(sorted(factor.get_variables()))
                 if variables_key not in cache:
                     cache[variables_key] = 1
                     factors.append(factor)

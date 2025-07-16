@@ -1,6 +1,7 @@
 """
 Example demonstrating Random Variables in Bayesian Networks.
 """
+
 import numpy as np
 from ..ds import BayesianNetwork, Normal, Uniform, Query, MetropolisHastings, Particle
 
@@ -10,17 +11,17 @@ def transition_function(particle):
     new_particle = particle.copy()
 
     # Update mu with random walk
-    if particle.has_variable('mu'):
-        current_mu = particle.get_value('mu')
+    if particle.has_variable("mu"):
+        current_mu = particle.get_value("mu")
         new_mu = current_mu + np.random.normal(0, 1)
-        new_particle.set_value('mu', new_mu)
+        new_particle.set_value("mu", new_mu)
 
     # Update sigma with random walk (ensure positivity)
-    if particle.has_variable('sigma'):
-        current_sigma = particle.get_value('sigma')
+    if particle.has_variable("sigma"):
+        current_sigma = particle.get_value("sigma")
         new_sigma = current_sigma + np.random.normal(0, 1)
         new_sigma = max(0.1, new_sigma)  # Ensure positive
-        new_particle.set_value('sigma', new_sigma)
+        new_particle.set_value("sigma", new_sigma)
 
     return new_particle
 
@@ -35,8 +36,8 @@ def run_random_variable_example():
 
     with BayesianNetwork() as bn:
         # Create random variables
-        mu = Normal(name='mu', mean=1.0, std=2.0)
-        sigma = Uniform(name='sigma', low=0.1, high=10.0)
+        mu = Normal(name="mu", mean=1.0, std=2.0)
+        sigma = Uniform(name="sigma", low=0.1, high=10.0)
 
         # Add them to the network
         bn.add_random_variable(mu)
@@ -50,22 +51,20 @@ def run_random_variable_example():
 
     # Create a simple network for sampling
     bn = BayesianNetwork()
-    mu = Normal(name='mu', mean=1.0, std=5.0)
-    sigma = Uniform(name='sigma', low=0.1, high=3.0)
-    X = Normal(name='X', mean=mu, sigma=sigma)
+    mu = Normal(name="mu", mean=1.0, std=5.0)
+    sigma = Uniform(name="sigma", low=0.1, high=3.0)
+    X = Normal(name="X", mean=mu, sigma=sigma)
 
     bn.add_random_variable(mu)
     bn.add_random_variable(sigma)
     bn.add_random_variable(X)
 
     # Create a query conditioning on some observation
-    query = Query(outcomes=[], givens=[{'X': 1.5}])  # Observe X = 1.5
+    query = Query(outcomes=[], givens=[{"X": 1.5}])  # Observe X = 1.5
 
     # Create sampler
     sampler = MetropolisHastings(
-        network=bn,
-        query=query,
-        transition_function=transition_function
+        network=bn, query=query, transition_function=transition_function
     )
 
     # Sample (with smaller number for demonstration)
@@ -85,24 +84,18 @@ def run_random_variable_example():
 
     with BayesianNetwork() as bn:
         # Prior for X
-        X = CPT(
-            table=[
-                {'X': 0, 'value': 0.8},
-                {'X': 1, 'value': 0.2}
-            ],
-            outcomes=['X']
-        )
+        X = CPT(table=[{"X": 0, "value": 0.8}, {"X": 1, "value": 0.2}], outcomes=["X"])
 
         # Conditional probability for Y given X
         Y = CPT(
             table=[
-                {'X': 0, 'Y': 0, 'value': 0.25},
-                {'X': 0, 'Y': 1, 'value': 0.75},
-                {'X': 1, 'Y': 0, 'value': 0.6},
-                {'X': 1, 'Y': 1, 'value': 0.4},
+                {"X": 0, "Y": 0, "value": 0.25},
+                {"X": 0, "Y": 1, "value": 0.75},
+                {"X": 1, "Y": 0, "value": 0.6},
+                {"X": 1, "Y": 1, "value": 0.4},
             ],
-            givens=['X'],
-            outcomes=['Y']
+            givens=["X"],
+            outcomes=["Y"],
         )
 
         # Add to network

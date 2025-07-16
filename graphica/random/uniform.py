@@ -1,6 +1,7 @@
 """
 Uniform distribution implementation.
 """
+
 import numpy as np
 from .random_variable import RandomVariable
 
@@ -8,7 +9,7 @@ from .random_variable import RandomVariable
 class Uniform(RandomVariable):
     """
     Uniform distribution.
-    
+
     Parameters:
         name: str, optional
             Name of the random variable.
@@ -17,7 +18,7 @@ class Uniform(RandomVariable):
         high: float or RandomVariable
             Upper bound of the uniform distribution.
     """
-    
+
     def __init__(self, name=None, low=0.0, high=1.0, **kwargs):
         """
         Initialize Uniform random variable.
@@ -38,12 +39,12 @@ class Uniform(RandomVariable):
 
         # Validate parameters and set parents
         if isinstance(low, RandomVariable):
-            self.parents['low'] = low
+            self.parents["low"] = low
         elif not isinstance(high, RandomVariable) and low >= high:
             raise ValueError("Lower bound must be less than upper bound")
 
         if isinstance(high, RandomVariable):
-            self.parents['high'] = high
+            self.parents["high"] = high
         elif not isinstance(low, RandomVariable) and low >= high:
             raise ValueError("Lower bound must be less than upper bound")
 
@@ -51,11 +52,11 @@ class Uniform(RandomVariable):
         """Process parameters for uniform distribution."""
         # Parameters are handled in __init__
         pass
-    
+
     def pdf(self, x, **kwargs):
         """
         Probability density function of the uniform distribution.
-        
+
         f(x) = 1/(high-low) for low <= x <= high, 0 otherwise.
 
         Parameters:
@@ -67,14 +68,11 @@ class Uniform(RandomVariable):
         Returns:
             array-like: PDF values at the given points.
         """
-        new_kwargs = {
-            'low': self.low,
-            'high': self.high
-        }
+        new_kwargs = {"low": self.low, "high": self.high}
         new_kwargs.update(kwargs)
 
-        low = new_kwargs['low']
-        high = new_kwargs['high']
+        low = new_kwargs["low"]
+        high = new_kwargs["high"]
         width = high - low
 
         x = np.asarray(x)
@@ -82,11 +80,11 @@ class Uniform(RandomVariable):
         mask = (x >= low) & (x <= high)
         result[mask] = 1.0 / width
         return result
-    
+
     def logpdf(self, x, **kwargs):
         """
         Logarithm of the probability density function.
-        
+
         log(f(x)) = -log(high-low) for low <= x <= high, -inf otherwise.
 
         Parameters:
@@ -98,14 +96,11 @@ class Uniform(RandomVariable):
         Returns:
             array-like: Log PDF values at the given points.
         """
-        new_kwargs = {
-            'low': self.low,
-            'high': self.high
-        }
+        new_kwargs = {"low": self.low, "high": self.high}
         new_kwargs.update(kwargs)
 
-        low = new_kwargs['low']
-        high = new_kwargs['high']
+        low = new_kwargs["low"]
+        high = new_kwargs["high"]
         width = high - low
 
         x = np.asarray(x)
@@ -113,7 +108,7 @@ class Uniform(RandomVariable):
         mask = (x >= low) & (x <= high)
         result[mask] = -np.log(width)
         return result
-    
+
     def sample(self, size=None, **kwargs):
         """
         Generate random samples from the uniform distribution.
@@ -127,17 +122,14 @@ class Uniform(RandomVariable):
         Returns:
             array-like: Random samples from the distribution.
         """
-        new_kwargs = {
-            'low': self.low,
-            'high': self.high
-        }
+        new_kwargs = {"low": self.low, "high": self.high}
         new_kwargs.update(kwargs)
 
-        low = new_kwargs['low']
-        high = new_kwargs['high']
+        low = new_kwargs["low"]
+        high = new_kwargs["high"]
 
         return np.random.uniform(low, high, size=size)
-    
+
     def cdf(self, x, **kwargs):
         """
         Cumulative distribution function of the uniform distribution.
@@ -151,14 +143,11 @@ class Uniform(RandomVariable):
         Returns:
             array-like: CDF values at the given points.
         """
-        new_kwargs = {
-            'low': self.low,
-            'high': self.high
-        }
+        new_kwargs = {"low": self.low, "high": self.high}
         new_kwargs.update(kwargs)
 
-        low = new_kwargs['low']
-        high = new_kwargs['high']
+        low = new_kwargs["low"]
+        high = new_kwargs["high"]
         width = high - low
 
         x = np.asarray(x)
@@ -167,18 +156,18 @@ class Uniform(RandomVariable):
         result[mask] = (x[mask] - low) / width
         result[x > high] = 1.0
         return result
-    
+
     def __repr__(self):
         """String representation of the uniform distribution."""
         if self.name:
             return f"Uniform(name='{self.name}', low={self.low}, high={self.high})"
         else:
             return f"Uniform(low={self.low}, high={self.high})"
-    
+
     def perturb(self, current_value, low=-0.1, high=0.1, **kwargs):
         """
         Perturb the current value by adding uniform noise.
-        
+
         Parameters:
             current_value: float
                 The current value to perturb.
@@ -188,7 +177,7 @@ class Uniform(RandomVariable):
                 Upper bound of uniform noise.
             **kwargs: dict
                 Additional parameters (ignored).
-                
+
         Returns:
             float: The perturbed value.
         """
@@ -197,4 +186,4 @@ class Uniform(RandomVariable):
 
     def __str__(self):
         """String representation of the uniform distribution."""
-        return self.__repr__() 
+        return self.__repr__()

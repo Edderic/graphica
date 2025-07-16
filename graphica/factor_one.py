@@ -2,6 +2,7 @@
 FactorOne
 """
 
+
 class FactorOne:
     """
     Class that makes summing easier.

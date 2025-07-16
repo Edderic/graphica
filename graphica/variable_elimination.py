@@ -63,6 +63,7 @@ class VariableElimination:
                 network: MarkovNetwork
 
     """
+
     def __init__(
         self,
         network,
@@ -93,36 +94,29 @@ class VariableElimination:
 
         numerator_eliminateables = list(
             set(self.network.get_variables())
-            - set(self.query.get_outcome_variables())
-            .union(set(self.query.get_given_variables()))
+            - set(self.query.get_outcome_variables()).union(
+                set(self.query.get_given_variables())
+            )
         )
 
-        self.__compute__(
-            numerator_eliminateables,
-            'numerator'
-        )
+        self.__compute__(numerator_eliminateables, "numerator")
 
         numer_factors = self.network.get_factors()
         numerator_prod = numer_factors.prod()
 
         given_vars = self.query.get_given_variables()
         left_to_eliminate = list(
-            set(self.query.get_outcome_variables()) -
-            set(given_vars)
+            set(self.query.get_outcome_variables()) - set(given_vars)
         )
 
-        self.__compute__(
-            left_to_eliminate,
-            'denominator'
-        )
+        self.__compute__(left_to_eliminate, "denominator")
 
         denom_prod = self.network.get_factors().prod()
 
         if denom_prod is None:
             return numerator_prod.normalize()
 
-        div = numerator_prod\
-            .div(denom_prod)
+        div = numerator_prod.div(denom_prod)
 
         normalized = div.normalize(given_vars)
 
@@ -131,83 +125,63 @@ class VariableElimination:
             numerator_prod,
             denom_prod,
             div,
-            normalized
+            normalized,
         )
 
         return normalized
 
     def __compute__(self, eliminateables, title):
         len_eliminateables = len(eliminateables)
-        logging.debug(
-            "Running __compute__ for %s on %s", title, datetime.now()
-        )
+        logging.debug("Running __compute__ for %s on %s", title, datetime.now())
 
         with tqdm(total=len_eliminateables, desc=title) as progress_bar:
             while eliminateables:
                 t1 = time.time()
                 logging.debug(
-                    "\nTOP OF ELIMINATEABLES: \ni\tELIMINATEABLES: %s",
-                    eliminateables
+                    "\nTOP OF ELIMINATEABLES: \ni\tELIMINATEABLES: %s", eliminateables
                 )
 
                 best_eliminateable, _ = self.greedy_heuristic(
-                    eliminateables=eliminateables,
-                    network=self.network
+                    eliminateables=eliminateables, network=self.network
                 )
 
                 factors = self.network.get_factors(best_eliminateable)
 
                 logging.debug(
-                    "\nbest_eliminateable: \n\t: %s, \n\tmin: %s, "
-                    "\n\tfactors: %s",
+                    "\nbest_eliminateable: \n\t: %s, \n\tmin: %s, " "\n\tfactors: %s",
                     best_eliminateable,
                     _,
-                    factors
+                    factors,
                 )
 
                 factor_prod = factors.prod()
 
-                logging.debug(
-                    "\nAfter prod. \n\tfactor_prod: \n\t%s",
-                    factor_prod
-                )
+                logging.debug("\nAfter prod. \n\tfactor_prod: \n\t%s", factor_prod)
 
                 # Update network with new factor
                 new_factor = factor_prod.sum(best_eliminateable)
 
-                logging.debug(
-                    "\nAfter sum. sum: \n\t%s",
-                    new_factor
-                )
+                logging.debug("\nAfter sum. sum: \n\t%s", new_factor)
 
-                self.network.add_factor(
-                    factor=new_factor
-                )
+                self.network.add_factor(factor=new_factor)
 
                 # Remove old factors
                 for factor in factors:
-                    self.network.remove_factor(
-                        factor=factor
-                    )
+                    self.network.remove_factor(factor=factor)
 
                 logging.debug(
-                    "\nAfter add and remove factor: Network:\n\t%s",
-                    self.network
+                    "\nAfter add and remove factor: Network:\n\t%s", self.network
                 )
 
-                eliminateables = list(
-                    set(eliminateables) - {best_eliminateable}
-                )
+                eliminateables = list(set(eliminateables) - {best_eliminateable})
 
                 t2 = time.time()
 
                 logging.debug(
-                    "elapsed: %s"
-                    "\nbest_eliminateable: \n\t: %s, "
-                    "\n\tfactors: %s",
+                    "elapsed: %s" "\nbest_eliminateable: \n\t: %s, " "\n\tfactors: %s",
                     t2 - t1,
                     best_eliminateable,
-                    factors
+                    factors,
                 )
 
                 progress_bar.update()

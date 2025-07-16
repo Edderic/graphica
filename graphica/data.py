@@ -1,6 +1,7 @@
 """
 Data module
 """
+
 from uuid import uuid4
 
 import pandas as pd
@@ -17,6 +18,7 @@ class InMemoryData:
             - read_parquet
             - to_parquet
     """
+
     def __init__(self, data, storage_folder=None, name=None):
         self.columns = data.columns
         self.data = data
@@ -58,6 +60,7 @@ class ParquetData:
             - read_parquet
             - to_parquet
     """
+
     def __init__(self, data, storage_folder, name=None):
         if name is None:
             self.name = uuid4()
@@ -91,10 +94,10 @@ class ParquetData:
 
         Returns: data
         """
-        return pd.read_parquet(self.path, engine='pyarrow')
+        return pd.read_parquet(self.path, engine="pyarrow")
 
     def write(self, data):
         """
         Write the data.
         """
-        data.to_parquet(self.path, engine='pyarrow')
+        data.to_parquet(self.path, engine="pyarrow")

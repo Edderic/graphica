@@ -1,6 +1,7 @@
 """
 Log Factor module
 """
+
 import numpy as np
 import pandas as pd
 
@@ -16,17 +17,13 @@ def compute_log_sum_exp(other_vars, tmp_df):
         other_vars: list[str]
         tmp_df: pd.DataFrame
     """
-    shifted = tmp_df\
-        .groupby(other_vars)[['value']].shift(-1)
+    shifted = tmp_df.groupby(other_vars)[["value"]].shift(-1)
 
     lagged = tmp_df.merge(
-        shifted.rename(columns=lambda x: x+"_lag"),
-        left_index=True,
-        right_index=True
+        shifted.rename(columns=lambda x: x + "_lag"), left_index=True, right_index=True
     )
 
-    tmp_df['value'] = \
-        np.logaddexp(lagged['value'], lagged['value_lag'])
+    tmp_df["value"] = np.logaddexp(lagged["value"], lagged["value_lag"])
     # TODO: this might be a problem when there are an odd number of
     # rows for a group?
     tmp_df = tmp_df.dropna()
@@ -59,28 +56,26 @@ class LogFactor:
         variables = self.get_variables()
 
         df = self.data.read()
-        counts = df.groupby(variables).count()['value']
+        counts = df.groupby(variables).count()["value"]
 
         if (counts > 1).sum(axis=0) > 0:
             raise ArgumentError(
-                f"Dataframe {df} must not have duplicate "
-                + "entries with variables."
+                f"Dataframe {df} must not have duplicate " + "entries with variables."
             )
 
-        if any(df['value'] == -np.inf):
+        if any(df["value"] == -np.inf):
             raise ArgumentError(
-                "Must not have negative infinity values. df:\n"
-                + f"{df}"
+                "Must not have negative infinity values. df:\n" + f"{df}"
             )
 
         if df.shape[0] == 0:
-            raise ArgumentError(
-                f"Dataframe is empty. Columns: {df.columns}"
-            )
+            raise ArgumentError(f"Dataframe is empty. Columns: {df.columns}")
 
     def __repr__(self):
-        return f"\nLogFactor(\nvariables: {self.get_variables()}" \
+        return (
+            f"\nLogFactor(\nvariables: {self.get_variables()}"
             + f", \ndf: \n{self.data.read()}\n)\n"
+        )
 
     def filter(self, query):
         """
@@ -111,9 +106,7 @@ class LogFactor:
                     df = df[df[key] == value]
 
         return LogFactor(
-            self.data.__class__(
-                df, storage_folder=self.data.get_storage_folder()
-            )
+            self.data.__class__(df, storage_folder=self.data.get_storage_folder())
         )
 
     def get_data(self):
@@ -126,7 +119,7 @@ class LogFactor:
         """
         Return variables
         """
-        return list(set(self.data.get_columns()) - {'value'})
+        return list(set(self.data.get_columns()) - {"value"})
 
     def add(self, other):
         """
@@ -142,16 +135,13 @@ class LogFactor:
         """
 
         merged, variables = self.__merged__(other)
-        merged['value'] = merged.value_x + merged.value_y
+        merged["value"] = merged.value_x + merged.value_y
 
         data = self.data.__class__(
-            merged[variables],
-            storage_folder=self.data.get_storage_folder()
+            merged[variables], storage_folder=self.data.get_storage_folder()
         )
 
-        return LogFactor(
-            data
-        )
+        return LogFactor(data)
 
     def subtract(self, other):
         """
@@ -168,12 +158,11 @@ class LogFactor:
         """
 
         merged, variables = self.__merged__(other)
-        merged['value'] = merged.value_x - merged.value_y
+        merged["value"] = merged.value_x - merged.value_y
 
         return LogFactor(
             self.data.__class__(
-                merged[variables],
-                storage_folder=self.data.get_storage_folder()
+                merged[variables], storage_folder=self.data.get_storage_folder()
             )
         )
 
@@ -182,7 +171,7 @@ class LogFactor:
         right_vars = set(list(other.get_variables()))
         common = list(left_vars.intersection(right_vars))
 
-        variables = list(left_vars.union(right_vars.union({'value'})))
+        variables = list(left_vars.union(right_vars.union({"value"})))
 
         left_df = self.data.read()
         right_df = other.data.read()
@@ -190,9 +179,9 @@ class LogFactor:
         if common:
             merged = left_df.merge(right_df, on=common)
         else:
-            left_df['cross-join'] = 1
-            right_df['cross-join'] = 1
-            merged = left_df.merge(right_df, on='cross-join')
+            left_df["cross-join"] = 1
+            right_df["cross-join"] = 1
+            merged = left_df.merge(right_df, on="cross-join")
 
         if merged.shape[0] == 0:
             raise ArgumentError(
