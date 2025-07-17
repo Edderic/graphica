@@ -155,9 +155,9 @@ class Binomial(RandomVariable):
             float: The perturbed value, clipped to [0, 1].
         """
         # Get distribution parameters
-        n = kwargs.get('n', self.n)
-        p = kwargs.get('p', self.p)
-        
+        n = kwargs.get("n", self.n)
+        p = kwargs.get("p", self.p)
+
         # Use a perturbation scale based on the distribution parameters
         # For binomial distribution, use a smaller perturbation for more concentrated distributions
         scale = min(0.1, 1.0 / np.sqrt(n * p * (1 - p)) if n * p * (1 - p) > 0 else 0.1)

@@ -55,11 +55,12 @@ def test_uniform_perturb():
     uniform = Uniform(name='test_uniform', low=0, high=1)
     
     current_value = 0.5
-    perturbed = uniform.perturb(current_value, low=-0.1, high=0.1)
+    perturbed = uniform.perturb(current_value)
     
-    # Should be close to current value
-    assert abs(perturbed - current_value) < 0.2
-    assert perturbed != current_value
+    # Should be close to current value and within bounds
+    assert 0 <= perturbed <= 1  # Within distribution bounds
+    assert abs(perturbed - current_value) < 0.2  # Close to current value
+    assert perturbed != current_value  # Should be different due to noise
 
 
 def test_binomial_perturb():
@@ -88,9 +89,13 @@ def test_deterministic_perturb():
     current_value = 1.0
     perturbed = deterministic.perturb(current_value)
     
-    # Should be close to current value with small noise
-    assert abs(perturbed - current_value) < 0.1
-    assert perturbed != current_value
+    # For deterministic nodes, perturb should recalculate based on current parameters
+    # Since x=1.0 is fixed, the result should be 1.0
+    assert perturbed == 1.0  
+    # Test with different fixed parameter
+    deterministic2 = Deterministic(name='test_deterministic2', callable_func=identity_func, x=2.0)
+    perturbed2 = deterministic2.perturb(current_value)
+    assert perturbed2 == 2.0
 
 
 def test_perturb_with_defaults():

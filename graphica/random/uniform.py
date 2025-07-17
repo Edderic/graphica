@@ -173,9 +173,9 @@ class Uniform(RandomVariable):
             float: The perturbed value, clipped to [low, high].
         """
         # Get distribution parameters
-        low = kwargs.get('low', self.low)
-        high = kwargs.get('high', self.high)
-        
+        low = kwargs.get("low", self.low)
+        high = kwargs.get("high", self.high)
+
         # Use a perturbation scale based on the distribution range
         range_size = high - low
         scale = min(0.1, range_size * 0.1)

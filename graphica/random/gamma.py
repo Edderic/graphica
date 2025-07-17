@@ -156,9 +156,9 @@ class Gamma(RandomVariable):
             float: The perturbed value.
         """
         # Get distribution parameters
-        shape = kwargs.get('shape', self.shape)
-        scale = kwargs.get('scale', self.scale)
-        
+        shape = kwargs.get("shape", self.shape)
+        scale = kwargs.get("scale", self.scale)
+
         # Use a perturbation scale based on the distribution parameters
         # For gamma distribution, use a smaller perturbation for more concentrated distributions
         exp_scale = min(0.1, 1.0 / np.sqrt(shape))

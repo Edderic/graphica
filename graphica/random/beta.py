@@ -154,9 +154,9 @@ class Beta(RandomVariable):
             float: The perturbed value, clipped to [0, 1].
         """
         # Get distribution parameters
-        a = kwargs.get('a', self.a)
-        b = kwargs.get('b', self.b)
-        
+        a = kwargs.get("a", self.a)
+        b = kwargs.get("b", self.b)
+
         # Use a perturbation scale based on the distribution parameters
         # For beta distribution, use a smaller perturbation for more concentrated distributions
         scale = min(0.1, 1.0 / (a + b))
