@@ -169,7 +169,6 @@ class Normal(RandomVariable):
             float: The perturbed value.
         """
         # Get distribution parameters
-        mean = kwargs.get("mean", self.mean)
         std = kwargs.get("std", self.std)
 
         # Use a perturbation scale based on the distribution's standard deviation
