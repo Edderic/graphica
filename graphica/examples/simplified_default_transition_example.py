@@ -60,12 +60,12 @@ def main():
         {"normal_var": 0.5, "gamma_var": 2.0, "beta_var": 0.3, "det_var": 2.8}
     )
 
-    print(f"Initial particle values:")
+    print("Initial particle values:")
     for var in ["normal_var", "gamma_var", "beta_var", "det_var"]:
         print(f"  {var}: {initial_particle.get_value(var):.4f}")
 
     # Perform several transitions
-    print(f"\nPerforming transitions...")
+    print("\nPerforming transitions...")
     current_particle = initial_particle
 
     for i in range(5):
@@ -88,9 +88,9 @@ def main():
 
         current_particle = new_particle
 
-    print(f"\n✓ All transitions completed successfully!")
-    print(f"✓ Deterministic relationships maintained!")
-    print(f"✓ Perturbations automatically adapted to distribution parameters!")
+    print("\n✓ All transitions completed successfully!")
+    print("✓ Deterministic relationships maintained!")
+    print("✓ Perturbations automatically adapted to distribution parameters!")
 
 
 if __name__ == "__main__":
