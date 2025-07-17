@@ -14,6 +14,7 @@ class RandomVariable(ABC):
     density functions (logpdf), and sampling capabilities.
     """
 
+    # pylint: disable=unused-argument
     def __init__(self, name=None, **kwargs):
         """
         Initialize random variable.
