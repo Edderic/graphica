@@ -2,14 +2,7 @@
 DefaultTransition class for Metropolis-Hastings sampling.
 """
 
-import inspect
-
 from ..random.deterministic import Deterministic
-from ..random.normal import Normal
-from ..random.gamma import Gamma
-from ..random.beta import Beta
-from ..random.binomial import Binomial
-from ..random.uniform import Uniform
 
 
 class DefaultTransition:
