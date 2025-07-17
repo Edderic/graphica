@@ -5,6 +5,7 @@ DefaultTransition class for Metropolis-Hastings sampling.
 from ..random.deterministic import Deterministic
 
 
+# pylint: disable=too-few-public-methods
 class DefaultTransition:
     """
     Default transition function for Metropolis-Hastings sampling.
@@ -59,23 +60,25 @@ class DefaultTransition:
 
         # Find all Deterministic nodes
         for var_name, rv in self.bayesian_network.random_variables.items():
-            if isinstance(rv, Deterministic):
-                self.deterministic_nodes[var_name] = rv
+            if not isinstance(rv, Deterministic):
+                continue
 
-                # Find children of this Deterministic node
-                children = []
-                for (
-                    child_name,
-                    child_rv,
-                ) in self.bayesian_network.random_variables.items():
-                    if hasattr(child_rv, "get_parents"):
-                        parents = child_rv.get_parents()
-                        for parent_name, parent in parents.items():
-                            if hasattr(parent, "name") and parent.name == var_name:
-                                children.append(child_name)
-                                break
+            self.deterministic_nodes[var_name] = rv
 
-                self.deterministic_children[var_name] = children
+            # Find children of this Deterministic node
+            children = []
+            for (
+                child_name,
+                child_rv,
+            ) in self.bayesian_network.random_variables.items():
+                if hasattr(child_rv, "get_parents"):
+                    parents = child_rv.get_parents()
+                    for _, parent in parents.items():
+                        if hasattr(parent, "name") and parent.name == var_name:
+                            children.append(child_name)
+                            break
+
+            self.deterministic_children[var_name] = children
 
     def _get_deterministic_chain(self, start_var):
         """
