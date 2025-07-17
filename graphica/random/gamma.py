@@ -157,7 +157,6 @@ class Gamma(RandomVariable):
         """
         # Get distribution parameters
         shape = kwargs.get("shape", self.shape)
-        scale = kwargs.get("scale", self.scale)
 
         # Use a perturbation scale based on the distribution parameters
         # For gamma distribution, use a smaller perturbation for more concentrated distributions
