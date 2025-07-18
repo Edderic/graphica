@@ -17,6 +17,7 @@ dependencies:
   - pylint
   - python
   - python-graphviz
+  - python-lsp-server
   - pytest
   - seaborn
   - scikit-learn
