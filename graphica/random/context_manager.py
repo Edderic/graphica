@@ -33,7 +33,6 @@ class RandomVariableContext:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context exit - nothing to do here."""
-        pass
 
 
 def add_to_network(network, rv):

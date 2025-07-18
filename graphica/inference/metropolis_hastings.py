@@ -3,7 +3,6 @@ Metropolis-Hastings sampler for Bayesian Networks with Random Variables.
 """
 
 import numpy as np
-from ..particles.particle import Particle
 from tqdm import tqdm
 
 
@@ -22,7 +21,9 @@ class MetropolisHastings:
             Initial particle to start sampling from.
     """
 
-    def __init__(self, network, query, transition_function, initial_particle=None):
+    def __init__(
+        self, network, query, transition_function, initial_particle=None
+    ):
         self.network = network
         self.query = query
         self.transition_function = transition_function

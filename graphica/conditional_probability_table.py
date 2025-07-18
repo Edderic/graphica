@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from .errors import ArgumentError
 from .random.random_variable import RandomVariable
+from .data import InMemoryData
 
 
 class ConditionalProbabilityTable(RandomVariable):
@@ -21,10 +22,11 @@ class ConditionalProbabilityTable(RandomVariable):
             In P(X,Y | Z,A), this is the left side (i.e. X, Y).
 
         givens: list[str]
-            In P(X,Y | Z,A), this is the right side (i.e. Z, A). If None, this is assumd to be an empty list.
+            In P(X,Y | Z,A), this is the right side (i.e. Z, A). If None, this
+            is assumed to be an empty list.
     """
 
-    # pylint:disable=too-few-public-methods
+    # pylint:disable=too-few-public-methods,too-many-arguments,too-many-positional-arguments
     def __init__(
         self, data=None, table=None, outcomes=None, givens=None, name=None, **kwargs
     ):
@@ -47,8 +49,6 @@ class ConditionalProbabilityTable(RandomVariable):
 
             # Convert table to DataFrame and create InMemoryData
             df = pd.DataFrame(table)
-            from .data import InMemoryData
-
             data = InMemoryData(df)
 
         if data is None:
@@ -237,15 +237,15 @@ class ConditionalProbabilityTable(RandomVariable):
         """
         if size is None:
             return self._sample_single(**kwargs)
-        else:
-            # Handle multiple samples
-            if isinstance(size, int):
-                return [self._sample_single(**kwargs) for _ in range(size)]
-            else:
-                # Handle tuple sizes
-                total_samples = np.prod(size)
-                samples = [self._sample_single(**kwargs) for _ in range(total_samples)]
-                return np.array(samples).reshape(size)
+
+        # Handle multiple samples
+        if isinstance(size, int):
+            return [self._sample_single(**kwargs) for _ in range(size)]
+
+        # Handle tuple sizes
+        total_samples = np.prod(size)
+        samples = [self._sample_single(**kwargs) for _ in range(total_samples)]
+        return np.array(samples).reshape(size)
 
     def _sample_single(self, **kwargs):
         """

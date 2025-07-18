@@ -3,10 +3,9 @@ Example demonstrating Binomial random variables in a Bayesian network.
 """
 
 import numpy as np
-from ..ds import BayesianNetwork as BN, Query
+from ..ds import BayesianNetwork as BN
 from ..random.binomial import Binomial
 from ..random.normal import Normal
-from ..inference.metropolis_hastings import MetropolisHastings
 
 
 def main():
