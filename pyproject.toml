@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "graphica"
+dynamic = ["version"]
+description = "Tools for Probabilistic Graphical Modeling"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Edderic Ugaddan", email = "edderic@gmail.com"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.6"
+dependencies = [
+    "numpy",
+    "pandas",
+    "python-graphviz",
+    "tqdm",
+    "scikit-learn",
+    "matplotlib",
+    "seaborn",
+]
+
+[project.urls]
+Homepage = "https://github.com/edderic/graphica"
+Repository = "https://github.com/edderic/graphica"
+Issues = "https://github.com/edderic/graphica/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["graphica*"]
+
+[tool.setuptools_scm]
+write_to = "graphica/_version.py" 
