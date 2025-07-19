@@ -6,6 +6,7 @@ import numpy as np
 
 from .errors import ArgumentError
 from .factor_one import FactorOne
+from .factor import Factor
 from .log_factor import LogFactor
 
 
@@ -26,6 +27,7 @@ class LogFactorAdapter:
                 + " Data, ConditionalProbabilityTable, or LogFactor"
             )
 
+        self.data = data
         if data is not None:
             df = data.read()
             df["value"] = np.log(df["value"])
@@ -114,6 +116,8 @@ class LogFactorAdapter:
         Returns: LogFactorAdapter
         """
 
+        variables = var
+
         if isinstance(var, str):
             variables = [var]
 
@@ -178,4 +182,7 @@ class LogFactorAdapter:
         return df
 
     def get_data(self):
+        """
+        Return the data object
+        """
         return self.data
