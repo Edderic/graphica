@@ -1,6 +1,7 @@
 numpy
 pandas
 pytest
+pyarrow
 pytest-cov
 coverage
 pylint
