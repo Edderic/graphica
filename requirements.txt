@@ -4,10 +4,9 @@ pytest
 pytest-cov
 coverage
 pylint
-python-graphviz
 tqdm
 scikit-learn
 matplotlib
 seaborn
 jupyter
-jupyterlab 
+jupyterlab
