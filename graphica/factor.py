@@ -52,7 +52,6 @@ class Factor:
         counts = df.groupby(cols).count()["value"]
 
         if any(counts > 1):
-            too_many = counts[counts > 1]
             raise ArgumentError(f"Too many counts detected: \n{counts}")
 
     def __merged__(self, other):
@@ -186,6 +185,7 @@ class Factor:
         Returns: Factor
         """
 
+        variables = var
         if isinstance(var, str):
             variables = [var]
 
