@@ -118,7 +118,7 @@ class Deterministic(RandomVariable):
         try:
             result = self.callable_func(**params)
         except Exception as e:
-            raise ValueError(f"Error calling function with parameters {params}: {e}")
+            raise ValueError(f"Error calling function with parameters {params}: {e}") from e
 
         # Handle size parameter
         if size is not None:

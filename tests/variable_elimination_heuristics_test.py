@@ -2,7 +2,7 @@ import pandas as pd
 
 from .conftest import clean_tmp, get_tmp_path
 from ..graphica.data import ParquetData
-from ..graphica.variable_elimination import min_fill_edges
+from ..graphica.inference.variable_elimination import min_fill_edges
 from ..graphica.ds import BayesianNetwork, ConditionalProbabilityTable as CPT
 
 

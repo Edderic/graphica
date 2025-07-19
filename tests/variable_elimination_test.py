@@ -5,7 +5,7 @@ import pandas as pd
 from ..graphica.data import ParquetData
 from ..graphica.ds import Query, ConditionalProbabilityTable as CPT, \
     BayesianNetwork
-from ..graphica.infer import VariableElimination
+from ..graphica.inference import VariableElimination
 from .conftest import assert_approx_value_df, \
     create_binary_prior_cpt, create_binary_CPT, \
     create_prior_df, clean_tmp, get_tmp_path, \
