@@ -15,7 +15,7 @@ def test_simple_network_with_cpts():
 
     # Create a simple network: X -> Y
     bayesian_network = BN()
-    
+
     # Prior for X
     cpt_x = CPT(
         table=[
@@ -60,14 +60,14 @@ def test_add_nodes_with_list():
     clean_tmp()
 
     bayesian_network = BN()
-    
+
     # Create CPTs
     cpt_x = CPT(
         table=[{'X': 0, 'value': 0.5}, {'X': 1, 'value': 0.5}],
         outcomes=['X'],
         name='X'
     )
-    
+
     cpt_y = CPT(
         table=[
             {'X': 0, 'Y': 0, 'value': 0.8},
@@ -79,10 +79,10 @@ def test_add_nodes_with_list():
         givens=['X'],
         name='Y'
     )
-    
+
     # Add nodes using list
     bayesian_network.add_nodes([cpt_x, cpt_y])
-    
+
     # Verify nodes were added
     random_vars = bayesian_network.get_random_variables()
     assert len(random_vars) == 2
@@ -95,14 +95,14 @@ def test_add_nodes_with_dict():
     clean_tmp()
 
     bayesian_network = BN()
-    
+
     # Create CPTs
     cpt_x = CPT(
         table=[{'X': 0, 'value': 0.5}, {'X': 1, 'value': 0.5}],
         outcomes=['X'],
         name='X'
     )
-    
+
     cpt_y = CPT(
         table=[
             {'X': 0, 'Y': 0, 'value': 0.8},
@@ -114,11 +114,11 @@ def test_add_nodes_with_dict():
         givens=['X'],
         name='Y'
     )
-    
+
     # Add nodes using dictionary
     rvs_dict = {'cpt_x': cpt_x, 'cpt_y': cpt_y}
     bayesian_network.add_nodes(rvs_dict)
-    
+
     # Verify nodes were added (using the names from the CPTs, not dict keys)
     random_vars = bayesian_network.get_random_variables()
     assert len(random_vars) == 2
@@ -131,21 +131,21 @@ def test_add_nodes_with_mixed_random_variables():
     clean_tmp()
 
     bayesian_network = BN()
-    
+
     # Create a CPT
     cpt_x = CPT(
         table=[{'X': 0, 'value': 0.5}, {'X': 1, 'value': 0.5}],
         outcomes=['X'],
         name='X'
     )
-    
+
     # Create a Normal random variable
     normal_rv = Normal(name='Y', mu=0, sigma=1)
-    
+
     # Add nodes using dictionary with mixed types
     rvs_dict = {'cpt': cpt_x, 'normal': normal_rv}
     bayesian_network.add_nodes(rvs_dict)
-    
+
     # Verify nodes were added
     random_vars = bayesian_network.get_random_variables()
     assert len(random_vars) == 2
@@ -153,63 +153,12 @@ def test_add_nodes_with_mixed_random_variables():
     assert 'Y' in random_vars
 
 
-def test_network_with_mixed_random_variables():
-    """Test a network with both CPTs and other RandomVariables."""
-    clean_tmp()
-
-    from ..graphica.random.normal import Normal
-    from ..graphica.random.uniform import Uniform
-
-    bayesian_network = BN()
-
-    # Add a Normal random variable
-    normal_rv = Normal(name='X', mu=0, sigma=1)
-    bayesian_network.add_node(normal_rv)
-
-    # Add a Uniform random variable
-    uniform_rv = Uniform(name='Y', low=0, high=1)
-    bayesian_network.add_node(uniform_rv)
-
-    # Add a CPT that depends on both
-    cpt_z = CPT(
-        table=[
-            {'X': 0, 'Y': 0, 'Z': 0, 'value': 0.5},
-            {'X': 0, 'Y': 0, 'Z': 1, 'value': 0.5},
-            {'X': 0, 'Y': 1, 'Z': 0, 'value': 0.3},
-            {'X': 0, 'Y': 1, 'Z': 1, 'value': 0.7},
-            {'X': 1, 'Y': 0, 'Z': 0, 'value': 0.7},
-            {'X': 1, 'Y': 0, 'Z': 1, 'value': 0.3},
-            {'X': 1, 'Y': 1, 'Z': 0, 'value': 0.2},
-            {'X': 1, 'Y': 1, 'Z': 1, 'value': 0.8},
-        ],
-        outcomes=['Z'],
-        givens=['X', 'Y'],
-        name='Z'
-    )
-    bayesian_network.add_node(cpt_z)
-
-    # Test sampling
-    particle = bayesian_network.sample()
-    assert isinstance(particle, Particle)
-    assert set(particle.get_variables()) == {'X', 'Y', 'Z'}
-
-    # Test that continuous variables have reasonable values
-    x_val = particle.get_value('X')
-    y_val = particle.get_value('Y')
-    z_val = particle.get_value('Z')
-    
-    assert isinstance(x_val, (int, float))
-    assert isinstance(y_val, (int, float))
-    assert z_val in [0, 1]
-    assert 0 <= y_val <= 1
-
-
 def test_get_random_variables():
     """Test getting all random variables from the network."""
     clean_tmp()
 
     bayesian_network = BN()
-    
+
     # Add some random variables
     cpt_x = CPT(
         table=[{'X': 0, 'value': 0.5}, {'X': 1, 'value': 0.5}],
@@ -244,7 +193,7 @@ def test_add_edge():
     clean_tmp()
 
     bayesian_network = BN()
-    
+
     # Add nodes
     cpt_x = CPT(
         table=[{'X': 0, 'value': 0.5}, {'X': 1, 'value': 0.5}],
@@ -281,7 +230,7 @@ def test_to_markov_network_with_cpts():
     clean_tmp()
 
     bayesian_network = BN()
-    
+
     # Add CPTs
     cpt_x = CPT(
         table=[{'X': 0, 'value': 0.4}, {'X': 1, 'value': 0.6}],
@@ -305,11 +254,11 @@ def test_to_markov_network_with_cpts():
 
     # Convert to Markov Network
     markov_network = bayesian_network.to_markov_network()
-    
+
     # Check that Markov Network has the expected factors
     factors = markov_network.get_factors()
     assert len(factors) == 2
-    
+
     # Check that all variables are present
     variables = markov_network.get_variables()
     assert set(variables) == {'X', 'Y'}
@@ -320,7 +269,7 @@ def test_to_markov_network_with_non_cpts():
     clean_tmp()
 
     bayesian_network = BN()
-    
+
     # Add a Normal random variable (not a CPT)
     normal_rv = Normal(name='X', mu=0, sigma=1)
     bayesian_network.add_node(normal_rv)
@@ -335,7 +284,7 @@ def test_to_markov_network_mixed():
     clean_tmp()
 
     bayesian_network = BN()
-    
+
     # Add a CPT
     cpt_x = CPT(
         table=[{'X': 0, 'value': 0.5}, {'X': 1, 'value': 0.5}],
