@@ -15,8 +15,7 @@ class Factors:
         self.factors = factors
 
     def __iter__(self):
-        for factor in self.factors:
-            yield factor
+        yield from self.factors
 
     def __repr__(self):
         return f"Factors(\n{self.factors})"
