@@ -22,7 +22,6 @@ requires-python = ">=3.6"
 dependencies = [
     "numpy",
     "pandas",
-    "python-graphviz",
     "tqdm",
     "scikit-learn",
     "matplotlib",
@@ -39,4 +38,4 @@ where = ["."]
 include = ["graphica*"]
 
 [tool.setuptools_scm]
-write_to = "graphica/_version.py" 
+write_to = "graphica/_version.py"
