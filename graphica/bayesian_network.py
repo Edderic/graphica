@@ -8,6 +8,9 @@ from .directed_acyclic_graph import DirectedAcyclicGraph
 from .particles.particle import Particle
 from .conditional_probability_table import ConditionalProbabilityTable
 
+from .random.context_manager import clear_current_network
+from .random.context_manager import set_current_network
+
 
 class BayesianNetwork(DirectedAcyclicGraph):
     """
@@ -152,20 +155,18 @@ class BayesianNetwork(DirectedAcyclicGraph):
     def __enter__(self):
         """
         Context manager entry point.
-        
+
         Returns:
             BayesianNetwork: The Bayesian network instance.
         """
-        # Store the current Bayesian network in a global context
-        from .random.context_manager import set_current_network, get_current_network
+
         set_current_network(self)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
         Context manager exit point.
-        
+
         Cleans up the global context.
         """
-        from .random.context_manager import clear_current_network
         clear_current_network()

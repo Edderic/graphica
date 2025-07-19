@@ -100,10 +100,10 @@ def run_random_variable_example():
 
         # Add to network
         bn.add_node(X)
-        bn.add_edge(Y)
+        bn.add_node(Y)
 
-        print(f"Network has {len(bn.cpts)} CPTs")
-        for var, cpt in bn.cpts.items():
+        print(f"Network has {len(bn.nodes)} CPTs")
+        for var, cpt in bn.nodes.items():
             print(f"  - {var}: {cpt}")
 
     print("\nExample completed!")
