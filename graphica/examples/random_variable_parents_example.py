@@ -8,6 +8,10 @@ from graphica.ds import Normal, Beta, Binomial, Gamma, Uniform
 
 
 def main():
+    """
+    For demonstration purposes.
+
+    """
     print("=== Random Variable Parent Relationships and kwargs Override Example ===\n")
 
     # Example 1: Normal distribution with parent relationships
