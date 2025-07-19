@@ -47,7 +47,6 @@ class InMemoryData:
         """
         Write the data.
         """
-        pass
 
 
 class ParquetData:
