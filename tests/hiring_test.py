@@ -1,6 +1,5 @@
 import logging
 
-import graphviz
 import pandas as pd
 
 from ..graphica.data import ParquetData
