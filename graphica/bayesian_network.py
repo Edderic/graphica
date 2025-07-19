@@ -2,7 +2,8 @@
 Bayesian Network class
 """
 
-import numpy as np
+from .markov_network import MarkovNetwork
+from .factor import Factor
 from .directed_acyclic_graph import DirectedAcyclicGraph
 from .particles.particle import Particle
 from .conditional_probability_table import ConditionalProbabilityTable
@@ -25,6 +26,12 @@ class BayesianNetwork(DirectedAcyclicGraph):
             self.random_variables = random_variables.copy()
 
     def add_nodes(self, rvs):
+        """
+        Add a bunch of random variables (rvs)
+
+        Parameters:
+            rvs: list[RandomVariable]
+        """
         if isinstance(rvs, dict):
             # If rvs is a dict, loop through the values
             for rv in rvs.values():
@@ -34,36 +41,27 @@ class BayesianNetwork(DirectedAcyclicGraph):
             for rv in rvs:
                 self.add_node(rv)
 
-    def add_node(self, rv):
+    def add_node(self, node):
         """
         Add a random variable to the network.
         Parameters:
             rv: RandomVariable
                 The random variable to add. Must have a name.
         """
-        if rv.name is None:
+        if node.name is None:
             raise ValueError("Random variable must have a name")
-        self.random_variables[rv.name] = rv
-        super().add_node(rv.name)
+        self.random_variables[node.name] = node
+        super().add_node(node.name)
 
         # For CPTs, add edges based on givens
-        if hasattr(rv, "get_givens"):
-            for parent_name in rv.get_givens():
-                self.add_edge(parent_name, rv.name)
+        if hasattr(node, "get_givens"):
+            for parent_name in node.get_givens():
+                self.add_edge(parent_name, node.name)
         else:
             # Add edges for parent relationships
-            for parent_name, parent in rv.get_parents().items():
+            for parent_name, parent in node.get_parents().items():
                 if parent is not None and hasattr(parent, "name"):
-                    self.add_edge(parent.name, rv.name)
-
-    def add_edge(self, parent_name, child_name):
-        """
-        Add an edge from parent to child in the DAG.
-        Parameters:
-            parent_name: str
-            child_name: str
-        """
-        super().add_edge(parent_name, child_name)
+                    self.add_edge(parent.name, node.name)
 
     def get_random_variables(self):
         """
@@ -99,18 +97,7 @@ class BayesianNetwork(DirectedAcyclicGraph):
                             f"Parent variable {parent_name} not yet sampled"
                         )
                     parent_val = particle.get_value(parent_name)
-                    # TODO: this is a code smell
-                    # Discretize parent values for CPTs
-                    if parent_name in self.random_variables:
-                        parent_rv = self.random_variables[parent_name]
-                        if parent_rv.__class__.__name__ == "Uniform":
-                            parent_values[parent_name] = int(parent_val > 0.5)
-                        elif parent_rv.__class__.__name__ == "Normal":
-                            parent_values[parent_name] = int(parent_val > 0)
-                        else:
-                            parent_values[parent_name] = parent_val
-                    else:
-                        parent_values[parent_name] = parent_val
+                    parent_values[parent_name] = parent_val
             else:
                 # For other random variables, get parent values from parent objects
                 for parent_name_from_child, parent in rv.get_parents().items():
@@ -141,14 +128,13 @@ class BayesianNetwork(DirectedAcyclicGraph):
         Raises:
             ValueError: If any random variable is not a ConditionalProbabilityTable
         """
-        from .markov_network import MarkovNetwork
-        from .factor import Factor
 
         # Check that all random variables are CPTs
         for var_name, rv in self.random_variables.items():
             if not isinstance(rv, ConditionalProbabilityTable):
                 raise ValueError(
-                    f"Random variable '{var_name}' is not a ConditionalProbabilityTable. "
+                    f"Random variable '{var_name}' is not a "
+                    "ConditionalProbabilityTable."
                     f"Found: {type(rv).__name__}. "
                     "to_markov_network() only works with CPTs."
                 )
