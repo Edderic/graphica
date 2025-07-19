@@ -99,9 +99,9 @@ class MetropolisHastings:
         if np.random.random() < alpha:
             proposed_particle.accept()
             return proposed_particle
-        else:
-            current_particle.reject()
-            return current_particle
+
+        current_particle.reject()
+        return current_particle
 
     def _log_probability(self, particle):
         """Calculate log probability of a particle under the network."""

@@ -3,7 +3,8 @@ Example demonstrating Random Variables in Bayesian Networks.
 """
 
 import numpy as np
-from ..ds import BayesianNetwork, Normal, Uniform, Query, MetropolisHastings, Particle
+from ..ds import BayesianNetwork, Normal, Uniform, Query, MetropolisHastings
+from ..ds import ConditionalProbabilityTable as CPT
 
 
 def transition_function(particle):
@@ -40,8 +41,8 @@ def run_random_variable_example():
         sigma = Uniform(name="sigma", low=0.1, high=10.0)
 
         # Add them to the network
-        bn.add_random_variable(mu)
-        bn.add_random_variable(sigma)
+        bn.add_node(mu)
+        bn.add_node(sigma)
 
         print(f"Network has {len(bn.random_variables)} random variables")
         for name, rv in bn.random_variables.items():
@@ -55,9 +56,9 @@ def run_random_variable_example():
     sigma = Uniform(name="sigma", low=0.1, high=3.0)
     X = Normal(name="X", mean=mu, sigma=sigma)
 
-    bn.add_random_variable(mu)
-    bn.add_random_variable(sigma)
-    bn.add_random_variable(X)
+    bn.add_node(mu)
+    bn.add_node(sigma)
+    bn.add_node(X)
 
     # Create a query conditioning on some observation
     query = Query(outcomes=[], givens=[{"X": 1.5}])  # Observe X = 1.5
@@ -80,7 +81,6 @@ def run_random_variable_example():
     print("\n3. Traditional CPT-based network:")
 
     # Example using CPTs (traditional approach)
-    from ..ds import ConditionalProbabilityTable as CPT
 
     with BayesianNetwork() as bn:
         # Prior for X

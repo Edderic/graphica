@@ -3,10 +3,8 @@ Log Factor module
 """
 
 import numpy as np
-import pandas as pd
 
 from .errors import ArgumentError
-from .factor_one import FactorOne
 
 
 def compute_log_sum_exp(other_vars, tmp_df):
@@ -167,6 +165,15 @@ class LogFactor:
         )
 
     def __merged__(self, other):
+        """
+        Combine this LogFactor with another LogFactor
+
+        Parameters:
+            other: LogFactor
+
+        Returns:
+            LogFactor
+        """
         left_vars = set(list(self.get_variables()))
         right_vars = set(list(other.get_variables()))
         common = list(left_vars.intersection(right_vars))
