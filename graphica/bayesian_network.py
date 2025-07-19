@@ -148,3 +148,24 @@ class BayesianNetwork(DirectedAcyclicGraph):
             markov_network.add_factor(factor)
 
         return markov_network
+
+    def __enter__(self):
+        """
+        Context manager entry point.
+        
+        Returns:
+            BayesianNetwork: The Bayesian network instance.
+        """
+        # Store the current Bayesian network in a global context
+        from .random.context_manager import set_current_network, get_current_network
+        set_current_network(self)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        Context manager exit point.
+        
+        Cleans up the global context.
+        """
+        from .random.context_manager import clear_current_network
+        clear_current_network()
