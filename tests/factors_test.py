@@ -108,7 +108,6 @@ def test_get_variables():
     assert {'X', 'Y', 'A'} == variables
 
 
-@pytest.mark.f
 def test_get_filters():
     clean_tmp()
 

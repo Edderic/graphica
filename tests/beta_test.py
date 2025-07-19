@@ -203,7 +203,6 @@ def test_beta_consistency():
     assert integral == pytest.approx(1.0, abs=0.01)
 
 
-@pytest.mark.f
 def test_beta_edge_cases():
     """Test edge cases and boundary conditions."""
     # Test very small parameters
