@@ -3,6 +3,7 @@ RandomVariable abstract class for probability distributions.
 """
 
 from abc import ABC, abstractmethod
+from .context_manager import add_random_variable_to_current_network
 
 
 class RandomVariable(ABC):
@@ -27,10 +28,9 @@ class RandomVariable(ABC):
         """
         self.name = name
         self.parents = {}
-        
+
         # Automatically add to current Bayesian network if one is set
         try:
-            from .context_manager import add_random_variable_to_current_network
             add_random_variable_to_current_network(self)
         except ImportError:
             # If context_manager is not available, ignore
