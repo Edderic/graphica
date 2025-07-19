@@ -12,7 +12,7 @@ _local = threading.local()
 def set_current_network(network):
     """
     Set the current Bayesian network for the current thread.
-    
+
     Parameters:
         network: BayesianNetwork
             The Bayesian network to set as current.
@@ -23,25 +23,25 @@ def set_current_network(network):
 def get_current_network():
     """
     Get the current Bayesian network for the current thread.
-    
+
     Returns:
         BayesianNetwork or None: The current Bayesian network, or None if not set.
     """
-    return getattr(_local, 'current_network', None)
+    return getattr(_local, "current_network", None)
 
 
 def clear_current_network():
     """
     Clear the current Bayesian network for the current thread.
     """
-    if hasattr(_local, 'current_network'):
-        delattr(_local, 'current_network')
+    if hasattr(_local, "current_network"):
+        delattr(_local, "current_network")
 
 
 def generate_variable_name():
     """
     Generate a unique variable name.
-    
+
     Returns:
         str: A unique variable name.
     """
@@ -51,11 +51,11 @@ def generate_variable_name():
 def add_random_variable_to_current_network(random_variable):
     """
     Add a random variable to the current Bayesian network if one is set.
-    
+
     Parameters:
         random_variable: RandomVariable
             The random variable to add to the current network.
-            
+
     Returns:
         bool: True if the variable was added to a network, False otherwise.
     """
@@ -64,7 +64,7 @@ def add_random_variable_to_current_network(random_variable):
         # Generate a name if the variable doesn't have one
         if random_variable.name is None:
             random_variable.name = generate_variable_name()
-        
+
         network.add_node(random_variable)
         return True
     return False
