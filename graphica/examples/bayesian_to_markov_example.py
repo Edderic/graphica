@@ -52,7 +52,7 @@ def main():
     print("Bayesian Network created:")
     print(f"Nodes: {list(bn.get_random_variables().keys())}")
     print(f"Graph structure: {bn.get_nodes()}")
-    print(f"Edges: X->Y, Y->Z")
+    print("Edges: X->Y, Y->Z")
     print()
 
     # Sample from the Bayesian Network

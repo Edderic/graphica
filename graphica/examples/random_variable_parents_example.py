@@ -4,7 +4,6 @@ Random Variable Parents Example
 This example demonstrates how to create random variables with parent dependencies.
 """
 
-import numpy as np
 from graphica.ds import Normal, Beta, Binomial, Gamma, Uniform
 
 
@@ -121,12 +120,12 @@ def main():
     x_values = [0.5, 1.0, 2.0, 3.0]
 
     print(f"   Gamma RV: {gamma_rv}")
-    print(f"   CDF values with default parameters:")
+    print("   CDF values with default parameters:")
     for x in x_values:
         cdf_val = gamma_rv.cdf(x)
         print(f"     CDF({x}) = {cdf_val:.6f}")
 
-    print(f"   CDF values with overridden parameters (shape=3, scale=2):")
+    print("   CDF values with overridden parameters (shape=3, scale=2):")
     for x in x_values:
         cdf_val = gamma_rv.cdf(x, shape=3.0, scale=2.0)
         print(f"     CDF({x}) = {cdf_val:.6f}")
