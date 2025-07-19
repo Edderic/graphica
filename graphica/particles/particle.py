@@ -22,8 +22,7 @@ class Particle:
             self.values = values.copy()
 
         # Track acceptance/rejection status
-        self._accepted = False
-        self._rejected = False
+        self.status = None
 
     def __repr__(self):
         return f"Particle({self.values})"
@@ -98,23 +97,29 @@ class Particle:
             Particle: A new particle with the same values and status.
         """
         new_particle = Particle(self.values.copy())
-        new_particle._accepted = self._accepted
-        new_particle._rejected = self._rejected
+        new_particle.status = self.get_status()
         return new_particle
 
     def accept(self):
         """
         Mark this particle as accepted.
         """
-        self._accepted = True
-        self._rejected = False
+        self.status = "accepted"
 
     def reject(self):
         """
         Mark this particle as rejected.
         """
-        self._accepted = False
-        self._rejected = True
+        self.status = "rejected"
+
+    def get_status(self):
+        """
+        Get the current status of this particle.
+
+        Returns:
+            str: The status of the particle ("accepted", "rejected", or None).
+        """
+        return self.status
 
     def is_accepted(self):
         """
@@ -123,7 +128,7 @@ class Particle:
         Returns:
             bool: True if the particle was accepted, False otherwise.
         """
-        return self._accepted
+        return self.get_status() == "accepted"
 
     def is_rejected(self):
         """
@@ -132,4 +137,4 @@ class Particle:
         Returns:
             bool: True if the particle was rejected, False otherwise.
         """
-        return self._rejected
+        return self.get_status() == "rejected"
