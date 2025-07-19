@@ -9,17 +9,22 @@ from ..ds import RandomVariable
 class ExponentialRandomVariable(RandomVariable):
     """Exponential distribution implementation."""
 
-    def __init__(self, rate=1.0):
+    def __init__(self, rate=1.0, name=None, **kwargs):
         """
         Initialize exponential random variable.
 
         Parameters:
             rate: float
                 Rate parameter (lambda) of the exponential distribution.
+            name: str, optional
+                Name of the random variable.
+            **kwargs: dict
+                Additional parameters passed to the base class.
         """
+        super().__init__(name=name, **kwargs)
         self.rate = rate
 
-    def pdf(self, x):
+    def pdf(self, x, **kwargs):
         """Exponential PDF: f(x) = λ * exp(-λx) for x >= 0."""
         x = np.asarray(x)
         result = np.zeros_like(x, dtype=float)
@@ -27,7 +32,7 @@ class ExponentialRandomVariable(RandomVariable):
         result[mask] = self.rate * np.exp(-self.rate * x[mask])
         return result
 
-    def logpdf(self, x):
+    def logpdf(self, x, **kwargs):
         """Exponential log PDF: log(f(x)) = log(λ) - λx for x >= 0."""
         x = np.asarray(x)
         result = np.full_like(x, -np.inf, dtype=float)
@@ -35,7 +40,7 @@ class ExponentialRandomVariable(RandomVariable):
         result[mask] = np.log(self.rate) - self.rate * x[mask]
         return result
 
-    def sample(self, size=None):
+    def sample(self, size=None, **kwargs):
         """Sample from exponential distribution."""
         return np.random.exponential(1 / self.rate, size=size)
 
@@ -46,7 +51,7 @@ class ExponentialRandomVariable(RandomVariable):
 class UniformRandomVariable(RandomVariable):
     """Uniform distribution implementation."""
 
-    def __init__(self, low=0.0, high=1.0):
+    def __init__(self, low=0.0, high=1.0, name=None, **kwargs):
         """
         Initialize uniform random variable.
 
@@ -55,12 +60,17 @@ class UniformRandomVariable(RandomVariable):
                 Lower bound of the uniform distribution.
             high: float
                 Upper bound of the uniform distribution.
+            name: str, optional
+                Name of the random variable.
+            **kwargs: dict
+                Additional parameters passed to the base class.
         """
+        super().__init__(name=name, **kwargs)
         self.low = low
         self.high = high
         self.width = high - low
 
-    def pdf(self, x):
+    def pdf(self, x, **kwargs):
         """Uniform PDF: f(x) = 1/(high-low) for low <= x <= high."""
         x = np.asarray(x)
         result = np.zeros_like(x, dtype=float)
@@ -68,7 +78,7 @@ class UniformRandomVariable(RandomVariable):
         result[mask] = 1.0 / self.width
         return result
 
-    def logpdf(self, x):
+    def logpdf(self, x, **kwargs):
         """Uniform log PDF: log(f(x)) = -log(high-low) for low <= x <= high."""
         x = np.asarray(x)
         result = np.full_like(x, -np.inf, dtype=float)
@@ -76,7 +86,7 @@ class UniformRandomVariable(RandomVariable):
         result[mask] = -np.log(self.width)
         return result
 
-    def sample(self, size=None):
+    def sample(self, size=None, **kwargs):
         """Sample from uniform distribution."""
         return np.random.uniform(self.low, self.high, size=size)
 
