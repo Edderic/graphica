@@ -55,7 +55,7 @@ def create_weather_network():
         givens=["Cloudy"],
     )
 
-    bayesian_network.add_edge(cpt_sprinkler)
+    bayesian_network.add_node(cpt_sprinkler)
 
     # WetGrass depends on Rain and Sprinkler
     df_wetgrass = pd.DataFrame(
@@ -77,7 +77,7 @@ def create_weather_network():
         givens=["Rain", "Sprinkler"],
     )
 
-    bayesian_network.add_edge(cpt_wetgrass)
+    bayesian_network.add_node(cpt_wetgrass)
 
     return bayesian_network
 
