@@ -45,7 +45,7 @@ def create_weather_network_with_table():
         givens=["Cloudy"],
     )
 
-    bayesian_network.add_edge(cpt_sprinkler)
+    bayesian_network.add_node(cpt_sprinkler)
 
     # WetGrass depends on Rain and Sprinkler using table parameter
     cpt_wetgrass = CPT(
@@ -63,7 +63,7 @@ def create_weather_network_with_table():
         givens=["Rain", "Sprinkler"],
     )
 
-    bayesian_network.add_edge(cpt_wetgrass)
+    bayesian_network.add_node(cpt_wetgrass)
 
     return bayesian_network
 
