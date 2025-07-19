@@ -148,7 +148,7 @@ class VariableElimination:
                 factors = self.network.get_factors(best_eliminateable)
 
                 logging.debug(
-                    "\nbest_eliminateable: \n\t: %s, \n\tmin: %s, " "\n\tfactors: %s",
+                    "\nbest_eliminateable: \n\t: %s, \n\tmin: %s, \n\tfactors: %s",
                     best_eliminateable,
                     _,
                     factors,
@@ -178,7 +178,7 @@ class VariableElimination:
                 t2 = time.time()
 
                 logging.debug(
-                    "elapsed: %s" "\nbest_eliminateable: \n\t: %s, " "\n\tfactors: %s",
+                    "elapsed: %s\nbest_eliminateable: \n\t: %s, \n\tfactors: %s",
                     t2 - t1,
                     best_eliminateable,
                     factors,
