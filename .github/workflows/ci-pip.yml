@@ -83,6 +83,7 @@ jobs:
         python -m build
 
     - name: Publish to TestPyPI
+      id: test-pypi
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
@@ -90,6 +91,7 @@ jobs:
         skip-existing: true
 
     - name: Publish to PyPI
+      if: steps.test-pypi.outcome == 'success'
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
