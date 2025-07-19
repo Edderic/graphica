@@ -6,9 +6,15 @@ import setuptools
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
+# Get version from environment variable or default
+import os
+version = os.environ.get('GITHUB_REF_NAME', '0.1.0')
+if version.startswith('v'):
+    version = version[1:]  # Remove 'v' prefix
+
 setuptools.setup(
     name="graphica",
-    version="0.1.0",
+    version=version,
     author="Edderic Ugaddan",
     author_email="edderic@gmail.com",
     description="Tools for Probabilistic Graphical Modeling",
