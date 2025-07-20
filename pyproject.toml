@@ -23,9 +23,26 @@ dependencies = [
     "numpy",
     "pandas",
     "tqdm",
+    "scipy",
+]
+
+[project.optional-dependencies]
+test = [
     "scikit-learn",
+    "pytest",
+    "pytest-cov",
+    "coverage",
+    "pylint",
+]
+dev = [
+    "jupyter",
+    "jupyterlab",
     "matplotlib",
     "seaborn",
+    "python-graphviz",
+    "pyarrow",
+    "line_profiler",
+    "pre-commit",
 ]
 
 [project.urls]
